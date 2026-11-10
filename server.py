@@ -59,6 +59,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 try:
+    import certifi
     from pymongo import MongoClient
     from pymongo.errors import PyMongoError
     from bson import ObjectId
@@ -86,7 +87,10 @@ if not MONGODB_URI:
     sys.exit(1)
 
 print("Conectando ao MongoDB...")
-client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=8000)
+# tlsCAFile=certifi.where() -> usa uma lista de certificados de segurança
+# atualizada (em vez da que já vem pronta em alguns servidores na nuvem,
+# que às vezes está desatualizada e causa erro de handshake SSL/TLS).
+client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=8000, tlsCAFile=certifi.where())
 try:
     client.admin.command("ping")
 except PyMongoError as exc:

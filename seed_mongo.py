@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 try:
+    import certifi
     from pymongo import MongoClient
 except ImportError:
     print("ERRO: rode 'pip install -r requirements.txt' antes de usar este script.")
@@ -44,7 +45,7 @@ if not SEED_FILE.exists():
 with open(SEED_FILE, "r", encoding="utf-8") as f:
     seed = json.load(f)
 
-client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=8000)
+client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=8000, tlsCAFile=certifi.where())
 client.admin.command("ping")
 db = client[DB_NAME]
 casos_col = db["casos"]
