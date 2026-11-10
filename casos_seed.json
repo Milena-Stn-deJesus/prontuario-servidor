@@ -1,0 +1,145 @@
+{
+  "case-1": {
+    "paciente": "Maria Fernanda Alves",
+    "estudante": "Ana Beatriz Lima",
+    "supervisor": "Dra. Patrícia Novaes",
+    "status": "Ativo",
+    "abertura": "14/08/2026",
+    "anamnese": {
+      "queixa": "Paciente relatou, na triagem, episódios recorrentes de ansiedade e dificuldade de concentração nos últimos seis meses, associados à rotina acadêmica.",
+      "historico": "Sem acompanhamento psicológico prévio. Nega uso de medicação psiquiátrica atual.",
+      "medicamentos": "Nenhum em uso no momento.",
+      "contexto": "Reside com os pais; cursa o ensino superior; relata boa rede de apoio familiar.",
+      "hipoteses": "Hipótese inicial de quadro ansioso relacionado a estressores acadêmicos. Plano: acompanhamento quinzenal com foco em técnicas de manejo da ansiedade.",
+      "autor": "Ana Beatriz Lima",
+      "data": "20/08/2026"
+    },
+    "evolucoes": [
+      {
+        "tipo": "atendimento",
+        "conteudo": "Primeiro atendimento. Paciente compareceu pontualmente, relatou melhora discreta na qualidade do sono. Trabalhadas técnicas de respiração.",
+        "tags": [
+          "ansiedade",
+          "psicoeducação"
+        ],
+        "autor": "Ana Beatriz Lima",
+        "papel": "Estudante",
+        "data": "28/08/2026 14h00"
+      },
+      {
+        "tipo": "atendimento",
+        "conteudo": "Paciente relata redução da frequência de crises de ansiedade. Mantido plano terapêutico. Orientações sobre rotina de estudos.",
+        "tags": [
+          "ansiedade"
+        ],
+        "autor": "Ana Beatriz Lima",
+        "papel": "Estudante",
+        "data": "11/09/2026 14h00"
+      }
+    ],
+    "documentos": [
+      {
+        "nome": "Encaminhamento - Ambulatório.pdf",
+        "autor": "Fernando Ricci",
+        "data": "15/08/2026"
+      }
+    ],
+    "agendamentos": [
+      {
+        "data": "18/11/2026",
+        "hora": "14h00",
+        "local": "Atendimento presencial — Clínica-Escola, sala 3",
+        "status": "Confirmada"
+      }
+    ]
+  },
+  "case-2": {
+    "paciente": "Carlos Eduardo Mendes",
+    "estudante": "Ana Beatriz Lima",
+    "supervisor": "Dra. Patrícia Novaes",
+    "status": "Encerrado",
+    "abertura": "02/06/2026",
+    "anamnese": {
+      "queixa": "Paciente buscou atendimento após período de luto, relatando tristeza persistente e isolamento social.",
+      "historico": "Acompanhamento psicológico breve há dois anos, sem uso de medicação.",
+      "medicamentos": "Nenhum.",
+      "contexto": "Mora sozinho; trabalha em período integral; rede de apoio reduzida.",
+      "hipoteses": "Hipótese de luto não complicado. Plano: suporte psicoterápico breve com foco no processo de elaboração.",
+      "autor": "Ana Beatriz Lima",
+      "data": "10/06/2026"
+    },
+    "evolucoes": [
+      {
+        "tipo": "atendimento",
+        "conteudo": "Paciente relata melhora progressiva do humor e retomada de atividades sociais.",
+        "tags": [
+          "luto"
+        ],
+        "autor": "Ana Beatriz Lima",
+        "papel": "Estudante",
+        "data": "02/09/2026 10h00"
+      },
+      {
+        "tipo": "retificacao",
+        "conteudo": "Retificação: correção da data registrada na evolução anterior, mantido o conteúdo original sem alterações clínicas.",
+        "tags": [],
+        "autor": "Dra. Patrícia Novaes",
+        "papel": "Supervisor",
+        "data": "03/09/2026 09h00"
+      },
+      {
+        "tipo": "contato",
+        "conteudo": "Contato telefônico de encerramento. Paciente relata estar bem e não identifica necessidade de continuidade no momento.",
+        "tags": [],
+        "autor": "Ana Beatriz Lima",
+        "papel": "Estudante",
+        "data": "30/10/2026 11h00"
+      }
+    ],
+    "documentos": [],
+    "agendamentos": [
+      {
+        "data": "30/10/2026",
+        "hora": "11h00",
+        "local": "Atendimento presencial — Clínica-Escola, sala 2",
+        "status": "Concluída"
+      }
+    ]
+  },
+  "case-3": {
+    "paciente": "Juliana Ferreira Costa",
+    "estudante": "Rafael Augusto Pires",
+    "supervisor": "Dr. Henrique Lacerda",
+    "status": "Ativo",
+    "abertura": "05/11/2026",
+    "anamnese": null,
+    "evolucoes": [],
+    "documentos": [],
+    "agendamentos": [
+      {
+        "data": "20/11/2026",
+        "hora": "09h30",
+        "local": "Atendimento presencial — Clínica-Escola, sala 1",
+        "status": "Confirmada"
+      }
+    ]
+  },
+  "case-4": {
+    "paciente": "Pedro Henrique Souza",
+    "estudante": "Rafael Augusto Pires",
+    "supervisor": "Dr. Henrique Lacerda",
+    "status": "Ativo",
+    "abertura": "03/11/2026",
+    "anamnese": null,
+    "evolucoes": [],
+    "documentos": [],
+    "agendamentos": [
+      {
+        "data": "21/11/2026",
+        "hora": "16h00",
+        "local": "Atendimento on-line — Google Meet",
+        "status": "Confirmada"
+      }
+    ]
+  }
+}
