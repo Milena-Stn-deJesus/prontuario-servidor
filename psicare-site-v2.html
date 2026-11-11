@@ -1718,48 +1718,78 @@ document.getElementById('yr').textContent=new Date().getFullYear();
    arquivos data/casos.json e data/solicitacoes.json de verdade. O navegador nunca
    toca nesses arquivos: ele só manda pedidos HTTP para o servidor. ===== */
 window.API_BASE = '';
-window.apiGetCasos = function(){
-  return fetch(window.API_BASE + '/api/casos').then(function(res){
-    if(!res.ok) throw new Error('GET /api/casos -> ' + res.status);
+
+/* ===== Sessão/login — o navegador guarda só o token (não a senha) em
+   sessionStorage, pra sobreviver a uma recarga de página na mesma aba sem
+   precisar logar de novo, mas sem persistir entre abas/dispositivos
+   diferentes nem ficar salvo depois que a aba fecha. ===== */
+try{ window.apiToken = sessionStorage.getItem('prontuario_token') || null; }catch(e){ window.apiToken = null; }
+
+function _apiAuthHeaders(){
+  return window.apiToken ? {'Authorization':'Bearer ' + window.apiToken} : {};
+}
+
+function _apiFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, _apiAuthHeaders());
+  return fetch(window.API_BASE + path, opts).then(function(res){
+    if(!res.ok){
+      return res.json().catch(function(){ return {}; }).then(function(d){
+        const e = new Error(d.erro || (path + ' -> ' + res.status));
+        e.status = res.status;
+        throw e;
+      });
+    }
     return res.json();
   });
+}
+
+window.apiLogin = function(email, senha){
+  return fetch(window.API_BASE + '/api/login', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:email, senha:senha})
+  }).then(function(res){
+    return res.json().catch(function(){ return {}; }).then(function(d){
+      if(!res.ok){
+        const e = new Error(d.erro || 'não foi possível entrar');
+        e.status = res.status;
+        throw e;
+      }
+      return d;
+    });
+  }).then(function(sessao){
+    window.apiToken = sessao.token;
+    try{ sessionStorage.setItem('prontuario_token', sessao.token); }catch(e){}
+    return sessao;
+  });
+};
+window.apiLogout = function(){
+  window.apiToken = null;
+  try{ sessionStorage.removeItem('prontuario_token'); }catch(e){}
+};
+window.apiGetCasos = function(){
+  return _apiFetch('/api/casos');
 };
 window.apiCreateCaso = function(payload){
-  return fetch(window.API_BASE + '/api/casos', {
+  return _apiFetch('/api/casos', {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  }).then(function(res){
-    if(!res.ok) throw new Error('POST /api/casos -> ' + res.status);
-    return res.json();
   });
 };
 window.apiSaveCaso = function(caseId, caso){
-  return fetch(window.API_BASE + '/api/casos/' + encodeURIComponent(caseId), {
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId), {
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(caso)
-  }).then(function(res){
-    if(!res.ok) throw new Error('PUT /api/casos/' + caseId + ' -> ' + res.status);
-    return res.json();
   });
 };
 window.apiGetSolicitacoes = function(){
-  return fetch(window.API_BASE + '/api/solicitacoes').then(function(res){
-    if(!res.ok) throw new Error('GET /api/solicitacoes -> ' + res.status);
-    return res.json();
-  });
+  return _apiFetch('/api/solicitacoes');
 };
 window.apiCreateSolicitacao = function(payload){
-  return fetch(window.API_BASE + '/api/solicitacoes', {
+  return _apiFetch('/api/solicitacoes', {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  }).then(function(res){
-    if(!res.ok) throw new Error('POST /api/solicitacoes -> ' + res.status);
-    return res.json();
   });
 };
 window.apiUpdateSolicitacao = function(reqId, payload){
-  return fetch(window.API_BASE + '/api/solicitacoes/' + encodeURIComponent(reqId), {
+  return _apiFetch('/api/solicitacoes/' + encodeURIComponent(reqId), {
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  }).then(function(res){
-    if(!res.ok) throw new Error('PUT /api/solicitacoes/' + reqId + ' -> ' + res.status);
-    return res.json();
   });
 };
 /* Mostra um aviso discreto no topo da página se o servidor local não responder
@@ -1773,7 +1803,11 @@ window.showServerOfflineBanner = function(){
   document.body.appendChild(b);
 };
 /* Fila compartilhada de solicitações de prontuário — paciente solicita, técnico libera.
-   Carregada do servidor (data/solicitacoes.json) para ser a MESMA fila em qualquer login/computador. */
+   Carregada do servidor (data/solicitacoes.json) para ser a MESMA fila em qualquer login/computador.
+   Esta chamada acontece ANTES de qualquer login (a página carrega e já tenta buscar a fila),
+   então, agora que o servidor exige login para ver as solicitações, um 401 aqui é esperado
+   e não deve disparar o aviso de "servidor offline" — isso só acontece de novo depois do
+   login, em apiGetSolicitacoes()/Promise.all() nos handlers de login. */
 window.PRONTUARIO_SOLICITACOES = [];
 window.solicitacoesReady = window.apiGetSolicitacoes().then(function(data){
   /* Atualiza o array no lugar (em vez de trocar a referência) para não perder uma
@@ -1781,6 +1815,10 @@ window.solicitacoesReady = window.apiGetSolicitacoes().then(function(data){
   window.PRONTUARIO_SOLICITACOES.length = 0;
   data.forEach(function(item){ window.PRONTUARIO_SOLICITACOES.push(item); });
 }).catch(function(err){
+  if(err && err.status === 401){
+    console.info('Solicitações ainda não carregadas: aguardando login.');
+    return;
+  }
   console.warn('Não foi possível carregar solicitações do servidor:', err);
   window.showServerOfflineBanner();
 });
@@ -1983,26 +2021,50 @@ route();
     if(!ok) return;
     if(sessionMsg) sessionMsg.classList.remove('show');
     const emailLower = emailVal.toLowerCase();
-    if(emailLower==='paciente@exemplo.com' && senhaVal==='senha123'){
-      baseFirstName = 'Maria';
-      currentPatientFullName = 'Maria Fernanda Alves';
-      baseGreeting = 'Bem-vinda de volta, Maria!';
-      setGreeting(baseGreeting);
-      showCard('success');
-      setCaseActive();
-    } else if(emailLower==='carlos@exemplo.com' && senhaVal==='senha123'){
-      baseFirstName = 'Carlos';
-      currentPatientFullName = 'Carlos Eduardo Mendes';
-      baseGreeting = 'Olá, Carlos!';
-      setGreeting(baseGreeting);
-      showCard('success');
-      setCaseClosed('30/10/2026');
-    } else if(emailLower==='novo@exemplo.com' && senhaDigits==='11122233344'){
-      currentPatientFullName = 'Pedro Henrique Souza';
-      showCard('firstAccess');
-    } else {
+    /* Login agora é validado de verdade no servidor (hash de senha + sessão com token),
+       não mais por uma lista de senhas fixas no próprio JavaScript do navegador. O
+       e-mail ainda decide qual tela de demonstração mostrar (caso ativo/encerrado/
+       primeiro acesso), porque o painel do paciente em si ainda usa dados de exemplo
+       — só o login passou a ser real. */
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if(submitBtn) submitBtn.disabled = true;
+    window.apiLogin(emailLower, senhaVal).then(function(sessao){
+      if(emailLower==='paciente@exemplo.com'){
+        baseFirstName = 'Maria';
+        currentPatientFullName = sessao.nome || 'Maria Fernanda Alves';
+        baseGreeting = 'Bem-vinda de volta, Maria!';
+        setGreeting(baseGreeting);
+        showCard('success');
+        setCaseActive();
+      } else if(emailLower==='carlos@exemplo.com'){
+        baseFirstName = 'Carlos';
+        currentPatientFullName = sessao.nome || 'Carlos Eduardo Mendes';
+        baseGreeting = 'Olá, Carlos!';
+        setGreeting(baseGreeting);
+        showCard('success');
+        setCaseClosed('30/10/2026');
+      } else if(emailLower==='novo@exemplo.com'){
+        currentPatientFullName = sessao.nome || 'Pedro Henrique Souza';
+        showCard('firstAccess');
+      } else {
+        /* Conta de paciente válida no servidor mas sem tela de demonstração específica. */
+        currentPatientFullName = sessao.nome || '';
+        baseFirstName = sessao.nome ? sessao.nome.split(' ')[0] : '';
+        baseGreeting = baseFirstName ? ('Bem-vindo(a) de volta, ' + baseFirstName + '!') : 'Bem-vindo(a) de volta!';
+        setGreeting(baseGreeting);
+        showCard('success');
+        setCaseActive();
+      }
+    }).catch(function(err){
+      if(err && err.status === 429){
+        formErr.textContent = err.message;
+      } else {
+        formErr.textContent = 'E-mail ou senha incorretos.';
+      }
       formErr.classList.add('show');
-    }
+    }).then(function(){
+      if(submitBtn) submitBtn.disabled = false;
+    });
   });
 
   /* ESQUECI MINHA SENHA */
@@ -2336,6 +2398,7 @@ route();
   /* ENCERRAR SESSÃO — ao sair, navegar para fora da página ou por inatividade */
   function resetPacienteSession(opts){
     opts = opts || {};
+    if(typeof window.apiLogout === 'function') window.apiLogout();
     showCard('login');
     form.reset();
     setFieldError(email, emailErr, '');
@@ -3467,44 +3530,62 @@ route();
     else setFieldError(senha, senhaErr, '');
     if(!ok) return;
     const emailLower = emailVal.toLowerCase();
-    /* Busca os casos e as solicitações de novo a CADA login (não só na primeira vez que
-       a página carregou) — assim, se outra pessoa cadastrou um paciente ou mudou algo
-       nesse meio tempo, quem está logando agora já vê a versão mais atual, mesmo numa
-       aba que já estava aberta há um tempo. */
-    Promise.all([
-      window.apiGetCasos().then(function(data){ CASOS = data; }).catch(function(err){
-        console.warn('Não foi possível atualizar os casos do servidor:', err);
-        window.showServerOfflineBanner();
-      }),
-      window.apiGetSolicitacoes().then(function(data){
-        window.PRONTUARIO_SOLICITACOES.length = 0;
-        data.forEach(function(item){ window.PRONTUARIO_SOLICITACOES.push(item); });
-      }).catch(function(err){
-        console.warn('Não foi possível atualizar as solicitações do servidor:', err);
-        window.showServerOfflineBanner();
-      })
-    ]).then(function(){
-      if(emailLower==='tecnico@exemplo.com' && senhaVal==='senha123'){
-        applyRole('tecnico', 'Fernando Ricci');
-        showCard('success');
-      } else if(emailLower==='supervisor@exemplo.com' && senhaVal==='senha123'){
-        applyRole('supervisor', 'Dra. Patrícia Novaes');
-        showCard('success');
-      } else if(emailLower==='estudante@exemplo.com' && senhaVal==='senha123'){
-        applyRole('estudante', 'Ana Beatriz Lima');
-        showCard('success');
-      } else if(emailLower==='novo.tecnico@exemplo.com' && senhaVal.replace(/\D/g,'')==='202601001'){
-        pendingFirstAccess = {role:'tecnico', name:'Novo Técnico'};
-        showCard('firstAccess');
-      } else if(emailLower==='novo.supervisor@exemplo.com' && senhaVal.replace(/\D/g,'')==='202601002'){
-        pendingFirstAccess = {role:'supervisor', name:'Novo Supervisor'};
-        showCard('firstAccess');
-      } else if(emailLower==='novo.estudante@exemplo.com' && senhaVal.replace(/\D/g,'')==='202601234'){
-        pendingFirstAccess = {role:'estudante', name:'Novo Estudante'};
-        showCard('firstAccess');
+    /* Login agora é validado de verdade no servidor (hash de senha + sessão com token) antes
+       de qualquer outra chamada — só depois de confirmado é que buscamos casos/solicitações
+       (que agora exigem login) e decidimos qual papel/tela mostrar. */
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if(submitBtn) submitBtn.disabled = true;
+    window.apiLogin(emailLower, senhaVal).then(function(sessao){
+      /* Busca os casos e as solicitações de novo a CADA login (não só na primeira vez que
+         a página carregou) — assim, se outra pessoa cadastrou um paciente ou mudou algo
+         nesse meio tempo, quem está logando agora já vê a versão mais atual, mesmo numa
+         aba que já estava aberta há um tempo. */
+      return Promise.all([
+        window.apiGetCasos().then(function(data){ CASOS = data; }).catch(function(err){
+          console.warn('Não foi possível atualizar os casos do servidor:', err);
+          window.showServerOfflineBanner();
+        }),
+        window.apiGetSolicitacoes().then(function(data){
+          window.PRONTUARIO_SOLICITACOES.length = 0;
+          data.forEach(function(item){ window.PRONTUARIO_SOLICITACOES.push(item); });
+        }).catch(function(err){
+          console.warn('Não foi possível atualizar as solicitações do servidor:', err);
+          window.showServerOfflineBanner();
+        })
+      ]).then(function(){
+        if(emailLower==='tecnico@exemplo.com'){
+          applyRole('tecnico', sessao.nome || 'Fernando Ricci');
+          showCard('success');
+        } else if(emailLower==='supervisor@exemplo.com'){
+          applyRole('supervisor', sessao.nome || 'Dra. Patrícia Novaes');
+          showCard('success');
+        } else if(emailLower==='estudante@exemplo.com'){
+          applyRole('estudante', sessao.nome || 'Ana Beatriz Lima');
+          showCard('success');
+        } else if(emailLower==='novo.tecnico@exemplo.com'){
+          pendingFirstAccess = {role:'tecnico', name: sessao.nome || 'Novo Técnico'};
+          showCard('firstAccess');
+        } else if(emailLower==='novo.supervisor@exemplo.com'){
+          pendingFirstAccess = {role:'supervisor', name: sessao.nome || 'Novo Supervisor'};
+          showCard('firstAccess');
+        } else if(emailLower==='novo.estudante@exemplo.com'){
+          pendingFirstAccess = {role:'estudante', name: sessao.nome || 'Novo Estudante'};
+          showCard('firstAccess');
+        } else {
+          /* Conta válida no servidor mas sem papel reconhecido pela demonstração. */
+          applyRole(sessao.role, sessao.nome || '');
+          showCard('success');
+        }
+      });
+    }).catch(function(err){
+      if(err && err.status === 429){
+        formErr.textContent = err.message;
       } else {
-        formErr.classList.add('show');
+        formErr.textContent = 'E-mail ou senha incorretos.';
       }
+      formErr.classList.add('show');
+    }).then(function(){
+      if(submitBtn) submitBtn.disabled = false;
     });
   });
 
@@ -3610,6 +3691,7 @@ route();
   }
 
   function resetEquipeSession(){
+    if(typeof window.apiLogout === 'function') window.apiLogout();
     showCard('login');
     form.reset();
     setFieldError(email, emailErr, '');

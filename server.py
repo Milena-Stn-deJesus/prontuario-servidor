@@ -50,10 +50,13 @@ COMO RODAR LOCALMENTE:
     3. Abra o navegador em: http://localhost:5000
 """
 
+import hashlib
 import json
 import os
 import re
+import secrets
 import sys
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote
@@ -94,6 +97,72 @@ ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "https://prontuario-servidor.o
 # de "Ativo" (ex.: vazio, com espaço, ou outra palavra).
 STATUS_CASO_VALIDOS = {"Ativo", "Encerrado"}
 STATUS_SOLICITACAO_VALIDOS = {"pendente", "liberado"}
+
+# ---------------------------------------------------------------------------
+# Autenticação e autorização
+#
+# Antes, o servidor não tinha NENHUMA forma de login: a tela de login do site
+# só verificava o e-mail/senha no próprio navegador (JavaScript), e qualquer
+# pessoa podia chamar a API diretamente (sem passar pela tela) e ler ou
+# alterar o prontuário de qualquer paciente. Esta seção implementa login de
+# verdade no servidor: quem chama a API precisa mandar um token de sessão
+# válido, obtido em POST /api/login, e cada rota só aceita os papéis
+# (paciente/estudante/técnico/supervisor) que fazem sentido para ela.
+#
+# As contas abaixo são as mesmas contas fixas de demonstração que o site já
+# usava (mesmos e-mails e senhas que apareciam no JavaScript do navegador) —
+# a diferença é que agora elas são validadas aqui, no servidor, e a senha
+# nunca é guardada nem comparada como texto puro (veja _hash_senha).
+# Criar contas de verdade (um cadastro real de equipe/paciente) é a próxima
+# etapa, já registrada na lista de pendências do projeto.
+
+SENHA_SALT = os.environ.get("SENHA_SALT", "prontuario-fcmscsp-salt-fixo-2026")
+
+
+def _hash_senha(senha):
+    """Deriva um hash da senha com PBKDF2 (não guarda nem compara a senha em
+    texto puro). Usa só a biblioteca padrão do Python (hashlib), sem precisar
+    instalar nada além do que já está em requirements.txt."""
+    derivado = hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"), SENHA_SALT.encode("utf-8"), 200_000)
+    return derivado.hex()
+
+
+def _conta(role, nome, senha):
+    return {"role": role, "nome": nome, "senha_hash": _hash_senha(senha)}
+
+
+CONTAS = {
+    # equipe
+    "tecnico@exemplo.com": _conta("tecnico", "Fernando Ricci", "senha123"),
+    "supervisor@exemplo.com": _conta("supervisor", "Dra. Patrícia Novaes", "senha123"),
+    "estudante@exemplo.com": _conta("estudante", "Ana Beatriz Lima", "senha123"),
+    # primeiro acesso da equipe (senha temporária = RA/matrícula)
+    "novo.tecnico@exemplo.com": _conta("tecnico", "Novo Técnico", "202601001"),
+    "novo.supervisor@exemplo.com": _conta("supervisor", "Novo Supervisor", "202601002"),
+    "novo.estudante@exemplo.com": _conta("estudante", "Novo Estudante", "202601234"),
+    # paciente
+    "paciente@exemplo.com": _conta("paciente", "Maria Fernanda Alves", "senha123"),
+    "carlos@exemplo.com": _conta("paciente", "Carlos Eduardo Mendes", "senha123"),
+    # primeiro acesso do paciente (senha temporária = CPF)
+    "novo@exemplo.com": _conta("paciente", "Pedro Henrique Souza", "11122233344"),
+}
+
+# Sessões ativas: token -> {"email", "role", "nome", "criado_em"}. Guardadas só
+# na memória do processo (zeram se o servidor reiniciar) — suficiente para um
+# protótipo acadêmico; um sistema maior guardaria isso no próprio MongoDB.
+SESSOES = {}
+SESSAO_DURACAO_SEGUNDOS = 8 * 60 * 60  # 8 horas
+
+# Limite de tentativas de login por e-mail, pra dificultar um ataque de força
+# bruta (antes não existia nenhum limite: dava pra tentar senha infinitas
+# vezes). email -> {"falhas": int, "bloqueado_ate": timestamp|None}
+TENTATIVAS_LOGIN = {}
+MAX_TENTATIVAS = 6
+BLOQUEIO_SEGUNDOS = 5 * 60  # 5 minutos
+
+PAPEIS_CASOS = {"tecnico", "supervisor", "estudante"}
+PAPEIS_SOLICITACOES_LEITURA = {"tecnico", "supervisor"}
+PAPEIS_SOLICITACOES_ESCRITA = {"tecnico", "supervisor"}
 
 if not MONGODB_URI:
     print("=" * 70)
@@ -171,7 +240,11 @@ class Handler(BaseHTTPRequestHandler):
     def _cors_headers(self):
         self.send_header("Access-Control-Allow-Origin", ALLOWED_ORIGIN)
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        # "Authorization" precisa estar aqui porque agora o front-end manda o token
+        # de sessão nesse cabeçalho em toda chamada autenticada (Bearer <token>);
+        # sem isso o navegador bloqueia a chamada no pre-flight do CORS antes
+        # mesmo dela chegar nas rotas abaixo.
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
     def _erro_servidor(self, exc, contexto):
         """Loga o detalhe técnico só no console do servidor (visível pra nós nos
@@ -193,6 +266,36 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         print("%s - %s" % (self.log_date_time_string(), fmt % args))
 
+    # ---------- autenticação ----------
+    def _sessao_atual(self):
+        """Lê o cabeçalho 'Authorization: Bearer <token>' e devolve a sessão
+        correspondente (dict com email/role/nome) se o token for válido e
+        ainda não tiver expirado, ou None caso contrário."""
+        auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return None
+        token = auth[len("Bearer "):].strip()
+        sessao = SESSOES.get(token)
+        if not sessao:
+            return None
+        if time.time() - sessao["criado_em"] > SESSAO_DURACAO_SEGUNDOS:
+            SESSOES.pop(token, None)
+            return None
+        return sessao
+
+    def _exigir_papel(self, papeis_permitidos):
+        """Verifica se há uma sessão válida com um papel autorizado para a rota.
+        Se não houver, já envia a resposta de erro (401/403) e devolve None;
+        quem chamou deve checar 'if sessao is None: return' logo em seguida."""
+        sessao = self._sessao_atual()
+        if sessao is None:
+            self._send_error_json(401, "é necessário estar autenticado (faça login novamente)")
+            return None
+        if sessao["role"] not in papeis_permitidos:
+            self._send_error_json(403, "seu perfil não tem permissão para esta operação")
+            return None
+        return sessao
+
     # ---------- OPTIONS (pre-flight de CORS) ----------
     def do_OPTIONS(self):
         self.send_response(204)
@@ -208,6 +311,8 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/casos":
+            if self._exigir_papel(PAPEIS_CASOS) is None:
+                return
             try:
                 casos = {doc["_id"]: caso_doc_to_json(doc) for doc in casos_col.find({})}
             except PyMongoError as exc:
@@ -217,6 +322,8 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/solicitacoes":
+            if self._exigir_papel(PAPEIS_SOLICITACOES_LEITURA) is None:
+                return
             try:
                 fila = [solicitacao_doc_to_json(doc) for doc in solicitacoes_col.find({}).sort("_id", 1)]
             except PyMongoError as exc:
@@ -244,7 +351,53 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = self.path.split("?", 1)[0]
 
+        if path == "/api/login":
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+
+            email = str(body.get("email", "")).strip().lower()
+            senha = str(body.get("senha", ""))
+
+            agora = time.time()
+            tentativa = TENTATIVAS_LOGIN.get(email)
+            if tentativa and tentativa.get("bloqueado_ate") and agora < tentativa["bloqueado_ate"]:
+                espera_min = int((tentativa["bloqueado_ate"] - agora) // 60) + 1
+                self._send_error_json(
+                    429,
+                    "muitas tentativas de login com este e-mail. Tente novamente em cerca de %d minuto(s)." % espera_min,
+                )
+                return
+
+            conta = CONTAS.get(email)
+            if not conta or conta["senha_hash"] != _hash_senha(senha):
+                t = TENTATIVAS_LOGIN.setdefault(email, {"falhas": 0, "bloqueado_ate": None})
+                t["falhas"] += 1
+                if t["falhas"] >= MAX_TENTATIVAS:
+                    t["bloqueado_ate"] = agora + BLOQUEIO_SEGUNDOS
+                    t["falhas"] = 0
+                # Mensagem genérica de propósito: não diz se o e-mail existe ou
+                # não, nem qual dos dois campos está errado (evita que alguém
+                # descubra, por tentativa e erro, quais e-mails têm conta).
+                self._send_error_json(401, "e-mail ou senha incorretos")
+                return
+
+            TENTATIVAS_LOGIN.pop(email, None)
+            token = secrets.token_urlsafe(32)
+            SESSOES[token] = {
+                "email": email,
+                "role": conta["role"],
+                "nome": conta["nome"],
+                "criado_em": agora,
+            }
+            self._send_json({"token": token, "role": conta["role"], "nome": conta["nome"]})
+            return
+
         if path == "/api/casos":
+            if self._exigir_papel(PAPEIS_CASOS) is None:
+                return
             try:
                 body = self._read_json_body()
             except Exception:
@@ -285,6 +438,11 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/solicitacoes":
+            # Qualquer papel autenticado pode criar uma solicitação (é assim que
+            # o paciente pede acesso ao próprio prontuário); só a leitura da
+            # fila inteira e a liberação é que ficam restritas à equipe.
+            if self._exigir_papel({"paciente", "tecnico", "supervisor", "estudante"}) is None:
+                return
             try:
                 body = self._read_json_body()
             except Exception:
@@ -329,6 +487,8 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/casos/(.+)$", path)
         if m:
+            if self._exigir_papel(PAPEIS_CASOS) is None:
+                return
             case_id = unquote(m.group(1))
             try:
                 body = self._read_json_body()
@@ -356,6 +516,8 @@ class Handler(BaseHTTPRequestHandler):
 
         m2 = re.match(r"^/api/solicitacoes/([0-9a-fA-F]{24})$", path)
         if m2:
+            if self._exigir_papel(PAPEIS_SOLICITACOES_ESCRITA) is None:
+                return
             try:
                 obj_id = ObjectId(m2.group(1))
             except InvalidId:
