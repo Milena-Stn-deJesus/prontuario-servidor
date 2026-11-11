@@ -78,6 +78,23 @@ PORT = int(os.environ.get("PORT", 5000))
 MONGODB_URI = os.environ.get("MONGODB_URI")
 DB_NAME = os.environ.get("MONGODB_DB_NAME", "prontuario")
 
+# Em quais sites (origens) o navegador pode chamar esta API via JavaScript.
+# Antes, o servidor respondia "*" (qualquer site do mundo). Isso não afeta o
+# próprio site (ele é servido por este mesmo servidor, então é "mesma origem"
+# e nunca precisou de CORS liberado) — só impede que OUTRO site na internet
+# use o navegador de alguém para ler/gravar nesta API escondido numa aba.
+# Pode ser configurado pela variável de ambiente ALLOWED_ORIGIN se um dia o
+# site for servido de outro domínio.
+ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "https://prontuario-servidor.onrender.com")
+
+# Valores aceitos para o campo "status" de um caso e de uma solicitação.
+# Antes não existia nenhuma validação: o servidor aceitava qualquer texto
+# (incluindo nada), o que causava bugs como o painel mostrar "0 casos
+# ativos" quando o status vinha gravado de um jeito ligeiramente diferente
+# de "Ativo" (ex.: vazio, com espaço, ou outra palavra).
+STATUS_CASO_VALIDOS = {"Ativo", "Encerrado"}
+STATUS_SOLICITACAO_VALIDOS = {"pendente", "liberado"}
+
 if not MONGODB_URI:
     print("=" * 70)
     print(" ERRO: a variável de ambiente MONGODB_URI não foi configurada.")
@@ -152,9 +169,17 @@ class Handler(BaseHTTPRequestHandler):
         self._send_json({"erro": mensagem}, status)
 
     def _cors_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Origin", ALLOWED_ORIGIN)
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+    def _erro_servidor(self, exc, contexto):
+        """Loga o detalhe técnico só no console do servidor (visível pra nós nos
+        logs do Render) e devolve ao navegador uma mensagem genérica — antes, a
+        mensagem de erro completa do MongoDB (que pode conter detalhes internos
+        do banco) era enviada direto para quem fez a requisição."""
+        print("ERRO (%s): %s" % (contexto, exc))
+        self._send_error_json(503, "não foi possível completar a operação agora. Tente novamente em instantes.")
 
     def _read_json_body(self):
         length = int(self.headers.get("Content-Length", 0) or 0)
@@ -186,7 +211,7 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 casos = {doc["_id"]: caso_doc_to_json(doc) for doc in casos_col.find({})}
             except PyMongoError as exc:
-                self._send_error_json(503, "não foi possível consultar o MongoDB: %s" % exc)
+                self._erro_servidor(exc, "GET /api/casos")
                 return
             self._send_json(casos)
             return
@@ -195,7 +220,7 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 fila = [solicitacao_doc_to_json(doc) for doc in solicitacoes_col.find({}).sort("_id", 1)]
             except PyMongoError as exc:
-                self._send_error_json(503, "não foi possível consultar o MongoDB: %s" % exc)
+                self._erro_servidor(exc, "GET /api/solicitacoes")
                 return
             self._send_json(fila)
             return
@@ -225,12 +250,26 @@ class Handler(BaseHTTPRequestHandler):
             except Exception:
                 self._send_error_json(400, "corpo da requisição não é um JSON válido")
                 return
+
+            nome_paciente = str(body.get("paciente", "")).strip()
+            if not nome_paciente:
+                self._send_error_json(400, "o campo 'paciente' é obrigatório para cadastrar um caso")
+                return
+
+            status_val = body.get("status", "Ativo")
+            if status_val not in STATUS_CASO_VALIDOS:
+                self._send_error_json(
+                    400,
+                    "status inválido: '%s' (valores aceitos: %s)" % (status_val, ", ".join(sorted(STATUS_CASO_VALIDOS))),
+                )
+                return
+
             caso = {
                 "_id": novo_id_de_caso(),
-                "paciente": body.get("paciente", ""),
+                "paciente": nome_paciente,
                 "estudante": body.get("estudante", ""),
                 "supervisor": body.get("supervisor", ""),
-                "status": body.get("status", "Ativo"),
+                "status": status_val,
                 "abertura": body.get("abertura", ""),
                 "anamnese": None,
                 "evolucoes": [],
@@ -240,7 +279,7 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 casos_col.insert_one(dict(caso))
             except PyMongoError as exc:
-                self._send_error_json(503, "não foi possível salvar no MongoDB: %s" % exc)
+                self._erro_servidor(exc, "POST /api/casos")
                 return
             self._send_json({"id": caso["_id"], "caso": caso_doc_to_json(caso)}, 201)
             return
@@ -251,12 +290,32 @@ class Handler(BaseHTTPRequestHandler):
             except Exception:
                 self._send_error_json(400, "corpo da requisição não é um JSON válido")
                 return
+
             doc = dict(body)
             doc.pop("_id", None)
+
+            paciente_val = str(doc.get("paciente", "")).strip()
+            protocolo_val = str(doc.get("protocolo", "")).strip()
+            if not paciente_val or not protocolo_val:
+                self._send_error_json(
+                    400,
+                    "os campos 'paciente' e 'protocolo' são obrigatórios para registrar uma solicitação",
+                )
+                return
+
+            # Se o status vier vazio ou com um valor inesperado, assume "pendente"
+            # em vez de gravar algo que depois nenhuma tela saberia interpretar
+            # (essa inconsistência era a causa de solicitações "somem" da lista
+            # de pendentes sem nunca aparecer como liberadas).
+            if doc.get("status") not in STATUS_SOLICITACAO_VALIDOS:
+                doc["status"] = "pendente"
+            doc["paciente"] = paciente_val
+            doc["protocolo"] = protocolo_val
+
             try:
                 result = solicitacoes_col.insert_one(doc)
             except PyMongoError as exc:
-                self._send_error_json(503, "não foi possível salvar no MongoDB: %s" % exc)
+                self._erro_servidor(exc, "POST /api/solicitacoes")
                 return
             doc["_id"] = str(result.inserted_id)
             self._send_json(doc, 201)
@@ -278,10 +337,16 @@ class Handler(BaseHTTPRequestHandler):
                 return
             body = dict(body)
             body.pop("_id", None)
+            if "status" in body and body["status"] not in STATUS_CASO_VALIDOS:
+                self._send_error_json(
+                    400,
+                    "status inválido: '%s' (valores aceitos: %s)" % (body["status"], ", ".join(sorted(STATUS_CASO_VALIDOS))),
+                )
+                return
             try:
                 result = casos_col.replace_one({"_id": case_id}, {"_id": case_id, **body})
             except PyMongoError as exc:
-                self._send_error_json(503, "não foi possível salvar no MongoDB: %s" % exc)
+                self._erro_servidor(exc, "PUT /api/casos/" + case_id)
                 return
             if result.matched_count == 0:
                 self._send_error_json(404, "caso não encontrado: " + case_id)
@@ -303,10 +368,16 @@ class Handler(BaseHTTPRequestHandler):
                 return
             body = dict(body)
             body.pop("_id", None)
+            if "status" in body and body["status"] not in STATUS_SOLICITACAO_VALIDOS:
+                self._send_error_json(
+                    400,
+                    "status inválido: '%s' (valores aceitos: %s)" % (body["status"], ", ".join(sorted(STATUS_SOLICITACAO_VALIDOS))),
+                )
+                return
             try:
                 result = solicitacoes_col.replace_one({"_id": obj_id}, body)
             except PyMongoError as exc:
-                self._send_error_json(503, "não foi possível salvar no MongoDB: %s" % exc)
+                self._erro_servidor(exc, "PUT /api/solicitacoes/" + str(obj_id))
                 return
             if result.matched_count == 0:
                 self._send_error_json(404, "solicitação não encontrada: " + str(obj_id))
