@@ -477,7 +477,29 @@ footer{margin-top:120px}
 .dash-hist{border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:28px}
 .dash-hist{overflow-x:auto}
 .dash-hist .dash-table{min-width:560px}
-@media (max-width:640px){.dash-hist{padding:18px}}
+@media (max-width:640px){
+  .dash-hist{padding:18px}
+  /* Nas tabelas do painel, no celular, prioriza as colunas essenciais
+     (quem, status, ação) e esconde as secundárias (estudante/supervisor,
+     protocolo/data) em vez de forçar rolagem lateral sem nenhuma pista
+     visual — o que fazia até a coluna "Status" do histórico do próprio
+     paciente ficar invisível fora da tela. */
+  #eq-cases-table-card .dash-table,
+  #eq-requests-card .dash-table,
+  .dash-hist:not(#eq-cases-table-card):not(#eq-requests-card) .dash-table{min-width:0}
+  .eq-col-estudante,.eq-col-supervisor{display:none}
+  #eq-requests-card table thead th:nth-child(2),
+  #eq-requests-card table thead th:nth-child(3),
+  #eq-requests-card table tbody td:nth-child(2),
+  #eq-requests-card table tbody td:nth-child(3){display:none}
+  .dash-table{font-size:12.5px}
+  .dash-table th,.dash-table td{padding:8px 6px}
+  /* Os botões "Encerrar caso" e "Exportar PDF" no topo do caso ficavam
+     espremidos lado a lado com flex:none e eram cortados pela borda da
+     tela no celular, ficando parcialmente impossíveis de tocar. */
+  .eq-detail-actions{flex:none;flex-wrap:wrap;width:100%}
+  .eq-detail-actions .btn{flex:1 1 auto;justify-content:center;white-space:normal}
+}
 .dash-hist-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .dash-hist-head svg{width:18px;height:18px;color:var(--blue)}
 .dash-hist-head h3{font-size:15px}
@@ -664,7 +686,7 @@ footer{margin-top:120px}
 .a11y-btn-ic{display:grid;place-items:center;width:22px;height:22px;flex:none}
 .a11y-btn-ic svg{width:22px;height:22px}
 .a11y-btn[aria-pressed="true"]{background:var(--blue)}
-@media (max-width:560px){.a11y-btn-label{display:none}.a11y-btn{padding:14px;left:16px;bottom:16px}}
+@media (max-width:560px){.a11y-btn-label{display:none}.a11y-btn{padding:14px;left:auto;right:16px;bottom:16px}}
 
 /* REVEAL */
 .rv{opacity:1;transform:none}
@@ -677,7 +699,7 @@ footer{margin-top:120px}
 .intro>*,.secure-grid>*,.access>*,.faq-grid>*,.foot-brand .wrap>*{min-width:0}
 @media (max-width:980px){
   .intro,.secure-grid,.access,.faq-grid,.intro{gap:10px}.faq-grid{gap:30px}.secure-grid{gap:50px}
-  .secure-grid,.access{grid-template-columns:1fr}
+  .secure-grid,.access,.faq-grid{grid-template-columns:1fr}
   .shield{margin:0 auto;max-width:300px}
   .trio{grid-template-columns:1fr}
   .hero-grid{grid-template-columns:1fr;gap:10px}
