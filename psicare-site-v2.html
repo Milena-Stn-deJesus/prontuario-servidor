@@ -1078,7 +1078,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             </div>
             <div class="dash-next-foot" id="pac-next-foot">
               <button type="button" class="dash-reschedule-btn" id="pac-reschedule-btn"><svg><use href="#i-refresh"/></svg>Preciso reagendar</button>
-              <p class="dash-next-msg" id="pac-reschedule-msg" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela aparece aqui no seu painel e também é enviada para o seu e-mail.</p>
+              <p class="dash-next-msg" id="pac-reschedule-msg" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela aparece aqui no seu painel.</p>
             </div>
           </div>
 
@@ -1291,9 +1291,10 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
 
       <div class="auth-card auth-success" id="pac-forgot-sent" hidden>
-        <span class="auth-check"><svg><use href="#i-mail"/></svg></span>
-        <h2>Verifique seu e-mail</h2>
-        <p class="lead">Enviamos uma confirmação para o e-mail cadastrado. Sua senha foi redefinida para o número do seu CPF — use-a para entrar novamente.</p>
+        <span class="auth-check"><svg><use href="#i-shield"/></svg></span>
+        <h2>Senha redefinida</h2>
+        <p class="lead">Sua senha foi redefinida para o número do seu CPF — use-a para entrar novamente.</p>
+        <p class="auth-demo">Ambiente de demonstração — numa versão real, essa redefinição passaria por uma verificação mais forte (feita pela equipe da Clínica-Escola), em vez de só CPF e data de nascimento.</p>
         <a href="javascript:void(0)" class="btn btn-primary auth-submit" id="pac-forgot-sent-back">Voltar para o login</a>
       </div>
 
@@ -1342,7 +1343,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
   <div class="pac-modal" role="alertdialog" aria-modal="true" aria-labelledby="pac-reschedule-modal-title" aria-describedby="pac-reschedule-modal-desc">
     <div class="pac-modal-icon"><svg><use href="#i-info"/></svg></div>
     <h3 id="pac-reschedule-modal-title">Solicitar reagendamento?</h3>
-    <p id="pac-reschedule-modal-desc">Sua consulta será realocada pela equipe para a próxima data disponível na agenda. Assim que confirmada, a nova data será exibida neste painel e também enviada para o seu e-mail. Deseja continuar?</p>
+    <p id="pac-reschedule-modal-desc">Sua consulta será realocada pela equipe para a próxima data disponível na agenda. Assim que confirmada, a nova data será exibida neste painel. Deseja continuar?</p>
     <div class="pac-modal-actions">
       <button type="button" class="btn pac-modal-cancel" id="pac-reschedule-cancel">Cancelar</button>
       <button type="button" class="btn btn-primary" id="pac-reschedule-confirm">Sim, reagendar<svg><use href="#i-arrow"/></svg></button>
@@ -1432,15 +1433,16 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
   </div>
 </section>
 
-<!-- RECUPERAR ACESSO — EQUIPE — e-mail de confirmação -->
+<!-- RECUPERAR ACESSO — EQUIPE — confirmação da redefinição -->
 <section class="pac-auth-sec" id="eq-forgot-sent" style="padding-top:150px;padding-bottom:110px;min-height:72vh;display:flex;align-items:center;position:relative;overflow:hidden" hidden>
   <div class="auth-bg" aria-hidden="true"></div>
   <div class="wrap">
     <div class="auth-wrap">
       <div class="auth-card auth-success">
-        <span class="auth-check"><svg><use href="#i-mail"/></svg></span>
-        <h2>Verifique seu e-mail</h2>
-        <p class="lead">Enviamos uma confirmação para o e-mail cadastrado. Sua senha foi redefinida para o número do seu RA — use-a para entrar novamente.</p>
+        <span class="auth-check"><svg><use href="#i-shield"/></svg></span>
+        <h2>Senha redefinida</h2>
+        <p class="lead">Sua senha foi redefinida para o número do seu RA — use-a para entrar novamente.</p>
+        <p class="auth-demo">Ambiente de demonstração — numa versão real, essa redefinição passaria por uma verificação mais forte (feita pela equipe da Clínica-Escola), em vez de só RA e data de nascimento.</p>
         <a href="javascript:void(0)" class="btn btn-primary auth-submit" id="eq-forgot-sent-back">Voltar para o login</a>
       </div>
     </div>
