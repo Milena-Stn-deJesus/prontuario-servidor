@@ -932,6 +932,42 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 </section>
 </div>
 
+<div id="page-privacidade" class="page" hidden>
+<!-- POLÍTICA DE PRIVACIDADE -->
+<section style="padding-top:150px;padding-bottom:110px;position:relative;overflow:hidden">
+  <div class="wrap" style="max-width:760px">
+    <span class="eyebrow">Privacidade</span>
+    <h2>Política de Privacidade</h2>
+    <p class="lead">Como a Clínica-Escola de Psicologia da Santa Casa de São Paulo trata os dados pessoais e de saúde registrados neste sistema, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD).</p>
+
+    <div style="margin-top:36px;display:flex;flex-direction:column;gap:28px">
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Quais dados coletamos</h3>
+        <p style="color:var(--muted);line-height:1.7">Dados de identificação do paciente (nome, e-mail, CPF) e dados referentes ao acompanhamento psicológico (anamnese, evoluções, documentos e agendamentos), registrados pela equipe responsável pelo atendimento.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Para que usamos esses dados</h3>
+        <p style="color:var(--muted);line-height:1.7">Exclusivamente para o acompanhamento clínico do paciente dentro da Clínica-Escola — incluindo o registro do atendimento pelo(a) estudante responsável e a supervisão acadêmica do caso. Os dados não são usados para nenhuma outra finalidade, nem compartilhados com terceiros.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Quem tem acesso</h3>
+        <p style="color:var(--muted);line-height:1.7">Apenas pessoas com login autorizado no sistema: o(a) técnico(a) responsável, o(a) supervisor(a) e o(a) estudante vinculado(a) ao caso. Cada papel só visualiza os dados necessários para sua função — por exemplo, um(a) estudante só acessa os casos sob sua responsabilidade.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Por quanto tempo guardamos</h3>
+        <p style="color:var(--muted);line-height:1.7">Os dados são mantidos enquanto durar o acompanhamento e pelo prazo exigido para fins de registro clínico e acadêmico, podendo ser removidos mediante solicitação do paciente, respeitadas as obrigações legais da instituição.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Seus direitos como titular dos dados</h3>
+        <p style="color:var(--muted);line-height:1.7">Você pode solicitar, a qualquer momento, acesso, correção ou exclusão dos seus dados pessoais, entrando em contato com a equipe da Clínica-Escola. <a href="#contato" style="color:var(--blue);font-weight:600">Veja como falar com a equipe</a>.</p>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:13px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)">Este é um protótipo acadêmico (projeto integrador) da Faculdade de Ciências Médicas da Santa Casa de São Paulo. Este texto ilustra, de forma simplificada, como um sistema real trataria essas informações em conformidade com a LGPD.</p>
+  </div>
+</section>
+</div>
+
 <div id="page-paciente" class="page" hidden>
 <!-- ACESSO DO PACIENTE -->
 <section class="pac-auth-sec" style="padding-top:150px;padding-bottom:110px;min-height:72vh;display:flex;align-items:center;position:relative;overflow:hidden">
@@ -1249,6 +1285,11 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <li data-rule="num">1 número</li>
             <li data-rule="special">1 caractere especial</li>
           </ul>
+          <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:13.5px;color:var(--muted);line-height:1.5">
+            <input type="checkbox" id="pac-lgpd-consent" style="margin-top:3px">
+            <span>Li e concordo com o tratamento dos meus dados pessoais e de saúde pela Clínica-Escola, conforme a <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Política de Privacidade</a>.</span>
+          </label>
+          <span class="fld-err auth-form-err" id="pac-lgpd-err">É necessário concordar com a Política de Privacidade para continuar.</span>
           <span class="fld-err auth-form-err" id="pac-newpw-form-err">Sua senha ainda não atende a todos os requisitos.</span>
           <button type="submit" class="btn btn-primary auth-submit">Salvar nova senha<svg><use href="#i-arrow"/></svg></button>
         </form>
@@ -1547,6 +1588,10 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
                 </select>
               </div>
             </div>
+            <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5">
+              <input type="checkbox" id="eq-np-lgpd-consent" style="margin-top:3px" required>
+              <span>Confirmo que o paciente (ou seu responsável) foi informado e consentiu com o tratamento de seus dados pessoais e de saúde, conforme a <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Política de Privacidade</a>.</span>
+            </label>
             <div class="eq-form-actions"><button type="submit" class="btn btn-primary"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button></div>
             <p class="eq-case-export-msg" id="eq-newpatient-msg" hidden></p>
           </form>
@@ -1621,7 +1666,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
       <div class="foot-bot">
         <span>© <span id="yr"></span> FCMSCSP</span>
-        <nav><a href="#sobre-nos">Sobre nós</a><a href="#duvidas">Dúvidas frequentes</a><a href="#contato">Contato</a><a href="#equipe">Login da equipe</a></nav>
+        <nav><a href="#sobre-nos">Sobre nós</a><a href="#duvidas">Dúvidas frequentes</a><a href="#contato">Contato</a><a href="#privacidade">Política de Privacidade</a><a href="#equipe">Login da equipe</a></nav>
       </div>
     </div>
   </div>
@@ -1712,20 +1757,23 @@ document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 const pageHome=document.getElementById('page-home');
 const pageSobre=document.getElementById('page-sobre');
 const pageContato=document.getElementById('page-contato');
+const pagePrivacidade=document.getElementById('page-privacidade');
 const pagePaciente=document.getElementById('page-paciente');
 const pageEquipe=document.getElementById('page-equipe');
-const titles={home:'Clínica-Escola de Psicologia — FCMSCSP',sobre:'Sobre nós — Clínica-Escola de Psicologia',contato:'Contato — Clínica-Escola de Psicologia',paciente:'Acesso do paciente — Clínica-Escola de Psicologia',equipe:'Acesso da equipe — Clínica-Escola de Psicologia'};
+const titles={home:'Clínica-Escola de Psicologia — FCMSCSP',sobre:'Sobre nós — Clínica-Escola de Psicologia',contato:'Contato — Clínica-Escola de Psicologia',privacidade:'Política de Privacidade — Clínica-Escola de Psicologia',paciente:'Acesso do paciente — Clínica-Escola de Psicologia',equipe:'Acesso da equipe — Clínica-Escola de Psicologia'};
 
 function route(){
   const h=location.hash.slice(1);
   let active='home';
   if(h==='sobre-nos')active='sobre';
   else if(h==='contato')active='contato';
+  else if(h==='privacidade')active='privacidade';
   else if(h==='paciente')active='paciente';
   else if(h==='equipe')active='equipe';
   pageHome.hidden = active!=='home';
   pageSobre.hidden = active!=='sobre';
   pageContato.hidden = active!=='contato';
+  if(pagePrivacidade) pagePrivacidade.hidden = active!=='privacidade';
   pagePaciente.hidden = active!=='paciente';
   if(pageEquipe) pageEquipe.hidden = active!=='equipe';
   if(active==='equipe'){
@@ -1999,6 +2047,8 @@ route();
     newpwEye.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
   });
 
+  const pacLgpdConsent = document.getElementById('pac-lgpd-consent');
+  const pacLgpdErr = document.getElementById('pac-lgpd-err');
   newpwForm.addEventListener('submit', (e)=>{
     e.preventDefault();
     const pwd = newpw.value;
@@ -2009,6 +2059,8 @@ route();
     newpwFormErr.classList.remove('show');
     if(pwd !== pwd2){ setFieldError(newpw2, newpw2Err, 'As senhas não coincidem.'); return; }
     setFieldError(newpw2, newpw2Err, '');
+    if(pacLgpdConsent && !pacLgpdConsent.checked){ if(pacLgpdErr) pacLgpdErr.classList.add('show'); return; }
+    if(pacLgpdErr) pacLgpdErr.classList.remove('show');
     baseFirstName = 'Pedro';
     baseGreeting = 'Bem-vindo, Pedro!';
     setGreeting(baseGreeting);
@@ -2559,6 +2611,12 @@ route();
       const estudante = document.getElementById('eq-np-estudante').value;
       const supervisor = document.getElementById('eq-np-supervisor').value;
       const msg = document.getElementById('eq-newpatient-msg');
+      const lgpdConsent = document.getElementById('eq-np-lgpd-consent');
+      if(lgpdConsent && !lgpdConsent.checked){
+        if(msg){ msg.textContent = 'Confirme que o paciente consentiu com o tratamento dos dados antes de cadastrar.'; msg.hidden = false; }
+        lgpdConsent.focus();
+        return;
+      }
       window.apiCreateCaso({
         paciente: nome, estudante: estudante, supervisor: supervisor, status: 'Ativo', abertura: abertura
       }).then(function(resp){
