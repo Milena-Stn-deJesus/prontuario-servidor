@@ -14,6 +14,28 @@ O QUE ESSE ARQUIVO FAZ:
     GET  /api/solicitacoes          -> devolve a fila de solicitações de prontuário
     POST /api/solicitacoes          -> cria uma nova solicitação (paciente pede o prontuário)
     PUT  /api/solicitacoes/<id>     -> atualiza uma solicitação (técnico libera o acesso)
+    GET  /api/reagendamentos        -> devolve a fila de pedidos de reagendamento
+    POST /api/reagendamentos        -> cria um novo pedido (paciente pede para reagendar)
+    PUT  /api/reagendamentos/<id>   -> confirma uma nova data (equipe escolhe a data;
+                                        dispara o e-mail de confirmação para o paciente)
+
+ENVIO DE E-MAIL (confirmação de reagendamento):
+    Quando a equipe confirma uma nova data, o servidor manda um e-mail de verdade
+    para o paciente — mas só se as variáveis de ambiente abaixo estiverem
+    configuradas (senão, o pedido é confirmado normalmente no sistema, só o
+    e-mail em si não sai, e isso fica registrado no log do servidor):
+
+        SMTP_HOST   -> endereço do servidor de e-mail (ex.: smtp.gmail.com)
+        SMTP_PORT   -> porta (opcional, padrão 587)
+        SMTP_USER   -> o e-mail que vai enviar (ex.: sua conta do Gmail)
+        SMTP_PASS   -> a senha dessa conta — NUNCA a senha normal da conta, e
+                       sim uma "senha de app" (no Gmail: Conta Google ->
+                       Segurança -> Verificação em duas etapas -> Senhas de app)
+        EMAIL_FROM  -> opcional; endereço que aparece como remetente (padrão: o
+                       próprio SMTP_USER)
+
+    Assim como a MONGODB_URI, essas variáveis são configuradas no painel do
+    Render (nunca escritas aqui no código).
 
 COMO CONFIGURAR (antes de rodar pela primeira vez):
     1. Crie uma conta gratuita no MongoDB Atlas (https://www.mongodb.com/cloud/atlas)
@@ -55,8 +77,10 @@ import json
 import os
 import re
 import secrets
+import smtplib
 import sys
 import time
+from email.mime.text import MIMEText
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote
@@ -97,6 +121,55 @@ ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "https://prontuario-servidor.o
 # de "Ativo" (ex.: vazio, com espaço, ou outra palavra).
 STATUS_CASO_VALIDOS = {"Ativo", "Encerrado"}
 STATUS_SOLICITACAO_VALIDOS = {"pendente", "liberado"}
+STATUS_REAGENDAMENTO_VALIDOS = {"pendente", "confirmado"}
+EMAIL_REGEX = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+# ---------------------------------------------------------------------------
+# Envio de e-mail (confirmação de reagendamento)
+#
+# Só funciona se SMTP_HOST/SMTP_USER/SMTP_PASS estiverem configurados (veja as
+# instruções no topo deste arquivo). Sem isso, a função abaixo não quebra nada
+# — só avisa no log do servidor que o e-mail não foi enviado — porque confirmar
+# a nova data no sistema não deve depender de o e-mail estar configurado.
+
+SMTP_HOST = os.environ.get("SMTP_HOST")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER")
+SMTP_PASS = os.environ.get("SMTP_PASS")
+EMAIL_FROM = os.environ.get("EMAIL_FROM", SMTP_USER)
+
+
+def _enviar_email(destinatario, assunto, corpo):
+    """Manda um e-mail de texto simples. Devolve True se enviou de verdade,
+    False se não conseguiu (inclusive se o SMTP não estiver configurado)."""
+    if not (SMTP_HOST and SMTP_USER and SMTP_PASS):
+        print("[e-mail] SMTP não configurado — e-mail NÃO enviado para %s (assunto: %s)" % (destinatario, assunto))
+        return False
+    msg = MIMEText(corpo, "plain", "utf-8")
+    msg["Subject"] = assunto
+    msg["From"] = EMAIL_FROM
+    msg["To"] = destinatario
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as servidor:
+            servidor.starttls()
+            servidor.login(SMTP_USER, SMTP_PASS)
+            servidor.sendmail(EMAIL_FROM, [destinatario], msg.as_string())
+        return True
+    except Exception as exc:
+        print("[e-mail] FALHA ao enviar para %s: %s" % (destinatario, exc))
+        return False
+
+
+def _enviar_confirmacao_reagendamento(destinatario, nome_paciente, nova_data):
+    assunto = "Prontuário Eletrônico — sua consulta foi reagendada"
+    corpo = (
+        "Olá, %s!\n\n"
+        "Sua consulta na Clínica-Escola de Psicologia foi reagendada.\n\n"
+        "Nova data: %s\n\n"
+        "Em caso de dúvidas, entre em contato com a equipe pelo site.\n\n"
+        "Este é um e-mail automático — não é necessário responder."
+    ) % (nome_paciente or "paciente", nova_data)
+    return _enviar_email(destinatario, assunto, corpo)
 
 # ---------------------------------------------------------------------------
 # Autenticação e autorização
@@ -191,6 +264,7 @@ except PyMongoError as exc:
 db = client[DB_NAME]
 casos_col = db["casos"]
 solicitacoes_col = db["solicitacoes"]
+reagendamentos_col = db["reagendamentos"]
 print("Conectado ao MongoDB! Banco: %s" % DB_NAME)
 
 
@@ -216,6 +290,12 @@ def caso_doc_to_json(doc):
 def solicitacao_doc_to_json(doc):
     """Converte o _id do MongoDB (um ObjectId) para string, que é o formato que
     JSON e JavaScript entendem."""
+    out = dict(doc)
+    out["_id"] = str(doc["_id"])
+    return out
+
+
+def reagendamento_doc_to_json(doc):
     out = dict(doc)
     out["_id"] = str(doc["_id"])
     return out
@@ -328,6 +408,17 @@ class Handler(BaseHTTPRequestHandler):
                 fila = [solicitacao_doc_to_json(doc) for doc in solicitacoes_col.find({}).sort("_id", 1)]
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/solicitacoes")
+                return
+            self._send_json(fila)
+            return
+
+        if path == "/api/reagendamentos":
+            if self._exigir_papel(PAPEIS_SOLICITACOES_LEITURA) is None:
+                return
+            try:
+                fila = [reagendamento_doc_to_json(doc) for doc in reagendamentos_col.find({}).sort("_id", 1)]
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/reagendamentos")
                 return
             self._send_json(fila)
             return
@@ -479,6 +570,48 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(doc, 201)
             return
 
+        if path == "/api/reagendamentos":
+            # Mesma regra da solicitação de prontuário: qualquer papel
+            # autenticado pode criar um pedido (é o paciente pedindo para
+            # reagendar a própria consulta); só a leitura da fila inteira e a
+            # confirmação ficam restritas à equipe.
+            if self._exigir_papel({"paciente", "tecnico", "supervisor", "estudante"}) is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+
+            doc = dict(body)
+            doc.pop("_id", None)
+
+            paciente_val = str(doc.get("paciente", "")).strip()
+            email_val = str(doc.get("email", "")).strip().lower()
+            if not paciente_val or not email_val:
+                self._send_error_json(
+                    400,
+                    "os campos 'paciente' e 'email' são obrigatórios para pedir um reagendamento",
+                )
+                return
+            if not EMAIL_REGEX.match(email_val):
+                self._send_error_json(400, "e-mail inválido: '%s'" % email_val)
+                return
+
+            doc["paciente"] = paciente_val
+            doc["email"] = email_val
+            doc["status"] = "pendente"
+            doc["nova_data"] = ""
+
+            try:
+                result = reagendamentos_col.insert_one(doc)
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/reagendamentos")
+                return
+            doc["_id"] = str(result.inserted_id)
+            self._send_json(doc, 201)
+            return
+
         self._send_error_json(404, "rota não encontrada: " + path)
 
     # ---------- PUT ----------
@@ -546,6 +679,56 @@ class Handler(BaseHTTPRequestHandler):
                 return
             body["_id"] = str(obj_id)
             self._send_json(body)
+            return
+
+        m3 = re.match(r"^/api/reagendamentos/([0-9a-fA-F]{24})$", path)
+        if m3:
+            if self._exigir_papel(PAPEIS_SOLICITACOES_ESCRITA) is None:
+                return
+            try:
+                obj_id = ObjectId(m3.group(1))
+            except InvalidId:
+                self._send_error_json(400, "id de reagendamento inválido")
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+
+            nova_data_val = str(body.get("nova_data", "")).strip()
+            if not nova_data_val:
+                self._send_error_json(400, "o campo 'nova_data' é obrigatório para confirmar o reagendamento")
+                return
+
+            try:
+                doc = reagendamentos_col.find_one({"_id": obj_id})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/reagendamentos/" + str(obj_id) + " (busca)")
+                return
+            if not doc:
+                self._send_error_json(404, "reagendamento não encontrado: " + str(obj_id))
+                return
+
+            try:
+                reagendamentos_col.update_one(
+                    {"_id": obj_id},
+                    {"$set": {"status": "confirmado", "nova_data": nova_data_val}},
+                )
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/reagendamentos/" + str(obj_id))
+                return
+
+            # O e-mail só é disparado AQUI, depois que a nova data já está
+            # salva no banco — assim, mesmo se o envio falhar (ou o SMTP não
+            # estiver configurado), a confirmação em si não se perde.
+            enviado = _enviar_confirmacao_reagendamento(doc.get("email", ""), doc.get("paciente", ""), nova_data_val)
+
+            doc["status"] = "confirmado"
+            doc["nova_data"] = nova_data_val
+            resposta = reagendamento_doc_to_json(doc)
+            resposta["enviado_email"] = enviado
+            self._send_json(resposta)
             return
 
         self._send_error_json(404, "rota não encontrada: " + path)

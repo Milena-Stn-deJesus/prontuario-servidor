@@ -491,7 +491,11 @@ footer{margin-top:120px}
   #eq-requests-card table thead th:nth-child(2),
   #eq-requests-card table thead th:nth-child(3),
   #eq-requests-card table tbody td:nth-child(2),
-  #eq-requests-card table tbody td:nth-child(3){display:none}
+  #eq-requests-card table tbody td:nth-child(3),
+  #eq-reagendamentos-card table thead th:nth-child(2),
+  #eq-reagendamentos-card table thead th:nth-child(3),
+  #eq-reagendamentos-card table tbody td:nth-child(2),
+  #eq-reagendamentos-card table tbody td:nth-child(3){display:none}
   .dash-table{font-size:12.5px}
   .dash-table th,.dash-table td{padding:8px 6px}
   /* Os botões "Encerrar caso" e "Exportar PDF" no topo do caso ficavam
@@ -606,6 +610,11 @@ footer{margin-top:120px}
 .dash-table tbody tr:last-child td{border-bottom:0}
 .dash-table td:last-child{text-align:right;white-space:nowrap}
 .eq-case-open{display:inline-flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--line);color:var(--navy);font-family:var(--sans);font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:999px;cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+/* Linha de confirmação de reagendamento (data + botão) dentro da célula de ação
+   da tabela — precisa de largura própria pro input de data, diferente do
+   .eq-input padrão (que é width:100%, bom em formulário mas não numa célula). */
+.eq-reagendar-action{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.eq-reagendar-action input[type="date"]{width:auto;min-width:0;padding:7px 10px;font-size:12.5px}
 .eq-case-open svg{width:13px;height:13px;color:var(--blue)}
 .eq-case-open:hover{border-color:var(--blue);background:var(--sky);transform:translateY(-1px)}
 .dash-record{border:1px solid var(--line);border-radius:16px;padding:24px;height:100%}
@@ -1078,7 +1087,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             </div>
             <div class="dash-next-foot" id="pac-next-foot">
               <button type="button" class="dash-reschedule-btn" id="pac-reschedule-btn"><svg><use href="#i-refresh"/></svg>Preciso reagendar</button>
-              <p class="dash-next-msg" id="pac-reschedule-msg" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela aparece aqui no seu painel.</p>
+              <p class="dash-next-msg" id="pac-reschedule-msg" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela também é enviada para o seu e-mail.</p>
             </div>
           </div>
 
@@ -1343,7 +1352,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
   <div class="pac-modal" role="alertdialog" aria-modal="true" aria-labelledby="pac-reschedule-modal-title" aria-describedby="pac-reschedule-modal-desc">
     <div class="pac-modal-icon"><svg><use href="#i-info"/></svg></div>
     <h3 id="pac-reschedule-modal-title">Solicitar reagendamento?</h3>
-    <p id="pac-reschedule-modal-desc">Sua consulta será realocada pela equipe para a próxima data disponível na agenda. Assim que confirmada, a nova data será exibida neste painel. Deseja continuar?</p>
+    <p id="pac-reschedule-modal-desc">Sua consulta será realocada pela equipe para a próxima data disponível na agenda. Assim que confirmada, a nova data também será enviada para o seu e-mail. Deseja continuar?</p>
     <div class="pac-modal-actions">
       <button type="button" class="btn pac-modal-cancel" id="pac-reschedule-cancel">Cancelar</button>
       <button type="button" class="btn btn-primary" id="pac-reschedule-confirm">Sim, reagendar<svg><use href="#i-arrow"/></svg></button>
@@ -1603,6 +1612,22 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <p class="eq-pt-empty" id="eq-requests-empty" hidden>Nenhuma solicitação de prontuário pendente no momento.</p>
         </div>
 
+        <div class="dash-hist" id="eq-reagendamentos-card" hidden>
+          <div class="dash-hist-head">
+            <svg><use href="#i-refresh"/></svg>
+            <h3>Pedidos de reagendamento</h3>
+          </div>
+          <table class="dash-table">
+            <caption class="sr-only">Pedidos de reagendamento de consulta feitos por pacientes, com e-mail, data do pedido e status</caption>
+            <thead>
+              <tr><th scope="col">Paciente</th><th scope="col">E-mail</th><th scope="col">Pedido em</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Ação</span></th></tr>
+            </thead>
+            <tbody id="eq-reagendamentos-body"></tbody>
+          </table>
+          <p class="eq-pt-empty" id="eq-reagendamentos-empty" hidden>Nenhum pedido de reagendamento pendente no momento.</p>
+          <p class="eq-pt-empty" id="eq-reagendamentos-msg" hidden></p>
+        </div>
+
         <div class="eq-pt-card" id="eq-newpatient-card" hidden>
           <div class="eq-pt-head">
             <div class="eq-pt-head-title">
@@ -1794,6 +1819,19 @@ window.apiUpdateSolicitacao = function(reqId, payload){
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
   });
 };
+window.apiGetReagendamentos = function(){
+  return _apiFetch('/api/reagendamentos');
+};
+window.apiCreateReagendamento = function(payload){
+  return _apiFetch('/api/reagendamentos', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+};
+window.apiConfirmarReagendamento = function(reqId, novaData){
+  return _apiFetch('/api/reagendamentos/' + encodeURIComponent(reqId), {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nova_data: novaData})
+  });
+};
 /* Mostra um aviso discreto no topo da página se o servidor local não responder
    (ex: a pessoa esqueceu de rodar "python3 server.py" antes de abrir a página). */
 window.showServerOfflineBanner = function(){
@@ -1811,6 +1849,10 @@ window.showServerOfflineBanner = function(){
    e não deve disparar o aviso de "servidor offline" — isso só acontece de novo depois do
    login, em apiGetSolicitacoes()/Promise.all() nos handlers de login. */
 window.PRONTUARIO_SOLICITACOES = [];
+/* Fila de pedidos de reagendamento — só a equipe lê a lista inteira (depois do
+   login), por isso não tem uma busca "eager" como a de solicitações acima: o
+   paciente só cria um pedido (POST), nunca precisa ler a fila toda. */
+window.PRONTUARIO_REAGENDAMENTOS = [];
 window.solicitacoesReady = window.apiGetSolicitacoes().then(function(data){
   /* Atualiza o array no lugar (em vez de trocar a referência) para não perder uma
      solicitação que o paciente já tenha criado localmente antes desta resposta chegar. */
@@ -1991,6 +2033,7 @@ route();
   let baseGreeting = 'Olá! Bem-vindo(a) de volta';
   let baseFirstName = '';
   let currentPatientFullName = '';
+  let currentPatientEmail = '';
   function applySocialName(name){
     const trimmed = (name || '').trim();
     if(trimmed && baseFirstName){ setGreeting(baseGreeting.replace(baseFirstName, trimmed)); }
@@ -2031,6 +2074,7 @@ route();
     const submitBtn = form.querySelector('button[type="submit"]');
     if(submitBtn) submitBtn.disabled = true;
     window.apiLogin(emailLower, senhaVal).then(function(sessao){
+      currentPatientEmail = emailLower;
       if(emailLower==='paciente@exemplo.com'){
         baseFirstName = 'Maria';
         currentPatientFullName = sessao.nome || 'Maria Fernanda Alves';
@@ -2208,6 +2252,16 @@ route();
       closeRescheduleModal();
       rescheduleBtn.hidden = true;
       rescheduleMsg.hidden = false;
+      /* Pedido de verdade: fica numa fila real para a equipe, que escolhe a
+         nova data e confirma — é essa confirmação que dispara o e-mail. */
+      window.apiCreateReagendamento({
+        paciente: currentPatientFullName || 'Paciente',
+        email: currentPatientEmail || '',
+        solicitado_em: new Date().toLocaleDateString('pt-BR')
+      }).catch(function(err){
+        console.warn('Não foi possível registrar o pedido de reagendamento no servidor:', err);
+        window.showServerOfflineBanner();
+      });
     });
   }
 
@@ -2470,6 +2524,10 @@ route();
   const requestsCard = document.getElementById('eq-requests-card');
   const requestsBody = document.getElementById('eq-requests-body');
   const requestsEmpty = document.getElementById('eq-requests-empty');
+  const reagendamentosCard = document.getElementById('eq-reagendamentos-card');
+  const reagendamentosBody = document.getElementById('eq-reagendamentos-body');
+  const reagendamentosEmpty = document.getElementById('eq-reagendamentos-empty');
+  const reagendamentosMsg = document.getElementById('eq-reagendamentos-msg');
   const newPatientCard = document.getElementById('eq-newpatient-card');
 
   let currentRole = null;
@@ -2628,6 +2686,7 @@ route();
       if(casesTableCard) casesTableCard.hidden = true;
       if(patientsCard) patientsCard.hidden = false;
       if(requestsCard) requestsCard.hidden = true;
+      if(reagendamentosCard) reagendamentosCard.hidden = true;
       if(newPatientCard) newPatientCard.hidden = true;
     } else if(role === 'supervisor'){
       if(roleEyebrow) roleEyebrow.textContent = 'Painel do supervisor';
@@ -2640,6 +2699,7 @@ route();
       if(casesTableCard) casesTableCard.hidden = false;
       if(patientsCard) patientsCard.hidden = true;
       if(requestsCard) requestsCard.hidden = true;
+      if(reagendamentosCard) reagendamentosCard.hidden = true;
       if(newPatientCard) newPatientCard.hidden = true;
     } else {
       if(roleEyebrow) roleEyebrow.textContent = 'Painel técnico';
@@ -2652,8 +2712,10 @@ route();
       if(casesTableCard) casesTableCard.hidden = false;
       if(patientsCard) patientsCard.hidden = true;
       if(requestsCard) requestsCard.hidden = false;
+      if(reagendamentosCard) reagendamentosCard.hidden = false;
       if(newPatientCard) newPatientCard.hidden = false;
       renderRequests();
+      renderReagendamentos();
     }
     resetCalendarView();
     renderCalendar();
@@ -2698,6 +2760,65 @@ route();
       window.apiUpdateSolicitacao(reqId, item).catch(function(err){
         console.warn('Não foi possível salvar a liberação no servidor:', err);
         window.showServerOfflineBanner();
+      });
+    });
+  }
+
+  /* PEDIDOS DE REAGENDAMENTO — fila técnico-exclusiva alimentada pelo pedido do paciente;
+     ao confirmar, o servidor dispara o e-mail de verdade para o paciente. */
+  function renderReagendamentos(){
+    if(!reagendamentosBody) return;
+    const fila = window.PRONTUARIO_REAGENDAMENTOS || [];
+    if(!fila.length){
+      reagendamentosBody.innerHTML = '';
+      if(reagendamentosEmpty) reagendamentosEmpty.hidden = false;
+      return;
+    }
+    if(reagendamentosEmpty) reagendamentosEmpty.hidden = true;
+    reagendamentosBody.innerHTML = fila.map(function(r){
+      const badge = r.status === 'confirmado'
+        ? '<span class="dash-badge dash-badge-ok">Confirmado — '+esc(r.nova_data)+'</span>'
+        : '<span class="dash-badge dash-badge-pending">Pendente</span>';
+      const action = r.status === 'confirmado'
+        ? ''
+        : '<div class="eq-reagendar-action">'
+          + '<input type="date" class="eq-input" data-reagendar-data="'+esc(r._id)+'">'
+          + '<button type="button" class="eq-case-open" data-reagendar-confirmar="'+esc(r._id)+'"><svg><use href="#i-arrow"/></svg>Confirmar</button>'
+          + '</div>';
+      return '<tr><td>'+esc(r.paciente)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.solicitado_em)+'</td><td>'+badge+'</td><td>'+action+'</td></tr>';
+    }).join('');
+  }
+  if(reagendamentosBody){
+    reagendamentosBody.addEventListener('click', function(e){
+      const btn = e.target.closest('[data-reagendar-confirmar]');
+      if(!btn) return;
+      const reqId = btn.dataset.reagendarConfirmar;
+      const dateInput = reagendamentosBody.querySelector('[data-reagendar-data="'+reqId+'"]');
+      const novaData = dateInput ? dateInput.value : '';
+      if(!novaData){
+        if(dateInput) dateInput.focus();
+        return;
+      }
+      const novaDataBr = (function(iso){
+        const partes = iso.split('-');
+        return partes.length===3 ? (partes[2]+'/'+partes[1]+'/'+partes[0]) : iso;
+      })(novaData);
+      btn.disabled = true;
+      window.apiConfirmarReagendamento(reqId, novaDataBr).then(function(resp){
+        const fila = window.PRONTUARIO_REAGENDAMENTOS || [];
+        const item = fila.find(function(r){ return String(r._id) === reqId; });
+        if(item){ item.status = 'confirmado'; item.nova_data = novaDataBr; }
+        renderReagendamentos();
+        if(reagendamentosMsg){
+          reagendamentosMsg.hidden = false;
+          reagendamentosMsg.textContent = resp.enviado_email
+            ? 'Data confirmada e e-mail enviado ao paciente.'
+            : 'Data confirmada no sistema — porém o e-mail NÃO foi enviado (SMTP não configurado no servidor; veja as instruções no topo do server.py).';
+        }
+      }).catch(function(err){
+        console.warn('Não foi possível confirmar o reagendamento no servidor:', err);
+        window.showServerOfflineBanner();
+        btn.disabled = false;
       });
     });
   }
@@ -3552,6 +3673,13 @@ route();
           data.forEach(function(item){ window.PRONTUARIO_SOLICITACOES.push(item); });
         }).catch(function(err){
           console.warn('Não foi possível atualizar as solicitações do servidor:', err);
+          window.showServerOfflineBanner();
+        }),
+        window.apiGetReagendamentos().then(function(data){
+          window.PRONTUARIO_REAGENDAMENTOS.length = 0;
+          data.forEach(function(item){ window.PRONTUARIO_REAGENDAMENTOS.push(item); });
+        }).catch(function(err){
+          console.warn('Não foi possível atualizar os reagendamentos do servidor:', err);
           window.showServerOfflineBanner();
         })
       ]).then(function(){
