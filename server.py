@@ -10,7 +10,9 @@ O QUE ESSE ARQUIVO FAZ:
 - Expõe a mesma API HTTP de antes, para o navegador consultar e atualizar os dados:
     GET  /api/casos                -> devolve todos os casos
     POST /api/casos                -> cria um caso novo (técnico cadastra paciente)
-    PUT  /api/casos/<id>            -> substitui um caso (agenda, evolução, documento, anamnese...)
+    PUT  /api/casos/<id>            -> atualiza um caso (agenda, nova evolução, documento,
+                                        primeira anamnese...); evoluções e anamnese já
+                                        registradas são imutáveis no servidor, não só na tela
     GET  /api/solicitacoes          -> devolve a fila de solicitações de prontuário
     POST /api/solicitacoes          -> cria uma nova solicitação (paciente pede o prontuário)
     PUT  /api/solicitacoes/<id>     -> atualiza uma solicitação (técnico libera o acesso)
@@ -305,7 +307,39 @@ db = client[DB_NAME]
 casos_col = db["casos"]
 solicitacoes_col = db["solicitacoes"]
 reagendamentos_col = db["reagendamentos"]
+# Trilha de auditoria (achado da auditoria de segurança — item pendente que
+# havia sido esquecido no relatório anterior): registra quem fez o quê e
+# quando, numa coleção própria, consultável depois. Antes, o servidor só
+# imprimia algumas linhas soltas no log do processo (ex.: pedido de
+# recuperação de senha) — nada era gravado de forma durável, e a maioria das
+# ações (login, abrir a lista de casos, alterar um caso, tentar acessar caso
+# de outra pessoa) não deixava rastro nenhum. Nunca grava senha nem conteúdo
+# clínico (anamnese/evolução) — só metadados do acesso.
+auditoria_col = db["auditoria"]
 print("Conectado ao MongoDB! Banco: %s" % DB_NAME)
+
+
+def _registrar_auditoria(sessao, acao, caso_id=None, resultado="sucesso", detalhe=None):
+    """Grava uma linha na trilha de auditoria. 'sessao' pode ser a sessão
+    autenticada (dict com email/nome/role) ou, numa tentativa de login que
+    falhou, um dict parcial só com o e-mail digitado."""
+    doc = {
+        "quando": time.time(),
+        "usuario_email": (sessao or {}).get("email"),
+        "usuario_nome": (sessao or {}).get("nome"),
+        "papel": (sessao or {}).get("role"),
+        "acao": acao,
+        "caso_id": caso_id,
+        "resultado": resultado,
+    }
+    if detalhe:
+        doc["detalhe"] = detalhe
+    try:
+        auditoria_col.insert_one(doc)
+    except PyMongoError as exc:
+        # A auditoria nunca deve impedir a operação principal de continuar —
+        # só registramos a falha no log do servidor.
+        print("ERRO (auditoria): não foi possível gravar a trilha de auditoria: %s" % exc)
 
 
 def novo_id_de_caso():
@@ -380,6 +414,45 @@ def _pode_acessar_caso(sessao, caso_doc):
     if sessao["role"] == "supervisor":
         return caso_doc.get("supervisor") == sessao["nome"]
     return False
+
+
+# ---------------------------------------------------------------------------
+# Imutabilidade de registros clínicos (correção de segurança — a regra já
+# existia nas instruções do projeto e já era respeitada pela tela, que não
+# tem botão de editar uma evolução antiga: quem quer corrigir registra uma
+# nova evolução de retificação. Mas essa regra só existia no front-end — o
+# servidor aceitava, via PUT /api/casos/<id>, qualquer corpo de requisição
+# que sobrescrevesse uma evolução já gravada ou substituísse a anamnese já
+# registrada, bastando que quem mandasse a requisição tivesse permissão
+# sobre aquele caso. Isso não é um problema de controle de acesso (o
+# acesso ao caso já é checado por _pode_acessar_caso) — é uma falta de
+# integridade do próprio registro clínico, que esta função passa a impor
+# diretamente no servidor, independentemente do que a tela mande.
+
+def _validar_imutabilidade_clinica(caso_atual, body):
+    """Devolve None se o corpo da requisição respeita a regra de que uma
+    evolução já registrada nunca é editada ou removida (só apensada) e que
+    a anamnese, uma vez preenchida, não é substituída. Devolve uma mensagem
+    de erro (string) quando o corpo tenta violar a regra."""
+    evolucoes_atuais = caso_atual.get("evolucoes") or []
+    if "evolucoes" in body:
+        evolucoes_novas = body["evolucoes"]
+        if not isinstance(evolucoes_novas, list):
+            return "o campo 'evolucoes' precisa ser uma lista"
+        if len(evolucoes_novas) < len(evolucoes_atuais):
+            return "não é permitido remover uma evolução já registrada"
+        if evolucoes_novas[: len(evolucoes_atuais)] != evolucoes_atuais:
+            return (
+                "não é permitido alterar uma evolução já registrada — "
+                "registre uma nova evolução de retificação em vez de editar a antiga"
+            )
+
+    anamnese_atual = caso_atual.get("anamnese")
+    if "anamnese" in body and anamnese_atual not in (None, ""):
+        if body["anamnese"] != anamnese_atual:
+            return "a anamnese já foi registrada para este caso e não pode ser alterada"
+
+    return None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -487,6 +560,11 @@ class Handler(BaseHTTPRequestHandler):
             self._send_error_json(401, "é necessário estar autenticado (faça login novamente)")
             return None
         if sessao["role"] not in papeis_permitidos:
+            _registrar_auditoria(
+                sessao,
+                "tentativa de acesso a rota sem permissão de papel: " + self.path.split("?", 1)[0],
+                resultado="negado",
+            )
             self._send_error_json(403, "seu perfil não tem permissão para esta operação")
             return None
         return sessao
@@ -515,6 +593,7 @@ class Handler(BaseHTTPRequestHandler):
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/casos")
                 return
+            _registrar_auditoria(sessao, "listagem de casos", detalhe="retornou %d caso(s)" % len(casos))
             self._send_json(casos)
             return
 
@@ -587,6 +666,7 @@ class Handler(BaseHTTPRequestHandler):
                 if t["falhas"] >= MAX_TENTATIVAS:
                     t["bloqueado_ate"] = agora + BLOQUEIO_SEGUNDOS
                     t["falhas"] = 0
+                _registrar_auditoria({"email": email}, "login", resultado="negado", detalhe="credenciais inválidas")
                 # Mensagem genérica de propósito: não diz se o e-mail existe ou
                 # não, nem qual dos dois campos está errado (evita que alguém
                 # descubra, por tentativa e erro, quais e-mails têm conta).
@@ -601,6 +681,7 @@ class Handler(BaseHTTPRequestHandler):
                 "nome": conta["nome"],
                 "criado_em": agora,
             }
+            _registrar_auditoria(SESSOES[token], "login", resultado="sucesso")
             self._send_json({"token": token, "role": conta["role"], "nome": conta["nome"]})
             return
 
@@ -614,7 +695,10 @@ class Handler(BaseHTTPRequestHandler):
             # token é removido de verdade da lista de sessões no servidor.
             auth = self.headers.get("Authorization", "")
             if auth.startswith("Bearer "):
-                SESSOES.pop(auth[len("Bearer "):].strip(), None)
+                token = auth[len("Bearer "):].strip()
+                sessao = SESSOES.pop(token, None)
+                if sessao:
+                    _registrar_auditoria(sessao, "logout", resultado="sucesso")
             self._send_json({"ok": True})
             return
 
@@ -720,6 +804,8 @@ class Handler(BaseHTTPRequestHandler):
             except PyMongoError as exc:
                 self._erro_servidor(exc, "POST /api/casos")
                 return
+            sessao_login = self._sessao_atual()
+            _registrar_auditoria(sessao_login, "criação de caso", caso_id=caso["_id"])
             self._send_json({"id": caso["_id"], "caso": caso_doc_to_json(caso)}, 201)
             return
 
@@ -846,6 +932,9 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_error_json(404, "caso não encontrado: " + case_id)
                 return
             if not _pode_acessar_caso(sessao, caso_atual):
+                _registrar_auditoria(
+                    sessao, "tentativa de alterar caso sem vínculo", caso_id=case_id, resultado="negado"
+                )
                 self._send_error_json(403, "seu perfil não tem permissão para alterar este caso")
                 return
 
@@ -875,7 +964,29 @@ class Handler(BaseHTTPRequestHandler):
             # própria tela já impede isso para o estudante (canCloseCase()),
             # mas essa regra não era garantida pelo servidor.
             if sessao["role"] == "estudante" and body.get("status") != caso_atual.get("status"):
+                _registrar_auditoria(
+                    sessao, "tentativa de encerrar/reabrir caso sem permissão", caso_id=case_id, resultado="negado"
+                )
                 self._send_error_json(403, "apenas técnico ou supervisor podem encerrar ou reabrir um caso")
+                return
+
+            # Correção de segurança: antes, quem tinha permissão sobre o caso
+            # podia, mandando o PUT diretamente (sem passar pela tela),
+            # sobrescrever uma evolução já registrada ou substituir a
+            # anamnese já preenchida — a regra de que esses registros são
+            # imutáveis só existia no front-end. Agora o servidor também a
+            # garante (_validar_imutabilidade_clinica), nunca aceita um corpo
+            # que viole essa regra, e registra a tentativa na auditoria.
+            erro_imutabilidade = _validar_imutabilidade_clinica(caso_atual, body)
+            if erro_imutabilidade:
+                _registrar_auditoria(
+                    sessao,
+                    "tentativa de alterar registro clínico imutável",
+                    caso_id=case_id,
+                    resultado="negado",
+                    detalhe=erro_imutabilidade,
+                )
+                self._send_error_json(403, erro_imutabilidade)
                 return
 
             try:
@@ -886,6 +997,7 @@ class Handler(BaseHTTPRequestHandler):
             if result.matched_count == 0:
                 self._send_error_json(404, "caso não encontrado: " + case_id)
                 return
+            _registrar_auditoria(sessao, "alteração de caso", caso_id=case_id)
             self._send_json(body)
             return
 
