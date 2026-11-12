@@ -19,6 +19,7 @@ O QUE ESSE ARQUIVO FAZ:
     PUT  /api/reagendamentos/<id>   -> confirma uma nova data (equipe escolhe a data;
                                         dispara o e-mail de confirmação para o paciente)
     POST /api/login                 -> autentica e devolve um token de sessão
+    POST /api/logout                -> invalida o token de sessão atual no servidor
     POST /api/recuperar-senha       -> recebe um e-mail, gera uma senha temporária
                                         de verdade e a envia por e-mail (nunca na
                                         resposta HTTP); resposta sempre genérica,
@@ -340,16 +341,91 @@ def reagendamento_doc_to_json(doc):
     return out
 
 
+# ---------------------------------------------------------------------------
+# Isolamento de casos por papel (correção de segurança — IDOR/BOLA)
+#
+# Antes, qualquer papel em PAPEIS_CASOS (técnico, supervisor OU estudante)
+# podia ler e alterar QUALQUER caso, de qualquer paciente, bastando estar
+# autenticado — sem nenhuma checagem de que aquele caso específico era da
+# responsabilidade de quem pedia. Isso foi comprovado em teste: um estudante
+# conseguia ler e editar prontuário de paciente de outro estudante. As
+# funções abaixo implementam a regra real do serviço-escola: um estudante só
+# acessa os casos em que ele mesmo é "estudante" responsável; um supervisor
+# só acessa os casos em que ele é o "supervisor"; o técnico (papel
+# administrativo, que também processa solicitações de prontuário e
+# reagendamentos de qualquer paciente) mantém acesso a todos os casos, como
+# já funcionava antes.
+
+def _filtro_visibilidade_casos(sessao):
+    """Filtro do MongoDB a aplicar em GET /api/casos conforme o papel da
+    sessão. Devolve {} (sem filtro = vê tudo) para técnico; para estudante e
+    supervisor, restringe à coluna correspondente com o nome da própria
+    sessão."""
+    if sessao["role"] == "estudante":
+        return {"estudante": sessao["nome"]}
+    if sessao["role"] == "supervisor":
+        return {"supervisor": sessao["nome"]}
+    return {}
+
+
+def _pode_acessar_caso(sessao, caso_doc):
+    """Verifica se a sessão tem permissão para ler/alterar ESTE caso
+    específico (não só o papel em geral). Usado em PUT /api/casos/<id>, onde
+    uma checagem só de papel não bastaria — o próprio id do caso vem na URL
+    e podia ser trocado para o de outro paciente."""
+    if sessao["role"] == "tecnico":
+        return True
+    if sessao["role"] == "estudante":
+        return caso_doc.get("estudante") == sessao["nome"]
+    if sessao["role"] == "supervisor":
+        return caso_doc.get("supervisor") == sessao["nome"]
+    return False
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "ProntuarioServerMongo/1.0"
 
     # ---------- utilidades de resposta ----------
+    def _security_headers(self):
+        """Cabeçalhos de segurança ausentes antes (achado da auditoria):
+        protegem contra clickjacking (X-Frame-Options), contra o navegador
+        tentando "adivinhar" um tipo de arquivo diferente do declarado
+        (X-Content-Type-Options), vazamento de URL completa para outros
+        sites via o cabeçalho Referer (Referrer-Policy), e reforçam que o
+        site só deve ser acessado por HTTPS (Strict-Transport-Security). A
+        política de Content-Security-Policy abaixo permite script inline
+        porque a página atual é construída assim (um CSP mais restrito, com
+        nonces, exigiria reescrever todos os <script> do arquivo — mudança
+        maior, fora do escopo desta auditoria); mesmo assim, ela já bloqueia
+        o carregamento de scripts, iframes e conexões de qualquer domínio
+        não explicitamente listado, o que limita bastante o que um ataque de
+        XSS conseguiria fazer mesmo que um dia aparecesse um."""
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://vlibras.gov.br; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https://vlibras.gov.br; "
+            "media-src 'self' https://vlibras.gov.br; "
+            "frame-src https://vlibras.gov.br; "
+            "connect-src 'self' https://vlibras.gov.br; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'",
+        )
+
     def _send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self._cors_headers()
+        self._security_headers()
         self.end_headers()
         self.wfile.write(body)
 
@@ -430,10 +506,12 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/casos":
-            if self._exigir_papel(PAPEIS_CASOS) is None:
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
                 return
             try:
-                casos = {doc["_id"]: caso_doc_to_json(doc) for doc in casos_col.find({})}
+                filtro = _filtro_visibilidade_casos(sessao)
+                casos = {doc["_id"]: caso_doc_to_json(doc) for doc in casos_col.find(filtro)}
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/casos")
                 return
@@ -474,6 +552,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(content)))
         self._cors_headers()
+        self._security_headers()
         self.end_headers()
         self.wfile.write(content)
 
@@ -523,6 +602,20 @@ class Handler(BaseHTTPRequestHandler):
                 "criado_em": agora,
             }
             self._send_json({"token": token, "role": conta["role"], "nome": conta["nome"]})
+            return
+
+        if path == "/api/logout":
+            # Correção de segurança: antes não existia NENHUMA rota de
+            # logout — "sair" só apagava o token guardado no navegador
+            # (sessionStorage), mas o token continuava válido no servidor até
+            # expirar sozinho (até 8h depois). Se alguém roubasse esse token
+            # (por exemplo, um computador compartilhado esquecido logado),
+            # clicar em "sair" não adiantava nada contra esse roubo. Agora o
+            # token é removido de verdade da lista de sessões no servidor.
+            auth = self.headers.get("Authorization", "")
+            if auth.startswith("Bearer "):
+                SESSOES.pop(auth[len("Bearer "):].strip(), None)
+            self._send_json({"ok": True})
             return
 
         if path == "/api/recuperar-senha":
@@ -584,7 +677,12 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/casos":
-            if self._exigir_papel(PAPEIS_CASOS) is None:
+            # Correção de segurança: cadastrar um paciente novo é uma ação
+            # administrativa — a própria tela só mostra esse formulário para o
+            # técnico (estudante e supervisor nunca veem esse botão). O
+            # servidor não garantia isso: qualquer um dos três papéis podia
+            # criar um caso novo chamando a API diretamente.
+            if self._exigir_papel({"tecnico"}) is None:
                 return
             try:
                 body = self._read_json_body()
@@ -629,7 +727,8 @@ class Handler(BaseHTTPRequestHandler):
             # Qualquer papel autenticado pode criar uma solicitação (é assim que
             # o paciente pede acesso ao próprio prontuário); só a leitura da
             # fila inteira e a liberação é que ficam restritas à equipe.
-            if self._exigir_papel({"paciente", "tecnico", "supervisor", "estudante"}) is None:
+            sessao = self._exigir_papel({"paciente", "tecnico", "supervisor", "estudante"})
+            if sessao is None:
                 return
             try:
                 body = self._read_json_body()
@@ -640,9 +739,16 @@ class Handler(BaseHTTPRequestHandler):
             doc = dict(body)
             doc.pop("_id", None)
 
-            paciente_val = str(doc.get("paciente", "")).strip()
+            # Correção de segurança: antes, o nome do paciente vinha do que o
+            # próprio navegador mandava no corpo da requisição — um paciente
+            # autenticado podia, chamando a API diretamente, registrar uma
+            # solicitação em nome de OUTRO paciente. Agora o nome é sempre o
+            # da própria sessão autenticada (exatamente o valor que a tela já
+            # usa hoje; nenhuma solicitação legítima muda de comportamento).
+            doc["paciente"] = sessao["nome"]
+
             protocolo_val = str(doc.get("protocolo", "")).strip()
-            if not paciente_val or not protocolo_val:
+            if not doc["paciente"] or not protocolo_val:
                 self._send_error_json(
                     400,
                     "os campos 'paciente' e 'protocolo' são obrigatórios para registrar uma solicitação",
@@ -655,7 +761,6 @@ class Handler(BaseHTTPRequestHandler):
             # de pendentes sem nunca aparecer como liberadas).
             if doc.get("status") not in STATUS_SOLICITACAO_VALIDOS:
                 doc["status"] = "pendente"
-            doc["paciente"] = paciente_val
             doc["protocolo"] = protocolo_val
 
             try:
@@ -672,7 +777,8 @@ class Handler(BaseHTTPRequestHandler):
             # autenticado pode criar um pedido (é o paciente pedindo para
             # reagendar a própria consulta); só a leitura da fila inteira e a
             # confirmação ficam restritas à equipe.
-            if self._exigir_papel({"paciente", "tecnico", "supervisor", "estudante"}) is None:
+            sessao = self._exigir_papel({"paciente", "tecnico", "supervisor", "estudante"})
+            if sessao is None:
                 return
             try:
                 body = self._read_json_body()
@@ -683,20 +789,24 @@ class Handler(BaseHTTPRequestHandler):
             doc = dict(body)
             doc.pop("_id", None)
 
-            paciente_val = str(doc.get("paciente", "")).strip()
-            email_val = str(doc.get("email", "")).strip().lower()
-            if not paciente_val or not email_val:
+            # Correção de segurança: "paciente" e "email" agora vêm sempre da
+            # própria sessão autenticada, não do que o navegador mandou no
+            # corpo da requisição — mesmo motivo do /api/solicitacoes acima:
+            # evita que alguém peça reagendamento (e o e-mail de confirmação
+            # que isso dispara) em nome de outra pessoa. O valor é idêntico ao
+            # que a tela já envia hoje, então nenhum uso legítimo muda.
+            doc["paciente"] = sessao["nome"]
+            doc["email"] = sessao["email"]
+            if not doc["paciente"] or not doc["email"]:
                 self._send_error_json(
                     400,
                     "os campos 'paciente' e 'email' são obrigatórios para pedir um reagendamento",
                 )
                 return
-            if not EMAIL_REGEX.match(email_val):
-                self._send_error_json(400, "e-mail inválido: '%s'" % email_val)
+            if not EMAIL_REGEX.match(doc["email"]):
+                self._send_error_json(400, "e-mail inválido: '%s'" % doc["email"])
                 return
 
-            doc["paciente"] = paciente_val
-            doc["email"] = email_val
             doc["status"] = "pendente"
             doc["nova_data"] = ""
 
@@ -717,9 +827,28 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/casos/(.+)$", path)
         if m:
-            if self._exigir_papel(PAPEIS_CASOS) is None:
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
                 return
             case_id = unquote(m.group(1))
+
+            # Correção de segurança (IDOR/BOLA): antes, qualquer papel em
+            # PAPEIS_CASOS podia alterar QUALQUER caso só trocando o id na
+            # URL. Agora buscamos o caso primeiro e checamos se esta sessão
+            # específica tem permissão para ele (_pode_acessar_caso), não só
+            # se o papel em geral tem permissão para a rota.
+            try:
+                caso_atual = casos_col.find_one({"_id": case_id})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/casos/" + case_id + " (busca)")
+                return
+            if caso_atual is None:
+                self._send_error_json(404, "caso não encontrado: " + case_id)
+                return
+            if not _pode_acessar_caso(sessao, caso_atual):
+                self._send_error_json(403, "seu perfil não tem permissão para alterar este caso")
+                return
+
             try:
                 body = self._read_json_body()
             except Exception:
@@ -733,6 +862,22 @@ class Handler(BaseHTTPRequestHandler):
                     "status inválido: '%s' (valores aceitos: %s)" % (body["status"], ", ".join(sorted(STATUS_CASO_VALIDOS))),
                 )
                 return
+
+            # Correção de segurança: "estudante" e "supervisor" definem A QUEM
+            # pertence o caso — não são campos que a própria tela deixa editar,
+            # então o servidor não aceita mudá-los por aqui (evita que o caso
+            # seja "transferido" para outra pessoa por uma chamada direta à
+            # API). Preservamos sempre o valor que já estava gravado.
+            body["estudante"] = caso_atual.get("estudante", "")
+            body["supervisor"] = caso_atual.get("supervisor", "")
+
+            # Só técnico e supervisor podem encerrar/reabrir um caso — a
+            # própria tela já impede isso para o estudante (canCloseCase()),
+            # mas essa regra não era garantida pelo servidor.
+            if sessao["role"] == "estudante" and body.get("status") != caso_atual.get("status"):
+                self._send_error_json(403, "apenas técnico ou supervisor podem encerrar ou reabrir um caso")
+                return
+
             try:
                 result = casos_col.replace_one({"_id": case_id}, {"_id": case_id, **body})
             except PyMongoError as exc:

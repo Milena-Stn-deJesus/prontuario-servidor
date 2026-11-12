@@ -1772,6 +1772,16 @@ window.apiLogin = function(email, senha){
   });
 };
 window.apiLogout = function(){
+  /* Correção de segurança: antes, "sair" só apagava o token guardado no
+     navegador — o token continuava válido no servidor por até 8h. Agora
+     avisamos o servidor para invalidar o token de verdade (fire-and-forget:
+     mesmo se essa chamada falhar, por exemplo sem internet no momento, o
+     navegador já esquece o token local de qualquer forma). */
+  if(window.apiToken){
+    fetch(window.API_BASE + '/api/logout', {
+      method:'POST', headers:_apiAuthHeaders()
+    }).catch(function(){});
+  }
   window.apiToken = null;
   try{ sessionStorage.removeItem('prontuario_token'); }catch(e){}
 };
@@ -2539,64 +2549,19 @@ route();
     return formatToday()+' '+pad(d.getHours())+'h'+pad(d.getMinutes());
   }
 
-  /* DADOS DE DEMONSTRAÇÃO DOS CASOS */
-  const CASOS_SEED = {
-    'case-1': {
-      paciente:'Maria Fernanda Alves', estudante:'Ana Beatriz Lima', supervisor:'Dra. Patrícia Novaes', status:'Ativo', abertura:'14/08/2026',
-      anamnese:{
-        queixa:'Paciente relatou, na triagem, episódios recorrentes de ansiedade e dificuldade de concentração nos últimos seis meses, associados à rotina acadêmica.',
-        historico:'Sem acompanhamento psicológico prévio. Nega uso de medicação psiquiátrica atual.',
-        medicamentos:'Nenhum em uso no momento.',
-        contexto:'Reside com os pais; cursa o ensino superior; relata boa rede de apoio familiar.',
-        hipoteses:'Hipótese inicial de quadro ansioso relacionado a estressores acadêmicos. Plano: acompanhamento quinzenal com foco em técnicas de manejo da ansiedade.',
-        autor:'Ana Beatriz Lima', data:'20/08/2026'
-      },
-      evolucoes:[
-        {tipo:'atendimento', conteudo:'Primeiro atendimento. Paciente compareceu pontualmente, relatou melhora discreta na qualidade do sono. Trabalhadas técnicas de respiração.', tags:['ansiedade','psicoeducação'], autor:'Ana Beatriz Lima', papel:'Estudante', data:'28/08/2026 14h00'},
-        {tipo:'atendimento', conteudo:'Paciente relata redução da frequência de crises de ansiedade. Mantido plano terapêutico. Orientações sobre rotina de estudos.', tags:['ansiedade'], autor:'Ana Beatriz Lima', papel:'Estudante', data:'11/09/2026 14h00'}
-      ],
-      documentos:[
-        {nome:'Encaminhamento - Ambulatório.pdf', autor:'Fernando Ricci', data:'15/08/2026'}
-      ],
-      agendamentos:[
-        {data:'18/11/2026', hora:'14h00', local:'Atendimento presencial — Clínica-Escola, sala 3', status:'Confirmada'}
-      ]
-    },
-    'case-2': {
-      paciente:'Carlos Eduardo Mendes', estudante:'Ana Beatriz Lima', supervisor:'Dra. Patrícia Novaes', status:'Encerrado', abertura:'02/06/2026',
-      anamnese:{
-        queixa:'Paciente buscou atendimento após período de luto, relatando tristeza persistente e isolamento social.',
-        historico:'Acompanhamento psicológico breve há dois anos, sem uso de medicação.',
-        medicamentos:'Nenhum.',
-        contexto:'Mora sozinho; trabalha em período integral; rede de apoio reduzida.',
-        hipoteses:'Hipótese de luto não complicado. Plano: suporte psicoterápico breve com foco no processo de elaboração.',
-        autor:'Ana Beatriz Lima', data:'10/06/2026'
-      },
-      evolucoes:[
-        {tipo:'atendimento', conteudo:'Paciente relata melhora progressiva do humor e retomada de atividades sociais.', tags:['luto'], autor:'Ana Beatriz Lima', papel:'Estudante', data:'02/09/2026 10h00'},
-        {tipo:'retificacao', conteudo:'Retificação: correção da data registrada na evolução anterior, mantido o conteúdo original sem alterações clínicas.', tags:[], autor:'Dra. Patrícia Novaes', papel:'Supervisor', data:'03/09/2026 09h00'},
-        {tipo:'contato', conteudo:'Contato telefônico de encerramento. Paciente relata estar bem e não identifica necessidade de continuidade no momento.', tags:[], autor:'Ana Beatriz Lima', papel:'Estudante', data:'30/10/2026 11h00'}
-      ],
-      documentos:[],
-      agendamentos:[
-        {data:'30/10/2026', hora:'11h00', local:'Atendimento presencial — Clínica-Escola, sala 2', status:'Concluída'}
-      ]
-    },
-    'case-3': {
-      paciente:'Juliana Ferreira Costa', estudante:'Rafael Augusto Pires', supervisor:'Dr. Henrique Lacerda', status:'Ativo', abertura:'05/11/2026',
-      anamnese:null, evolucoes:[], documentos:[],
-      agendamentos:[
-        {data:'20/11/2026', hora:'09h30', local:'Atendimento presencial — Clínica-Escola, sala 1', status:'Confirmada'}
-      ]
-    },
-    'case-4': {
-      paciente:'Pedro Henrique Souza', estudante:'Rafael Augusto Pires', supervisor:'Dr. Henrique Lacerda', status:'Ativo', abertura:'03/11/2026',
-      anamnese:null, evolucoes:[], documentos:[],
-      agendamentos:[
-        {data:'21/11/2026', hora:'16h00', local:'Atendimento on-line — Google Meet', status:'Confirmada'}
-      ]
-    }
-  };
+  /* Correção de segurança (achado da auditoria): antes, os dados clínicos
+     completos dos 4 pacientes de demonstração (anamnese, evoluções/notas de
+     sessão) ficavam escritos aqui mesmo, direto no código-fonte da página —
+     e essa página é servida por GET / sem exigir login nenhum. Ou seja,
+     qualquer visitante, sem entrar com conta nenhuma, conseguia abrir
+     "Ver código-fonte" no navegador e ler o conteúdo clínico de todos os
+     casos. Isso foi substituído por um objeto vazio: os dados de verdade
+     (reais ou de demonstração) só chegam depois do login, pela API
+     autenticada (GET /api/casos), exatamente como a tela já fazia na
+     prática — este objeto nunca era mais do que um estado "antes do
+     servidor responder", então removê-lo daqui não muda nada do que já
+     funciona depois do login. */
+  const CASOS_SEED = {};
   /* PERSISTÊNCIA NO SERVIDOR — os casos (agenda, evoluções, documentos, anamnese, novos pacientes)
      vivem no arquivo data/casos.json, do lado do servidor (server.py). O navegador busca uma cópia
      ao carregar a página e manda cada alteração de volta para o servidor gravar no arquivo — é isso
