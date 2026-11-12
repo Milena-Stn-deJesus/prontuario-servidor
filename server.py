@@ -18,12 +18,18 @@ O QUE ESSE ARQUIVO FAZ:
     POST /api/reagendamentos        -> cria um novo pedido (paciente pede para reagendar)
     PUT  /api/reagendamentos/<id>   -> confirma uma nova data (equipe escolhe a data;
                                         dispara o e-mail de confirmação para o paciente)
+    POST /api/login                 -> autentica e devolve um token de sessão
+    POST /api/recuperar-senha       -> recebe um e-mail, gera uma senha temporária
+                                        de verdade e a envia por e-mail (nunca na
+                                        resposta HTTP); resposta sempre genérica,
+                                        exista ou não o e-mail na base
 
-ENVIO DE E-MAIL (confirmação de reagendamento):
-    Quando a equipe confirma uma nova data, o servidor manda um e-mail de verdade
-    para o paciente — mas só se as variáveis de ambiente abaixo estiverem
-    configuradas (senão, o pedido é confirmado normalmente no sistema, só o
-    e-mail em si não sai, e isso fica registrado no log do servidor):
+ENVIO DE E-MAIL (confirmação de reagendamento e recuperação de senha):
+    Em ambos os casos, o servidor manda um e-mail de verdade — mas só se as
+    variáveis de ambiente abaixo estiverem configuradas (senão, a ação em si
+    é concluída normalmente no sistema — reagendamento confirmado, senha
+    redefinida — só o e-mail não sai, e isso fica registrado no log do
+    servidor):
 
         SMTP_HOST   -> endereço do servidor de e-mail (ex.: smtp.gmail.com)
         SMTP_PORT   -> porta (opcional, padrão 587)
@@ -171,6 +177,32 @@ def _enviar_confirmacao_reagendamento(destinatario, nome_paciente, nova_data):
     ) % (nome_paciente or "paciente", nova_data)
     return _enviar_email(destinatario, assunto, corpo)
 
+
+def _enviar_senha_temporaria(destinatario, nome, senha_temporaria):
+    assunto = "Prontuário Eletrônico — nova senha de acesso"
+    corpo = (
+        "Olá, %s!\n\n"
+        "Recebemos um pedido de redefinição de senha para sua conta.\n\n"
+        "Sua nova senha temporária é: %s\n\n"
+        "Use-a para entrar e, por segurança, recomendamos trocá-la depois do login.\n\n"
+        "Se você não pediu essa redefinição, ignore este e-mail — sua senha "
+        "antiga deixou de funcionar, então pode ser que outra pessoa tenha "
+        "tentado acessar sua conta; avise a equipe da Clínica-Escola.\n\n"
+        "Este é um e-mail automático — não é necessário responder."
+    ) % (nome or "usuário(a)", senha_temporaria)
+    return _enviar_email(destinatario, assunto, corpo)
+
+
+def _gerar_senha_temporaria():
+    """Gera uma senha temporária aleatória seguindo as mesmas regras exibidas
+    na tela de 'criar nova senha' (maiúscula, número, caractere especial,
+    pelo menos 6 caracteres) — para que, ao entrar, trocar a senha não seja
+    obrigatório parecer "menos segura" que o próprio requisito do site."""
+    alfabeto = "abcdefghjkmnpqrstuvwxyz23456789"
+    especiais = "!@#$%*?"
+    corpo = "".join(secrets.choice(alfabeto) for _ in range(6))
+    return corpo[:3].upper() + corpo[3:] + str(secrets.randbelow(10)) + secrets.choice(especiais)
+
 # ---------------------------------------------------------------------------
 # Autenticação e autorização
 #
@@ -232,6 +264,13 @@ SESSAO_DURACAO_SEGUNDOS = 8 * 60 * 60  # 8 horas
 TENTATIVAS_LOGIN = {}
 MAX_TENTATIVAS = 6
 BLOQUEIO_SEGUNDOS = 5 * 60  # 5 minutos
+
+# Limite de pedidos de recuperação de senha por e-mail, pra dificultar que
+# alguém use essa rota pra descobrir quais e-mails têm conta ou pra floodar
+# a caixa de entrada de alguém. email -> {"pedidos": int, "bloqueado_ate": timestamp|None}
+TENTATIVAS_RECUPERACAO = {}
+MAX_PEDIDOS_RECUPERACAO = 3
+BLOQUEIO_RECUPERACAO_SEGUNDOS = 10 * 60  # 10 minutos
 
 PAPEIS_CASOS = {"tecnico", "supervisor", "estudante"}
 PAPEIS_SOLICITACOES_LEITURA = {"tecnico", "supervisor"}
@@ -484,6 +523,64 @@ class Handler(BaseHTTPRequestHandler):
                 "criado_em": agora,
             }
             self._send_json({"token": token, "role": conta["role"], "nome": conta["nome"]})
+            return
+
+        if path == "/api/recuperar-senha":
+            # Recuperação de senha de verdade: antes, a tela de "esqueci minha
+            # senha" só verificava CPF/RA + data de nascimento no navegador
+            # (nenhuma chamada ao servidor) e revelava, no próprio site, qual
+            # era a senha "redefinida" (o CPF ou o RA) — e a dica de CPF/RA de
+            # demonstração ficava exposta na tela de login para qualquer
+            # visitante ver. Esta rota substitui isso por uma redefinição
+            # real no servidor: recebe só o e-mail, gera uma senha temporária
+            # aleatória, grava o novo hash em CONTAS e manda a senha por
+            # e-mail (nunca na resposta HTTP). A resposta é sempre a mesma
+            # (200, {"ok": true}), exista ou não o e-mail, para não revelar
+            # quais contas existem.
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+
+            email = str(body.get("email", "")).strip().lower()
+            if not email or not EMAIL_REGEX.match(email):
+                self._send_error_json(400, "informe um e-mail válido")
+                return
+
+            agora = time.time()
+            tentativa = TENTATIVAS_RECUPERACAO.get(email)
+            if tentativa and tentativa.get("bloqueado_ate") and agora < tentativa["bloqueado_ate"]:
+                # Mesmo bloqueada, a resposta não diz isso ao navegador — só
+                # registramos no servidor e respondemos como sempre, para não
+                # dar pista de que esse e-mail existe e está sendo testado.
+                print("[recuperar-senha] %s bloqueado por excesso de pedidos" % email)
+                self._send_json({"ok": True, "email_enviado": False})
+                return
+
+            t = TENTATIVAS_RECUPERACAO.setdefault(email, {"pedidos": 0, "bloqueado_ate": None})
+            t["pedidos"] += 1
+            if t["pedidos"] >= MAX_PEDIDOS_RECUPERACAO:
+                t["bloqueado_ate"] = agora + BLOQUEIO_RECUPERACAO_SEGUNDOS
+                t["pedidos"] = 0
+
+            conta = CONTAS.get(email)
+            email_enviado = False
+            if conta:
+                nova_senha = _gerar_senha_temporaria()
+                conta["senha_hash"] = _hash_senha(nova_senha)
+                SESSOES_PARA_REMOVER = [tok for tok, s in SESSOES.items() if s.get("email") == email]
+                for tok in SESSOES_PARA_REMOVER:
+                    SESSOES.pop(tok, None)
+                email_enviado = _enviar_senha_temporaria(email, conta["nome"], nova_senha)
+                print(
+                    "[recuperar-senha] senha redefinida para %s (e-mail %s)"
+                    % (email, "enviado" if email_enviado else "NÃO enviado — SMTP não configurado")
+                )
+            else:
+                print("[recuperar-senha] pedido para e-mail não cadastrado: %s" % email)
+
+            self._send_json({"ok": True, "email_enviado": email_enviado})
             return
 
         if path == "/api/casos":

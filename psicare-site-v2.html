@@ -970,7 +970,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         <p class="lead">Para informações sobre atendimento ou para solicitar acesso ao seu prontuário, entre em contato com a equipe da Clínica-Escola de Psicologia da Santa Casa de São Paulo.</p>
       </div>
       <div class="contact-cards">
-        <div class="cc"><span class="ic"><svg><use href="#i-pin"/></svg></span><div><b>Endereço</b><span data-contato="endereco">R. Jesuíno Pascoal, 121 — Consolação, São Paulo – SP, CEP 01224-050</span></div></div>
+        <div class="cc"><span class="ic"><svg><use href="#i-pin"/></svg></span><div><b>Endereço</b><span data-contato="endereco">Av. Dr. Abraão Ribeiro, 283 — Barra Funda, São Paulo – SP, CEP 01133-020</span></div></div>
         <div class="cc"><span class="ic"><svg><use href="#i-phone"/></svg></span><div><b>Telefone</b><span data-contato="telefone">(11) 3466-2500 / (11) 3466-2502</span></div></div>
         <div class="cc"><span class="ic"><svg><use href="#i-cal"/></svg></span><div><b>Horário</b><span data-contato="horario">Segunda a sexta-feira, das 7h00 às 17h00</span></div></div>
         <div class="cc"><span class="ic"><svg><use href="#i-mail"/></svg></span><div><b>E-mail</b><span data-contato="email">Em breve</span></div></div>
@@ -1275,35 +1275,26 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         <a href="javascript:void(0)" class="auth-back" id="pac-forgot-back"><svg><use href="#i-arrow"/></svg>Voltar para o login</a>
         <span class="eyebrow">Recuperar acesso</span>
         <h2>Esqueci minha senha</h2>
-        <p class="lead">Informe seu CPF e sua data de nascimento para redefinir sua senha.</p>
+        <p class="lead">Informe o e-mail da sua conta. Se ele estiver cadastrado, enviaremos uma nova senha para esse endereço.</p>
         <form id="pac-forgot-form" novalidate>
           <div class="fld">
-            <label for="pac-cpf">CPF</label>
+            <label for="pac-forgot-email">E-mail</label>
             <div class="fld-box">
               <svg><use href="#i-user"/></svg>
-              <input type="text" id="pac-cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14">
+              <input type="email" id="pac-forgot-email" autocomplete="email" placeholder="seu@email.com">
             </div>
-            <span class="fld-err" id="pac-cpf-err"></span>
+            <span class="fld-err" id="pac-forgot-email-err"></span>
           </div>
-          <div class="fld">
-            <label for="pac-nasc">Data de nascimento</label>
-            <div class="fld-box">
-              <svg><use href="#i-cal"/></svg>
-              <input type="date" id="pac-nasc">
-            </div>
-            <span class="fld-err" id="pac-nasc-err"></span>
-          </div>
-          <span class="fld-err auth-form-err" id="pac-forgot-err">CPF ou data de nascimento não encontrados.</span>
+          <span class="fld-err auth-form-err" id="pac-forgot-err"></span>
           <button type="submit" class="btn btn-primary auth-submit">Solicitar redefinição<svg><use href="#i-arrow"/></svg></button>
         </form>
-        <p class="auth-demo">Ambiente de demonstração — use CPF <b>111.222.333-44</b> e nascimento <b>01/01/1990</b></p>
       </div>
 
       <div class="auth-card auth-success" id="pac-forgot-sent" hidden>
         <span class="auth-check"><svg><use href="#i-shield"/></svg></span>
-        <h2>Senha redefinida</h2>
-        <p class="lead">Sua senha foi redefinida para o número do seu CPF — use-a para entrar novamente.</p>
-        <p class="auth-demo">Ambiente de demonstração — numa versão real, essa redefinição passaria por uma verificação mais forte (feita pela equipe da Clínica-Escola), em vez de só CPF e data de nascimento.</p>
+        <h2>Verifique seu e-mail</h2>
+        <p class="lead">Se o e-mail informado estiver cadastrado, uma nova senha foi enviada para ele. Use-a para entrar novamente.</p>
+        <p class="auth-demo" id="pac-forgot-sent-note" hidden>O envio de e-mails ainda não está configurado neste ambiente de demonstração — peça à equipe da Clínica-Escola para configurar o SMTP para que o e-mail seja entregue de fato.</p>
         <a href="javascript:void(0)" class="btn btn-primary auth-submit" id="pac-forgot-sent-back">Voltar para o login</a>
       </div>
 
@@ -1415,28 +1406,19 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         <a href="javascript:void(0)" class="auth-back" id="eq-forgot-back"><svg><use href="#i-arrow"/></svg>Voltar para o login</a>
         <span class="eyebrow">Recuperar acesso</span>
         <h2>Esqueci minha senha</h2>
-        <p class="lead">Informe seu RA (registro acadêmico/institucional) e sua data de nascimento para redefinir sua senha.</p>
+        <p class="lead">Informe o e-mail da sua conta institucional. Se ele estiver cadastrado, enviaremos uma nova senha para esse endereço.</p>
         <form id="eq-forgot-form" novalidate>
           <div class="fld">
-            <label for="eq-ra">RA</label>
+            <label for="eq-forgot-email">E-mail</label>
             <div class="fld-box">
               <svg><use href="#i-user"/></svg>
-              <input type="text" id="eq-ra" inputmode="numeric" placeholder="000000000" maxlength="12">
+              <input type="email" id="eq-forgot-email" autocomplete="email" placeholder="seu@email.com">
             </div>
-            <span class="fld-err" id="eq-ra-err"></span>
+            <span class="fld-err" id="eq-forgot-email-err"></span>
           </div>
-          <div class="fld">
-            <label for="eq-nasc">Data de nascimento</label>
-            <div class="fld-box">
-              <svg><use href="#i-cal"/></svg>
-              <input type="date" id="eq-nasc">
-            </div>
-            <span class="fld-err" id="eq-nasc-err"></span>
-          </div>
-          <span class="fld-err auth-form-err" id="eq-forgot-err">RA ou data de nascimento não encontrados.</span>
+          <span class="fld-err auth-form-err" id="eq-forgot-err"></span>
           <button type="submit" class="btn btn-primary auth-submit">Solicitar redefinição<svg><use href="#i-arrow"/></svg></button>
         </form>
-        <p class="auth-demo">Ambiente de demonstração — use RA <b>202601234</b> e nascimento <b>20/05/2001</b></p>
       </div>
     </div>
   </div>
@@ -1449,9 +1431,9 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     <div class="auth-wrap">
       <div class="auth-card auth-success">
         <span class="auth-check"><svg><use href="#i-shield"/></svg></span>
-        <h2>Senha redefinida</h2>
-        <p class="lead">Sua senha foi redefinida para o número do seu RA — use-a para entrar novamente.</p>
-        <p class="auth-demo">Ambiente de demonstração — numa versão real, essa redefinição passaria por uma verificação mais forte (feita pela equipe da Clínica-Escola), em vez de só RA e data de nascimento.</p>
+        <h2>Verifique seu e-mail</h2>
+        <p class="lead">Se o e-mail informado estiver cadastrado, uma nova senha foi enviada para ele. Use-a para entrar novamente.</p>
+        <p class="auth-demo" id="eq-forgot-sent-note" hidden>O envio de e-mails ainda não está configurado neste ambiente de demonstração — peça à equipe da Clínica-Escola para configurar o SMTP para que o e-mail seja entregue de fato.</p>
         <a href="javascript:void(0)" class="btn btn-primary auth-submit" id="eq-forgot-sent-back">Voltar para o login</a>
       </div>
     </div>
@@ -1832,6 +1814,16 @@ window.apiConfirmarReagendamento = function(reqId, novaData){
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nova_data: novaData})
   });
 };
+/* Recuperação de senha por e-mail: a resposta é propositalmente a mesma
+   (200, {ok:true}) exista ou não o e-mail na base — isso evita que alguém
+   descubra, por tentativa e erro, quais e-mails têm conta. "email_enviado"
+   indica apenas se o servidor tem SMTP configurado (útil só para mostrar o
+   aviso de ambiente de demonstração). */
+window.apiSolicitarRecuperacaoSenha = function(email){
+  return _apiFetch('/api/recuperar-senha', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email: email})
+  });
+};
 /* Mostra um aviso discreto no topo da página se o servidor local não responder
    (ex: a pessoa esqueceu de rodar "python3 server.py" antes de abrir a página). */
 window.showServerOfflineBanner = function(){
@@ -2118,16 +2110,14 @@ route();
   const forgotBack=document.getElementById('pac-forgot-back');
   const forgotSentBack=document.getElementById('pac-forgot-sent-back');
   const forgotForm=document.getElementById('pac-forgot-form');
-  const cpfInput=document.getElementById('pac-cpf');
-  const nascInput=document.getElementById('pac-nasc');
-  const cpfErr=document.getElementById('pac-cpf-err');
-  const nascErr=document.getElementById('pac-nasc-err');
+  const forgotEmailInput=document.getElementById('pac-forgot-email');
+  const forgotEmailErr=document.getElementById('pac-forgot-email-err');
   const forgotErr=document.getElementById('pac-forgot-err');
+  const forgotSentNote=document.getElementById('pac-forgot-sent-note');
 
   function resetForgotForm(){
     forgotForm.reset();
-    setFieldError(cpfInput, cpfErr, '');
-    setFieldError(nascInput, nascErr, '');
+    setFieldError(forgotEmailInput, forgotEmailErr, '');
     forgotErr.classList.remove('show');
   }
 
@@ -2135,30 +2125,28 @@ route();
   forgotBack.addEventListener('click', ()=>{ showCard('login'); resetForgotForm(); });
   forgotSentBack.addEventListener('click', ()=> showCard('login'));
 
-  cpfInput.addEventListener('input', ()=>{
-    let v = cpfInput.value.replace(/\D/g,'').slice(0,11);
-    if(v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-    else if(v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    else if(v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-    cpfInput.value = v;
-  });
-
   forgotForm.addEventListener('submit', (e)=>{
     e.preventDefault();
     forgotErr.classList.remove('show');
-    let ok = true;
-    const cpfVal = cpfInput.value.replace(/\D/g,'');
-    const nascVal = nascInput.value;
-    if(cpfVal.length !== 11){ setFieldError(cpfInput, cpfErr, 'Informe um CPF válido.'); ok=false; }
-    else setFieldError(cpfInput, cpfErr, '');
-    if(!nascVal){ setFieldError(nascInput, nascErr, 'Informe a data de nascimento.'); ok=false; }
-    else setFieldError(nascInput, nascErr, '');
-    if(!ok) return;
-    if(cpfVal==='11122233344' && nascVal==='1990-01-01'){
-      showCard('forgotSent');
-    } else {
-      forgotErr.classList.add('show');
+    const emailVal = forgotEmailInput.value.trim();
+    if(!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){
+      setFieldError(forgotEmailInput, forgotEmailErr, 'Informe um e-mail válido.');
+      return;
     }
+    setFieldError(forgotEmailInput, forgotEmailErr, '');
+    const btn = forgotForm.querySelector('button[type="submit"]');
+    if(btn) btn.disabled = true;
+    window.apiSolicitarRecuperacaoSenha(emailVal).then(function(data){
+      if(forgotSentNote) forgotSentNote.hidden = !!(data && data.email_enviado);
+      showCard('forgotSent');
+    }).catch(function(){
+      // Mesmo em erro inesperado, não revelamos se o e-mail existe ou não —
+      // mostramos a mesma tela genérica de confirmação.
+      if(forgotSentNote) forgotSentNote.hidden = false;
+      showCard('forgotSent');
+    }).then(function(){
+      if(btn) btn.disabled = false;
+    });
   });
 
   /* PRIMEIRO ACESSO — NOVA SENHA */
@@ -3438,7 +3426,7 @@ route();
       doc.setFont('helvetica','bold');
       doc.text('Faculdade de Ciências Médicas da Santa Casa de São Paulo', mx, pageH-27);
       doc.setFont('helvetica','normal');
-      doc.text('R. Jesuíno Pascoal, 121 — Consolação, São Paulo – SP, CEP 01224-050', mx, pageH-15);
+      doc.text('Av. Dr. Abraão Ribeiro, 283 — Barra Funda, São Paulo – SP, CEP 01133-020', mx, pageH-15);
       doc.text('Pág. '+page, pageW-mx, pageH-15, {align:'right'});
     }
 
@@ -3719,21 +3707,19 @@ route();
     });
   });
 
-  /* ESQUECI MINHA SENHA — EQUIPE (RA + data de nascimento) */
+  /* ESQUECI MINHA SENHA — EQUIPE (e-mail institucional) */
   const eqForgotLink = document.getElementById('eq-forgot-link');
   const eqForgotBack = document.getElementById('eq-forgot-back');
   const eqForgotSentBack = document.getElementById('eq-forgot-sent-back');
   const eqForgotForm = document.getElementById('eq-forgot-form');
-  const eqRaInput = document.getElementById('eq-ra');
-  const eqNascInput = document.getElementById('eq-nasc');
-  const eqRaErr = document.getElementById('eq-ra-err');
-  const eqNascErr = document.getElementById('eq-nasc-err');
+  const eqForgotEmailInput = document.getElementById('eq-forgot-email');
+  const eqForgotEmailErr = document.getElementById('eq-forgot-email-err');
   const eqForgotErr = document.getElementById('eq-forgot-err');
+  const eqForgotSentNote = document.getElementById('eq-forgot-sent-note');
 
   function resetEqForgotForm(){
     if(eqForgotForm) eqForgotForm.reset();
-    if(eqRaInput) setFieldError(eqRaInput, eqRaErr, '');
-    if(eqNascInput) setFieldError(eqNascInput, eqNascErr, '');
+    if(eqForgotEmailInput) setFieldError(eqForgotEmailInput, eqForgotEmailErr, '');
     if(eqForgotErr) eqForgotErr.classList.remove('show');
   }
 
@@ -3741,29 +3727,27 @@ route();
   if(eqForgotBack) eqForgotBack.addEventListener('click', ()=>{ showCard('login'); resetEqForgotForm(); });
   if(eqForgotSentBack) eqForgotSentBack.addEventListener('click', ()=> showCard('login'));
 
-  if(eqRaInput){
-    eqRaInput.addEventListener('input', ()=>{
-      eqRaInput.value = eqRaInput.value.replace(/\D/g,'').slice(0,12);
-    });
-  }
-
   if(eqForgotForm){
     eqForgotForm.addEventListener('submit', (e)=>{
       e.preventDefault();
       if(eqForgotErr) eqForgotErr.classList.remove('show');
-      let ok = true;
-      const raVal = eqRaInput.value.replace(/\D/g,'');
-      const nascVal = eqNascInput.value;
-      if(raVal.length < 6){ setFieldError(eqRaInput, eqRaErr, 'Informe um RA válido.'); ok=false; }
-      else setFieldError(eqRaInput, eqRaErr, '');
-      if(!nascVal){ setFieldError(eqNascInput, eqNascErr, 'Informe a data de nascimento.'); ok=false; }
-      else setFieldError(eqNascInput, eqNascErr, '');
-      if(!ok) return;
-      if(raVal==='202601234' && nascVal==='2001-05-20'){
-        showCard('forgotSent');
-      } else if(eqForgotErr){
-        eqForgotErr.classList.add('show');
+      const emailVal = eqForgotEmailInput.value.trim();
+      if(!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){
+        setFieldError(eqForgotEmailInput, eqForgotEmailErr, 'Informe um e-mail válido.');
+        return;
       }
+      setFieldError(eqForgotEmailInput, eqForgotEmailErr, '');
+      const btn = eqForgotForm.querySelector('button[type="submit"]');
+      if(btn) btn.disabled = true;
+      window.apiSolicitarRecuperacaoSenha(emailVal).then(function(data){
+        if(eqForgotSentNote) eqForgotSentNote.hidden = !!(data && data.email_enviado);
+        showCard('forgotSent');
+      }).catch(function(){
+        if(eqForgotSentNote) eqForgotSentNote.hidden = false;
+        showCard('forgotSent');
+      }).then(function(){
+        if(btn) btn.disabled = false;
+      });
     });
   }
 
