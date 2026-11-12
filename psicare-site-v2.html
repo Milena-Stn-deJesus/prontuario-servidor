@@ -2605,6 +2605,13 @@ route();
   const casosReady = window.apiGetCasos().then(function(data){
     CASOS = data;
   }).catch(function(err){
+    if(err && err.status === 401){
+      /* Esperado: /api/casos exige login da equipe, e essa busca roda antes
+         de qualquer login (igual ao caso de solicitacoesReady). Não é o
+         servidor fora do ar — só ainda não há sessão. */
+      console.info('Casos ainda não carregados: aguardando login da equipe.');
+      return;
+    }
     console.warn('Não foi possível carregar casos do servidor:', err);
     window.showServerOfflineBanner();
   });
