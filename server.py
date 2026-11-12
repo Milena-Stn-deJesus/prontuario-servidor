@@ -20,6 +20,14 @@ O QUE ESSE ARQUIVO FAZ:
     POST /api/reagendamentos        -> cria um novo pedido (paciente pede para reagendar)
     PUT  /api/reagendamentos/<id>   -> confirma uma nova data (equipe escolhe a data;
                                         dispara o e-mail de confirmação para o paciente)
+    GET  /api/meu-caso              -> (só paciente) status e próxima consulta do PRÓPRIO
+                                        caso, sem nenhum conteúdo clínico
+    GET  /api/minhas-solicitacoes   -> (só paciente) as PRÓPRIAS solicitações de prontuário,
+                                        com o status real (pendente/liberado)
+    GET  /api/meu-prontuario        -> (só paciente) o prontuário completo do PRÓPRIO caso,
+                                        só quando existe uma solicitação já liberada pela
+                                        equipe (senão, 403 — a liberação é checada aqui,
+                                        no servidor, não só escondendo o botão na tela)
     POST /api/login                 -> autentica e devolve um token de sessão
     POST /api/logout                -> invalida o token de sessão atual no servidor
     POST /api/recuperar-senha       -> recebe um e-mail, gera uma senha temporária
@@ -455,6 +463,64 @@ def _validar_imutabilidade_clinica(caso_atual, body):
     return None
 
 
+def _hoje_br():
+    return time.strftime("%d/%m/%Y")
+
+
+def _parse_data_br(valor):
+    """Converte 'DD/MM/AAAA' em (ano, mes, dia) para poder ordenar/comparar
+    datas. Devolve None se o valor não bater com esse formato (ex.: vazio ou
+    mal formatado) — quem usa isso deve tratar o None, nunca presumir uma
+    data que o campo não tem de verdade."""
+    if not valor or not isinstance(valor, str):
+        return None
+    m = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", valor.strip())
+    if not m:
+        return None
+    dia, mes, ano = (int(x) for x in m.groups())
+    return (ano, mes, dia)
+
+
+def _proxima_consulta(caso):
+    """Escolhe, entre os agendamentos do caso, o próximo a acontecer (o de
+    data mais próxima que ainda não passou; se nenhum estiver no futuro,
+    devolve o mais recente, para não esconder informação de quem já tem
+    caso encerrado). Devolve só os campos que o paciente já vê hoje na
+    própria tela (data, hora, local, status) — nenhum dado clínico."""
+    agendamentos = caso.get("agendamentos") or []
+    hoje = _parse_data_br(_hoje_br())
+    futuros = []
+    for ag in agendamentos:
+        chave = _parse_data_br(ag.get("data", ""))
+        if chave is not None:
+            futuros.append((chave, ag))
+    if not futuros:
+        return None
+    futuros.sort(key=lambda par: par[0])
+    proximos = [ag for chave, ag in futuros if hoje is None or chave >= hoje]
+    escolhido = proximos[0] if proximos else futuros[-1][1]
+    return {
+        "data": escolhido.get("data", ""),
+        "hora": escolhido.get("hora", ""),
+        "local": escolhido.get("local", ""),
+        "status": escolhido.get("status", ""),
+    }
+
+
+def _encontrar_caso_do_paciente(nome_paciente):
+    """Acha o caso deste paciente (pelo nome da própria sessão, nunca por um
+    id que o navegador possa mandar). Se houver mais de um, prioriza um caso
+    'Ativo'; não deveria haver mais de um caso ativo por paciente no
+    serviço-escola, mas se houver, pega o primeiro encontrado."""
+    candidatos = list(casos_col.find({"paciente": nome_paciente}))
+    if not candidatos:
+        return None
+    for c in candidatos:
+        if c.get("status") == "Ativo":
+            return c
+    return candidatos[0]
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "ProntuarioServerMongo/1.0"
 
@@ -617,6 +683,99 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "GET /api/reagendamentos")
                 return
             self._send_json(fila)
+            return
+
+        if path == "/api/meu-caso":
+            # Correção de bug: a tela do paciente decidia "Ativo"/"Encerrado"
+            # fixo pelo e-mail de login (resquício de dado de exemplo), em
+            # vez de consultar o status real do caso no banco. Esta rota
+            # devolve só o que o paciente precisa ver sobre o PRÓPRIO caso —
+            # status, quando mudou pela última vez, e a próxima consulta —
+            # nunca anamnese, evolução ou documento.
+            sessao = self._exigir_papel({"paciente"})
+            if sessao is None:
+                return
+            try:
+                caso = _encontrar_caso_do_paciente(sessao["nome"])
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/meu-caso")
+                return
+            if caso is None:
+                self._send_json({"tem_caso": False})
+                return
+            resposta = {
+                "tem_caso": True,
+                "status": caso.get("status", ""),
+                "status_atualizado_em": caso.get("status_atualizado_em", ""),
+                "proxima_consulta": _proxima_consulta(caso) if caso.get("status") == "Ativo" else None,
+            }
+            _registrar_auditoria(sessao, "consulta do próprio status de caso", caso_id=caso.get("_id"))
+            self._send_json(resposta)
+            return
+
+        if path == "/api/minhas-solicitacoes":
+            # O paciente só vê as PRÓPRIAS solicitações (filtrado pelo nome da
+            # sessão autenticada, não por um id que o navegador possa mandar)
+            # — antes, não existia nenhuma forma de o paciente consultar o
+            # status real de um pedido já feito; a tela só mostrava o que
+            # tinha ficado salvo localmente no próprio navegador no momento
+            # do pedido, e nunca atualizava depois.
+            sessao = self._exigir_papel({"paciente"})
+            if sessao is None:
+                return
+            try:
+                fila = [
+                    solicitacao_doc_to_json(doc)
+                    for doc in solicitacoes_col.find({"paciente": sessao["nome"]}).sort("_id", 1)
+                ]
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/minhas-solicitacoes")
+                return
+            self._send_json(fila)
+            return
+
+        if path == "/api/meu-prontuario":
+            # Correção de segurança (não só uma conveniência de tela): o
+            # acesso do paciente ao PRÓPRIO prontuário completo só é
+            # concedido aqui, no servidor, quando existe de verdade uma
+            # solicitação liberada pela equipe para este paciente — nunca
+            # só porque a tela escondeu ou mostrou um botão. Sem isso,
+            # qualquer paciente autenticado poderia chamar esta rota
+            # diretamente e baixar o próprio prontuário sem nunca ter sido
+            # liberado por ninguém.
+            sessao = self._exigir_papel({"paciente"})
+            if sessao is None:
+                return
+            try:
+                liberada = solicitacoes_col.find_one(
+                    {"paciente": sessao["nome"], "status": "liberado"}
+                )
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/meu-prontuario (solicitação)")
+                return
+            if not liberada:
+                _registrar_auditoria(
+                    sessao, "tentativa de baixar prontuário sem liberação", resultado="negado"
+                )
+                self._send_error_json(403, "seu prontuário ainda não foi liberado pela equipe")
+                return
+            try:
+                caso = _encontrar_caso_do_paciente(sessao["nome"])
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/meu-prontuario (caso)")
+                return
+            if caso is None:
+                self._send_error_json(404, "nenhum caso encontrado para este paciente")
+                return
+            _registrar_auditoria(
+                sessao,
+                "download do próprio prontuário",
+                caso_id=caso.get("_id"),
+                detalhe="protocolo " + str(liberada.get("protocolo", "")),
+            )
+            resposta = caso_doc_to_json(caso)
+            resposta["protocolo"] = liberada.get("protocolo", "")
+            self._send_json(resposta)
             return
 
         self._send_error_json(404, "rota não encontrada: " + path)
@@ -969,6 +1128,19 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 self._send_error_json(403, "apenas técnico ou supervisor podem encerrar ou reabrir um caso")
                 return
+
+            # Correção de bug (achado pela usuária): a tela do paciente não
+            # lia o status real do caso — ela decidia "Ativo"/"Encerrado"
+            # fixo pelo e-mail de login, resquício de quando o painel do
+            # paciente ainda usava dado de exemplo. Para a tela do paciente
+            # (GET /api/meu-caso, abaixo) poder mostrar a data real do
+            # encerramento, gravamos aqui QUANDO o status muda de verdade —
+            # este campo é controlado só pelo servidor, nunca pelo que a
+            # tela mandar (mesmo padrão já usado para "estudante"/"supervisor").
+            if body.get("status") != caso_atual.get("status"):
+                body["status_atualizado_em"] = _hoje_br()
+            else:
+                body["status_atualizado_em"] = caso_atual.get("status_atualizado_em", "")
 
             # Correção de segurança: antes, quem tinha permissão sobre o caso
             # podia, mandando o PUT diretamente (sem passar pela tela),

@@ -627,6 +627,9 @@ footer{margin-top:120px}
 .dash-record-status p strong{color:var(--ink)}
 #pac-record-btn[hidden]{display:none}
 #pac-record-status[hidden]{display:none}
+#pac-record-download[hidden]{display:none}
+.dash-record-download-msg{font-size:12.5px;color:var(--muted);width:100%;margin:2px 0 0}
+.dash-record-download-msg[hidden]{display:none}
 .dash-help{background:var(--sky);border-radius:16px;padding:24px;height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
 #pac-profile-mini{height:auto}
 .dash-help-head{display:flex;gap:14px}
@@ -1073,11 +1076,11 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
               <span class="dash-badge dash-badge-ok" id="pac-next-status-badge">Confirmada</span>
             </div>
             <div class="dash-next-body" id="pac-next-body">
-              <div class="dash-next-date"><span class="dash-next-day">18</span><span class="dash-next-mon">nov</span></div>
+              <div class="dash-next-date"><span class="dash-next-day" id="pac-next-day">18</span><span class="dash-next-mon" id="pac-next-mon">nov</span></div>
               <div class="dash-next-info">
-                <strong>Quarta-feira, 18 de novembro de 2026</strong>
-                <span><svg><use href="#i-cal"/></svg>14h00</span>
-                <span><svg><use href="#i-pin"/></svg>Atendimento presencial — Clínica-Escola, sala 3</span>
+                <strong id="pac-next-fulldate">Quarta-feira, 18 de novembro de 2026</strong>
+                <span><svg><use href="#i-cal"/></svg><span id="pac-next-hora">14h00</span></span>
+                <span><svg><use href="#i-pin"/></svg><span id="pac-next-local">Atendimento presencial — Clínica-Escola, sala 3</span></span>
               </div>
             </div>
             <div class="dash-next-empty" id="pac-next-empty" hidden>
@@ -1166,8 +1169,10 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             </div>
             <button type="button" class="btn btn-primary" id="pac-record-btn">Solicitar meu prontuário<svg><use href="#i-arrow"/></svg></button>
             <div class="dash-record-status" id="pac-record-status" hidden>
-              <span class="dash-badge dash-badge-pending">Em análise</span>
-              <p><strong>Solicitação enviada</strong> — protocolo <b id="pac-record-protocol"></b>. Você será notificado assim que o acesso for liberado.</p>
+              <span class="dash-badge dash-badge-pending" id="pac-record-badge">Em análise</span>
+              <p id="pac-record-msg"><strong>Solicitação enviada</strong> — protocolo <b id="pac-record-protocol"></b>. Você será notificado assim que o acesso for liberado.</p>
+              <button type="button" class="btn btn-primary" id="pac-record-download" hidden>Baixar prontuário em PDF<svg><use href="#i-arrow"/></svg></button>
+              <p class="dash-record-download-msg" id="pac-record-download-msg" hidden></p>
             </div>
           </div>
 
@@ -1824,6 +1829,26 @@ window.apiConfirmarReagendamento = function(reqId, novaData){
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nova_data: novaData})
   });
 };
+/* Correção de bug: antes, o painel do paciente decidia "Ativo"/"Encerrado"
+   fixo pelo e-mail de login (resquício de quando era tudo dado de exemplo).
+   Esta chamada traz o status REAL do próprio caso, sem nenhum conteúdo
+   clínico. */
+window.apiGetMeuCaso = function(){
+  return _apiFetch('/api/meu-caso');
+};
+/* Permite ao paciente ver o status real das PRÓPRIAS solicitações de
+   prontuário (pendente/liberado) — antes, a tela só mostrava o que tinha
+   ficado salvo localmente no momento do pedido, e nunca sabia se a equipe
+   já tinha liberado o acesso. */
+window.apiGetMinhasSolicitacoes = function(){
+  return _apiFetch('/api/minhas-solicitacoes');
+};
+/* O download do prontuário só é permitido pelo servidor quando existe uma
+   solicitação já liberada para este paciente (ver server.py) — a tela não
+   é o que decide isso, só o que mostra ou esconde o botão. */
+window.apiGetMeuProntuario = function(){
+  return _apiFetch('/api/meu-prontuario');
+};
 /* Recuperação de senha por e-mail: a resposta é propositalmente a mesma
    (200, {ok:true}) exista ou não o e-mail na base — isso evita que alguém
    descubra, por tentativa e erro, quais e-mails têm conta. "email_enviado"
@@ -2083,14 +2108,16 @@ route();
         baseGreeting = 'Bem-vinda de volta, Maria!';
         setGreeting(baseGreeting);
         showCard('success');
-        setCaseActive();
+        refreshMeuCaso();
+        refreshMinhasSolicitacoes();
       } else if(emailLower==='carlos@exemplo.com'){
         baseFirstName = 'Carlos';
         currentPatientFullName = sessao.nome || 'Carlos Eduardo Mendes';
         baseGreeting = 'Olá, Carlos!';
         setGreeting(baseGreeting);
         showCard('success');
-        setCaseClosed('30/10/2026');
+        refreshMeuCaso();
+        refreshMinhasSolicitacoes();
       } else if(emailLower==='novo@exemplo.com'){
         currentPatientFullName = sessao.nome || 'Pedro Henrique Souza';
         showCard('firstAccess');
@@ -2101,7 +2128,8 @@ route();
         baseGreeting = baseFirstName ? ('Bem-vindo(a) de volta, ' + baseFirstName + '!') : 'Bem-vindo(a) de volta!';
         setGreeting(baseGreeting);
         showCard('success');
-        setCaseActive();
+        refreshMeuCaso();
+        refreshMinhasSolicitacoes();
       }
     }).catch(function(err){
       if(err && err.status === 429){
@@ -2210,7 +2238,9 @@ route();
     baseGreeting = 'Bem-vindo, Pedro!';
     setGreeting(baseGreeting);
     showCard('success');
-    setCaseActive();
+    currentPatientFullName = currentPatientFullName || 'Pedro Henrique Souza';
+    refreshMeuCaso();
+    refreshMinhasSolicitacoes();
   });
 
   /* REAGENDAMENTO */
@@ -2263,17 +2293,61 @@ route();
     });
   }
 
-  /* SOLICITAR PRONTUÁRIO */
+  /* SOLICITAR PRONTUÁRIO — e, depois de liberado pela equipe, baixar o PDF.
+     Correção de bug (achado pela usuária): antes, essa tela só mostrava "Em
+     análise" com o que tinha sido salvo localmente no momento do próprio
+     clique — nunca checava se a equipe já tinha liberado o acesso depois.
+     "Liberar" no painel da equipe também não fazia nada visível para o
+     paciente. Agora refreshMinhasSolicitacoes() consulta o status real no
+     servidor (toda vez que a tela do paciente é aberta) e, se já estiver
+     liberado, mostra o botão de baixar — cujo acesso o SERVIDOR confere de
+     novo antes de entregar qualquer dado (ver GET /api/meu-prontuario). */
   const recordBtn=document.getElementById('pac-record-btn');
   const recordStatus=document.getElementById('pac-record-status');
+  const recordBadge=document.getElementById('pac-record-badge');
+  const recordMsg=document.getElementById('pac-record-msg');
   const recordProtocol=document.getElementById('pac-record-protocol');
+  const recordDownloadBtn=document.getElementById('pac-record-download');
+  const recordDownloadMsg=document.getElementById('pac-record-download-msg');
+
+  function mostrarSolicitacaoPendente(protocolo){
+    if(recordBtn) recordBtn.hidden = true;
+    if(recordStatus) recordStatus.hidden = false;
+    if(recordBadge){ recordBadge.textContent='Em análise'; recordBadge.className='dash-badge dash-badge-pending'; }
+    if(recordMsg) recordMsg.innerHTML = '<strong>Solicitação enviada</strong> — protocolo <b id="pac-record-protocol">'+(protocolo||'')+'</b>. Você será notificado assim que o acesso for liberado.';
+    if(recordDownloadBtn) recordDownloadBtn.hidden = true;
+    if(recordDownloadMsg) recordDownloadMsg.hidden = true;
+  }
+  function mostrarSolicitacaoLiberada(protocolo){
+    if(recordBtn) recordBtn.hidden = true;
+    if(recordStatus) recordStatus.hidden = false;
+    if(recordBadge){ recordBadge.textContent='Liberado'; recordBadge.className='dash-badge dash-badge-ok'; }
+    if(recordMsg) recordMsg.innerHTML = '<strong>Solicitação liberada</strong> — protocolo <b>'+(protocolo||'')+'</b>. Seu prontuário já está disponível para download.';
+    if(recordDownloadBtn) recordDownloadBtn.hidden = false;
+    if(recordDownloadMsg){ recordDownloadMsg.hidden = true; recordDownloadMsg.textContent=''; }
+  }
+  function mostrarSemSolicitacao(){
+    if(recordBtn) recordBtn.hidden = false;
+    if(recordStatus) recordStatus.hidden = true;
+  }
+  /* Consulta no servidor as solicitações do PRÓPRIO paciente (GET
+     /api/minhas-solicitacoes) e mostra o estado real — não mais só o que
+     ficou guardado localmente no navegador no momento do pedido. */
+  function refreshMinhasSolicitacoes(){
+    window.apiGetMinhasSolicitacoes().then(function(lista){
+      if(!lista || !lista.length){ mostrarSemSolicitacao(); return; }
+      const ultima = lista[lista.length-1];
+      if(ultima.status === 'liberado') mostrarSolicitacaoLiberada(ultima.protocolo);
+      else mostrarSolicitacaoPendente(ultima.protocolo);
+    }).catch(function(err){
+      console.warn('Não foi possível consultar as solicitações no servidor:', err);
+    });
+  }
   if(recordBtn){
     recordBtn.addEventListener('click', ()=>{
       const n = String(Math.floor(Math.random()*9000)+1000);
       const protocolo = 'PRT-2026-' + n;
-      recordProtocol.textContent = protocolo;
-      recordBtn.hidden = true;
-      recordStatus.hidden = false;
+      mostrarSolicitacaoPendente(protocolo);
       const pedido = {
         paciente: currentPatientFullName || 'Paciente',
         protocolo: protocolo,
@@ -2286,6 +2360,29 @@ route();
       }).catch(function(err){
         console.warn('Não foi possível registrar a solicitação no servidor:', err);
         window.showServerOfflineBanner();
+      });
+    });
+  }
+  if(recordDownloadBtn){
+    recordDownloadBtn.addEventListener('click', function(){
+      recordDownloadBtn.disabled = true;
+      if(recordDownloadMsg){ recordDownloadMsg.hidden = true; recordDownloadMsg.textContent=''; }
+      window.apiGetMeuProntuario().then(function(caso){
+        const protocolo = caso.protocolo || '';
+        const ok = (typeof window.buildProntuarioPdf === 'function') && window.buildProntuarioPdf(caso, protocolo);
+        if(!ok && recordDownloadMsg){
+          recordDownloadMsg.hidden = false;
+          recordDownloadMsg.textContent = 'Não foi possível gerar o PDF agora — tente novamente em instantes.';
+        }
+      }).catch(function(err){
+        if(recordDownloadMsg){
+          recordDownloadMsg.hidden = false;
+          recordDownloadMsg.textContent = (err && err.status === 403)
+            ? 'Seu prontuário ainda não foi liberado pela equipe.'
+            : 'Não foi possível baixar o prontuário agora — tente novamente em instantes.';
+        }
+      }).then(function(){
+        recordDownloadBtn.disabled = false;
       });
     });
   }
@@ -2303,28 +2400,79 @@ route();
   }
   setupCollapse(tipsToggle, tipsBody);
 
-  /* STATUS DO CASO — controla se "Próxima consulta" mostra uma consulta real ou o estado vazio */
+  /* STATUS DO CASO — controla se "Próxima consulta" mostra uma consulta real ou o estado vazio.
+     Correção de bug (achado pela usuária): antes, esta tela decidia "Ativo"/"Encerrado" fixo
+     pelo e-mail de login (resquício de quando o painel do paciente só usava dado de exemplo) —
+     um caso encerrado pelo técnico continuava aparecendo como "Ativo" para o próprio paciente.
+     Agora setCaseActive/setCaseClosed só são chamadas com o que window.apiGetMeuCaso() devolveu
+     de verdade (ver refreshMeuCaso, abaixo). */
   const caseBadge=document.getElementById('pac-case-badge');
   const caseClosedLine=document.getElementById('pac-case-closed-line');
   const nextBody=document.getElementById('pac-next-body');
   const nextEmpty=document.getElementById('pac-next-empty');
   const nextFoot=document.getElementById('pac-next-foot');
   const nextStatusBadge=document.getElementById('pac-next-status-badge');
-  function setCaseActive(){
+  const nextDayEl=document.getElementById('pac-next-day');
+  const nextMonEl=document.getElementById('pac-next-mon');
+  const nextFullDateEl=document.getElementById('pac-next-fulldate');
+  const nextHoraEl=document.getElementById('pac-next-hora');
+  const nextLocalEl=document.getElementById('pac-next-local');
+  const MESES_ABREV=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const MESES_CHEIO=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const DIAS_SEMANA=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  function preencherProximaConsulta(consulta){
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((consulta && consulta.data) || '');
+    if(!m) return false;
+    const dia = parseInt(m[1],10), mes = parseInt(m[2],10), ano = parseInt(m[3],10);
+    const d = new Date(ano, mes-1, dia);
+    if(nextDayEl) nextDayEl.textContent = m[1];
+    if(nextMonEl) nextMonEl.textContent = MESES_ABREV[mes-1] || '';
+    if(nextFullDateEl){
+      const diaSemana = DIAS_SEMANA[d.getDay()] || '';
+      nextFullDateEl.textContent = (diaSemana.charAt(0).toUpperCase()+diaSemana.slice(1)) + ', ' + dia + ' de ' + (MESES_CHEIO[mes-1]||'') + ' de ' + ano;
+    }
+    if(nextHoraEl) nextHoraEl.textContent = consulta.hora || '';
+    if(nextLocalEl) nextLocalEl.textContent = consulta.local || '';
+    if(nextStatusBadge){
+      const statusTxt = consulta.status || '';
+      nextStatusBadge.textContent = statusTxt || 'Confirmada';
+      nextStatusBadge.className = 'dash-badge ' + (statusTxt==='Concluída' ? 'dash-badge-ok' : (statusTxt==='Faltou' ? 'dash-badge-bad' : 'dash-badge-ok'));
+    }
+    return true;
+  }
+  function setCaseActive(proximaConsulta){
     if(caseBadge){ caseBadge.textContent='Ativo'; caseBadge.className='dash-badge dash-badge-ok'; }
     if(caseClosedLine){ caseClosedLine.hidden = true; caseClosedLine.textContent=''; }
-    if(nextBody){ nextBody.hidden = false; }
-    if(nextEmpty){ nextEmpty.hidden = true; }
+    const temConsulta = proximaConsulta ? preencherProximaConsulta(proximaConsulta) : true;
+    if(nextBody){ nextBody.hidden = !temConsulta; }
+    if(nextEmpty){ nextEmpty.hidden = temConsulta; }
     if(nextFoot){ nextFoot.hidden = false; }
     if(nextStatusBadge){ nextStatusBadge.hidden = false; }
   }
   function setCaseClosed(dateStr){
     if(caseBadge){ caseBadge.textContent='Encerrado'; caseBadge.className='dash-badge dash-badge-muted'; }
-    if(caseClosedLine){ caseClosedLine.hidden = false; caseClosedLine.textContent = 'Encerrado em ' + dateStr; }
+    if(caseClosedLine){
+      caseClosedLine.hidden = false;
+      caseClosedLine.textContent = dateStr ? ('Encerrado em ' + dateStr) : 'Caso encerrado';
+    }
     if(nextBody){ nextBody.hidden = true; }
     if(nextEmpty){ nextEmpty.hidden = false; }
     if(nextFoot){ nextFoot.hidden = true; }
     if(nextStatusBadge){ nextStatusBadge.hidden = true; }
+  }
+  /* Busca o status REAL do próprio caso no servidor (GET /api/meu-caso) e só então
+     decide se mostra "Ativo" (com a próxima consulta real) ou "Encerrado" (com a
+     data real do encerramento) — nunca mais decidido pelo e-mail de login. */
+  function refreshMeuCaso(){
+    window.apiGetMeuCaso().then(function(r){
+      if(!r || !r.tem_caso){ setCaseActive(null); return; }
+      if(r.status === 'Encerrado'){ setCaseClosed(r.status_atualizado_em || ''); }
+      else { setCaseActive(r.proxima_consulta); }
+    }).catch(function(err){
+      console.warn('Não foi possível consultar o status do caso no servidor:', err);
+      // Mantém o que já estava na tela (ou o padrão "Ativo" já mostrado por showCard)
+      // em vez de travar a tela num estado de erro.
+    });
   }
 
   /* MEU PERFIL — dados cadastrais + troca de senha, em tela própria */
@@ -2466,6 +2614,8 @@ route();
     setGreeting('Olá! Bem-vindo(a) de volta');
     if(recordBtn){ recordBtn.hidden = false; }
     if(recordStatus){ recordStatus.hidden = true; }
+    if(recordDownloadBtn){ recordDownloadBtn.hidden = true; }
+    if(recordDownloadMsg){ recordDownloadMsg.hidden = true; recordDownloadMsg.textContent=''; }
     if(rescheduleBtn){ rescheduleBtn.hidden = false; }
     if(rescheduleMsg){ rescheduleMsg.hidden = true; }
     if(typeof closeRescheduleModal==='function'){ closeRescheduleModal(); }
@@ -3574,6 +3724,10 @@ route();
     }
     return true;
   }
+  /* Exposta em window: a tela do paciente (outra IIFE, mais acima neste
+     mesmo arquivo) reusa esta mesma geração de PDF para o próprio botão de
+     "baixar prontuário", em vez de duplicar a lógica de montagem do PDF. */
+  window.buildProntuarioPdf = buildProntuarioPdf;
 
   const exportBtn = document.getElementById('eq-case-export');
   if(exportBtn){
