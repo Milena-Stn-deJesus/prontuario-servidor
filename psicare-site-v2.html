@@ -121,12 +121,12 @@ h2{font-size:clamp(24px,3.2vw,36px);margin:14px 0 18px}
 /* FAQ */
 .faq-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px}
 .faq-side{display:flex;flex-direction:column}
-.faq-art{flex:1;display:flex;align-items:center;justify-content:center;min-height:116px;margin-top:8px}
+.faq-art{display:flex;align-items:flex-start;justify-content:center;min-height:116px;margin-top:0}
 .faq-qa{width:100%;max-width:260px;height:auto;overflow:visible;opacity:.6}
 .faq-qa-mark{font-family:var(--sans);font-size:30px;font-weight:700;fill:#fff}
 .faq-kicker{display:inline-flex;align-items:center;gap:10px;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.03em;color:var(--blue);margin-bottom:22px}
 .faq-kicker::before{content:"";width:24px;height:2px;background:currentColor;border-radius:2px;flex:none}
-.faq-title{font-family:'Cormorant Garamond',var(--serif),serif;font-weight:600;font-size:clamp(30px,3vw,46px);line-height:1.18;letter-spacing:-.008em;color:var(--navy);max-width:480px;text-wrap:balance;margin:0 0 48px}
+.faq-title{font-family:'Cormorant Garamond',var(--serif),serif;font-weight:600;font-size:clamp(30px,3vw,46px);line-height:1.18;letter-spacing:-.008em;color:var(--navy);max-width:480px;text-wrap:balance;margin:0 0 20px}
 @media (max-width:860px){.faq-title{margin-bottom:32px;max-width:100%}}
 .faq{display:grid;gap:10px}
 .q{background:#fff;border:1px solid var(--line);border-radius:16px;transition:box-shadow .3s,border-color .3s}
@@ -827,6 +827,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <p class="lead rv d2">Este é o prontuário online da Clínica-Escola de Psicologia da Santa Casa SP — um só lugar para agendar, atender e acompanhar cada caso com segurança.</p>
       <div class="hero-cta rv d3">
         <a href="#paciente" class="btn btn-primary"><svg><use href="#i-user"/></svg>Sou paciente</a>
+        <a href="#inscricao" class="btn btn-ghost"><svg><use href="#i-heart"/></svg>Quero me inscrever</a>
         <a href="#equipe" class="btn btn-ghost"><svg><use href="#i-lock"/></svg>Login da equipe</a>
       </div>
     </div>
@@ -883,29 +884,15 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
   </div>
 </section>
 
-<!-- FAQ -->
-<section id="duvidas" style="padding-top:0">
-  <div class="wrap faq-grid">
-    <div class="faq-side">
-      <span class="eyebrow rv">Perguntas frequentes</span>
-      <h2 class="rv d1">Ficou com alguma dúvida?</h2>
-      <div class="faq-art rv d2" aria-hidden="true">
-        <svg viewBox="0 0 130 116" class="faq-qa">
-          <path d="M18,8 H64 A14,14 0 0 1 78,22 V46 A14,14 0 0 1 64,60 H34 L18,74 L18,60 H18 A14,14 0 0 1 4,46 V22 A14,14 0 0 1 18,8 Z" fill="var(--navy)"/>
-          <text x="41" y="42" class="faq-qa-mark" text-anchor="middle">?</text>
-          <path d="M54,46 H100 A14,14 0 0 1 114,60 V84 A14,14 0 0 1 100,98 H70 L54,112 L54,98 H54 A14,14 0 0 1 40,84 V60 A14,14 0 0 1 54,46 Z" fill="var(--blue)"/>
-          <path d="M58 72l9 9 19-19" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-      </div>
-    </div>
-    <div class="faq rv d1">
-      <details class="q" open><summary>Quem pode ver o meu prontuário?<span class="pm"></span></summary><p>Somente a equipe responsável pelo seu caso — psicólogo técnico, supervisor e o estudante alocado. Você pode solicitar acesso ao seu próprio prontuário a qualquer momento.</p></details>
-      <details class="q"><summary>Como funciona a supervisão dos atendimentos?<span class="pm"></span></summary><p>Todo atendimento conduzido por um estudante é acompanhado por um supervisor, que tem acesso completo ao andamento do caso e orienta a condução do cuidado.</p></details>
-      <details class="q"><summary>Posso editar ou apagar alguma informação do meu prontuário?<span class="pm"></span></summary><p>Não. Seu acesso ao prontuário é somente de leitura — você pode consultar seu histórico, mas não pode editar, anexar documentos ou apagar nada. Qualquer registro é feito exclusivamente pela equipe responsável pelo seu caso.</p></details>
-      <details class="q"><summary>Como sei se minha consulta está confirmada?<span class="pm"></span></summary><p>Cada agendamento mostra um status — confirmado ou reagendado — assim você sempre sabe se a data e o horário combinados seguem valendo.</p></details>
-      <details class="q"><summary>Meus dados cadastrais podem ser apagados?<span class="pm"></span></summary><p>Não. O cadastro de um paciente pode ser encerrado (alta), mas nunca excluído — isso preserva o histórico e a continuidade do cuidado.</p></details>
-      <details class="q"><summary>Como um paciente novo chega até a Clínica-Escola?<span class="pm"></span></summary><p>A maioria chega de duas formas: por procura direta na unidade, ou preenchendo o formulário de fila de espera que disponibilizamos — esse formulário costuma ser compartilhado pelos próprios estudantes com pessoas que conhecem e que estão buscando atendimento, ou encontrado por quem acessa a página do curso e localiza o link de inscrição. Depois do preenchimento, a pessoa entra na fila de espera até que a equipe técnica faça o cadastro e dê início ao acompanhamento.</p></details>
-      <details class="q"><summary>O psicólogo técnico e o supervisor acompanham as sessões ao vivo?<span class="pm"></span></summary><p>Não. Nem o psicólogo técnico nem o supervisor participam das sessões de atendimento em si — quem conduz o atendimento é o estudante. O acompanhamento de ambos acontece pelas evoluções: o registro que o estudante faz logo após cada sessão, descrevendo o que foi trabalhado e a condução do caso. É lendo essas evoluções que o psicólogo técnico e o supervisor orientam e supervisionam o andamento do tratamento.</p></details>
+<!-- CHAMADA PARA INSCRIÇÃO -->
+<section style="padding-top:40px;padding-bottom:10px">
+  <div class="wrap" style="max-width:680px;text-align:center">
+    <span class="eyebrow rv" style="justify-content:center">Primeira vez por aqui?</span>
+    <h2 class="rv d1" style="margin-top:14px">Conheça o Serviço-Escola e inscreva-se para o atendimento</h2>
+    <p class="lead rv d2" style="max-width:520px;margin:0 auto 32px">O atendimento psicológico é gratuito e aberto a pessoas de qualquer idade. Veja como funciona o programa e o passo a passo para se inscrever — da triagem até o início do acompanhamento.</p>
+    <div class="hero-cta rv d3" style="justify-content:center;margin-top:0">
+      <a href="#inscricao" class="btn btn-primary"><svg><use href="#i-heart"/></svg>Quero me inscrever</a>
+      <a href="#sobre-nos" class="btn btn-outline">Conhecer o programa<svg><use href="#i-arrow"/></svg></a>
     </div>
   </div>
 </section>
@@ -918,6 +905,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <div><h2>Pronto para começar?</h2><p>Acesse a plataforma e acompanhe o cuidado, a formação e o histórico clínico em um só lugar.</p></div>
       <div class="cta-btns">
         <a href="#paciente" class="btn btn-ghost"><svg><use href="#i-user"/></svg>Sou paciente</a>
+        <a href="#inscricao" class="btn btn-ghost"><svg><use href="#i-heart"/></svg>Quero me inscrever</a>
         <a href="#equipe" class="btn btn-light"><svg><use href="#i-lock"/></svg>Login da equipe</a>
       </div>
     </div>
