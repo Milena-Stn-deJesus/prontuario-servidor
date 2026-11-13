@@ -25,22 +25,21 @@ section{padding:80px 0}
 .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;letter-spacing:0;color:var(--blue)}
 .eyebrow::before{content:"";width:24px;height:2px;background:currentColor;border-radius:2px;flex:none}
 .welcome-sec{padding-top:8px;padding-bottom:16px}
-.welcome-card{position:relative;overflow:hidden;background:linear-gradient(170deg,var(--sky) 0%,#fff 62%);border:1px solid var(--line);border-radius:36px;padding:56px 48px 52px;text-align:center;box-shadow:var(--shadow)}
-.welcome-card::before{content:"";position:absolute;top:-70px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(62,148,116,.16),rgba(62,148,116,0) 70%)}
-.welcome-card::after{content:"";position:absolute;bottom:-90px;left:-70px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(19,55,42,.08),rgba(19,55,42,0) 70%)}
-.welcome-deco{position:absolute;pointer-events:none;z-index:0}
-.welcome-deco-ring{top:30px;right:52px;width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(62,148,116,.3)}
-.welcome-deco-dot{bottom:34px;left:44px;width:10px;height:10px;border-radius:50%;background:rgba(62,148,116,.3)}
-.welcome-deco-dash{top:44px;left:38px;width:30px;height:2px;border-radius:2px;background:rgba(19,55,42,.18);transform:rotate(-12deg)}
-.welcome-deco-plus{bottom:40px;right:46px;width:14px;height:14px}
-.welcome-deco-plus::before,.welcome-deco-plus::after{content:"";position:absolute;background:rgba(19,55,42,.22);border-radius:2px}
-.welcome-deco-plus::before{top:50%;left:0;width:100%;height:2px;transform:translateY(-50%)}
-.welcome-deco-plus::after{left:50%;top:0;height:100%;width:2px;transform:translateX(-50%)}
-.welcome-badge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:9px;color:var(--navy);font-family:var(--serif);font-weight:600;font-style:italic;font-size:clamp(19px,2.4vw,24px);letter-spacing:-.01em}
-.welcome-badge svg{width:19px;height:19px;flex:none;color:var(--blue)}
-.welcome-card h2{position:relative;z-index:1;text-align:center;max-width:540px;margin-inline:auto}
-.welcome-card .lead{position:relative;z-index:1;text-align:center}
+.welcome-card{position:relative;overflow:hidden;background:linear-gradient(170deg,var(--sky) 0%,#fff 65%);border:1px solid #dcf0e8;border-radius:28px;padding:60px 48px;text-align:center;box-shadow:0 1px 2px rgba(19,55,42,.04),0 14px 36px -20px rgba(19,55,42,.18)}
+.welcome-arc{position:absolute;pointer-events:none;z-index:0;fill:none}
+.welcome-arc-tl{top:-130px;left:-130px;width:200px;height:200px}
+.welcome-arc-tr{top:-150px;right:-160px;width:260px;height:260px}
+.welcome-arc-br{bottom:-130px;right:-120px;width:200px;height:200px}
+.welcome-arc-bl{bottom:-48px;left:-38px;width:80px;height:80px}
+.welcome-badge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:10px;color:var(--blue);font-family:var(--sans);font-weight:600;font-size:13.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:28px}
+.welcome-badge::before{content:"";width:22px;height:2px;border-radius:2px;background:currentColor;flex:none}
+.welcome-card h2{position:relative;z-index:1;text-align:center;max-width:620px;margin:0 auto 18px;font-family:'Cormorant Garamond',var(--serif),serif;font-weight:500;font-size:clamp(28px,3.4vw,42px);line-height:1.18;letter-spacing:-.01em;color:var(--navy)}
+.welcome-card .lead{position:relative;z-index:1;text-align:center;max-width:650px;margin:0 auto 32px;font-size:clamp(15.5px,1.4vw,17px);line-height:1.65;color:var(--muted)}
 .welcome-card .hero-cta{position:relative;z-index:1}
+.welcome-card .btn-primary{border-radius:16px;height:54px;padding:0 30px;transition:background .2s,box-shadow .2s}
+.welcome-card .btn-primary svg{transition:transform .2s}
+.welcome-card .btn-primary:hover{transform:none;background:var(--navy-2);box-shadow:0 10px 26px -14px rgba(19,55,42,.5)}
+.welcome-card .btn-primary:hover svg{transform:translateX(3px)}
 h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.015em;line-height:1.12;color:var(--navy)}
 h2{font-size:clamp(24px,3.2vw,36px);margin:14px 0 18px}
 .lead{font-size:15.5px;color:var(--muted)}
@@ -141,9 +140,9 @@ h2{font-size:clamp(24px,3.2vw,36px);margin:14px 0 18px}
 .faq-art{display:flex;align-items:flex-start;justify-content:center;min-height:116px;margin-top:0}
 .faq-qa{width:100%;max-width:260px;height:auto;overflow:visible;opacity:.6}
 .faq-qa-mark{font-family:var(--sans);font-size:30px;font-weight:700;fill:#fff}
-.faq-kicker{display:inline-flex;align-items:center;gap:16px;font-family:var(--sans);font-size:clamp(15px,1.6vw,22px);font-weight:600;letter-spacing:.02em;color:var(--blue);margin-bottom:36px}
+.faq-kicker{display:inline-flex;align-items:center;gap:14px;font-family:var(--sans);font-size:clamp(14px,1.4vw,19px);font-weight:600;letter-spacing:.02em;color:var(--blue);margin-bottom:26px}
 .faq-kicker::before{content:"";width:24px;height:2px;background:currentColor;border-radius:2px;flex:none}
-.faq-title{font-family:'Cormorant Garamond',var(--serif),serif;font-weight:500;font-size:clamp(26px,3.6vw,37px);line-height:1.18;letter-spacing:-.02em;color:var(--navy);text-align:left;margin:0 0 18px}
+.faq-title{font-family:'Cormorant Garamond',var(--serif),serif;font-weight:500;font-size:clamp(25px,3.3vw,34px);line-height:1.16;letter-spacing:-.015em;color:var(--navy);text-align:left;margin:0 0 14px}
 .faq-title-badge{display:inline-block;margin-top:.16em;background:#086B3D;color:#fff;font-weight:600;font-size:1.25em;padding:clamp(5px,.9vw,8px) clamp(14px,2.2vw,22px);border-radius:clamp(14px,1.8vw,22px);letter-spacing:-.01em}
 .faq-tabs{display:flex;gap:30px;border-bottom:1px solid var(--line);margin:0 0 34px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
 .faq-tabs::-webkit-scrollbar{display:none}
@@ -152,17 +151,19 @@ h2{font-size:clamp(24px,3.2vw,36px);margin:14px 0 18px}
 .faq-tab:hover{color:var(--navy)}
 .faq-tab.is-active{color:var(--navy)}
 .faq-tab.is-active::after{transform:scaleX(1)}
-.faq{display:flex;flex-direction:column}
+.faq{display:grid;gap:10px}
 .faq[hidden]{display:none}
-.q{background:none;border:none;border-bottom:1px solid var(--line);border-radius:0;transition:border-color .25s}
-.q:last-child{border-bottom:none}
-.q summary{list-style:none;cursor:pointer;padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:24px;font-weight:600;color:var(--navy);font-size:clamp(16px,1.25vw,18.5px)}
+.q{background:#fff;border:1px solid var(--line);border-radius:16px;transition:box-shadow .3s,border-color .3s}
+.q[open]{box-shadow:var(--shadow);border-color:#d4eae2}
+.q summary{list-style:none;cursor:pointer;padding:17px 22px;display:flex;justify-content:space-between;align-items:center;gap:20px;font-weight:600;color:var(--navy);font-size:15.5px}
 .q summary::-webkit-details-marker{display:none}
-.q .pm{width:18px;height:18px;flex:none;position:relative}
-.q .pm::before,.q .pm::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:1.5px;margin:-.75px 0 0 -6.5px;background:var(--blue);border-radius:2px;transition:transform .25s}
+.q .pm{width:26px;height:26px;border-radius:50%;background:var(--sky);flex:none;position:relative;transition:background .3s,transform .3s}
+.q .pm::before,.q .pm::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:2px;margin:-1px 0 0 -5.5px;background:var(--blue);border-radius:2px;transition:transform .3s}
 .q .pm::after{transform:rotate(90deg)}
+.q[open] .pm{background:var(--blue);transform:rotate(180deg)}
+.q[open] .pm::before,.q[open] .pm::after{background:#fff}
 .q[open] .pm::after{transform:rotate(0)}
-.q p{padding:0 0 24px;color:var(--muted);max-width:620px;font-size:15.5px;line-height:1.7}
+.q p{padding:0 22px 19px;color:var(--muted);max-width:640px;font-size:14.5px}
 
 /* INSTITUIÇÃO */
 .inst{display:grid;grid-template-columns:1fr 1.05fr;gap:60px;align-items:center}
@@ -785,7 +786,12 @@ footer{margin-top:120px}
   .doc .seal{width:54px;height:54px;right:-12px;bottom:-12px}
   .doc .seal svg{width:22px;height:22px}
   .art{max-width:260px}
-  .q summary{padding:19px 0}.q p{padding:0 0 20px}
+  .q summary{padding:18px 20px;font-size:15.5px}.q p{padding:0 20px 20px}
+  .welcome-card{padding:44px 26px;border-radius:24px}
+  .welcome-arc-tl{width:130px;height:130px;top:-84px;left:-84px}
+  .welcome-arc-tr{width:150px;height:150px;top:-88px;right:-92px}
+  .welcome-arc-br{width:124px;height:124px;bottom:-78px;right:-70px}
+  .welcome-arc-bl{width:46px;height:46px;bottom:-28px;left:-22px}
   .faq-tabs{gap:22px;margin-bottom:26px}
   .faq-tab{font-size:13.5px}
   .cta-btns{width:100%}.cta-btns .btn{flex:1 1 auto;justify-content:center}
@@ -880,13 +886,23 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 <section class="welcome-sec">
   <div class="wrap" style="max-width:760px">
     <div class="welcome-card">
-      <span class="welcome-deco welcome-deco-ring" aria-hidden="true"></span>
-      <span class="welcome-deco welcome-deco-dot" aria-hidden="true"></span>
-      <span class="welcome-deco welcome-deco-dash" aria-hidden="true"></span>
-      <span class="welcome-deco welcome-deco-plus" aria-hidden="true"></span>
-      <span class="welcome-badge rv"><svg><use href="#i-wave"/></svg>Primeira vez por aqui?</span>
-      <h2 class="rv d1" style="margin-top:24px">Conheça o Serviço-Escola e inscreva-se para o atendimento</h2>
-      <p class="lead rv d2" style="max-width:520px;margin:0 auto 32px">O atendimento psicológico é gratuito e aberto a pessoas de qualquer idade. Veja como funciona o programa e o passo a passo para se inscrever — da triagem até o início do acompanhamento.</p>
+      <svg class="welcome-arc welcome-arc-tl" aria-hidden="true" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="98" stroke="#3e9474" stroke-opacity=".32" stroke-width="1.3"/>
+        <circle cx="100" cy="100" r="68" stroke="#3e9474" stroke-opacity=".4" stroke-width="1.3"/>
+      </svg>
+      <svg class="welcome-arc welcome-arc-tr" aria-hidden="true" viewBox="0 0 230 230">
+        <circle cx="115" cy="115" r="112" stroke="#3e9474" stroke-opacity=".22" stroke-width="1"/>
+      </svg>
+      <svg class="welcome-arc welcome-arc-br" aria-hidden="true" viewBox="0 0 190 190">
+        <circle cx="95" cy="95" r="92" stroke="#13372a" stroke-opacity=".28" stroke-width="1.3"/>
+        <circle cx="95" cy="95" r="64" stroke="#13372a" stroke-opacity=".34" stroke-width="1.3"/>
+      </svg>
+      <svg class="welcome-arc welcome-arc-bl" aria-hidden="true" viewBox="0 0 70 70">
+        <circle cx="35" cy="35" r="33" stroke="#3e9474" stroke-opacity=".3" stroke-width="1.2"/>
+      </svg>
+      <span class="welcome-badge rv">Primeira vez por aqui?</span>
+      <h2 class="rv d1">Conheça o Serviço-Escola e inscreva-se para o atendimento</h2>
+      <p class="lead rv d2">O atendimento psicológico é gratuito e aberto a pessoas de qualquer idade. Veja como funciona o programa e o passo a passo para se inscrever — da triagem até o início do acompanhamento.</p>
       <div class="hero-cta rv d3" style="justify-content:center;margin-top:0">
         <a href="#inscricao" class="btn btn-primary">Conhecer o programa<svg><use href="#i-arrow"/></svg></a>
       </div>
@@ -1085,7 +1101,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
 
       <div class="faq" id="faq-panel-1" role="tabpanel" aria-labelledby="faq-tab-1">
-        <details class="q" open><summary>Os atendimentos são pagos?<span class="pm"></span></summary><p>Não. Todas as modalidades de atendimento oferecidas pelo Serviço-Escola são gratuitas.</p></details>
+        <details class="q"><summary>Os atendimentos são pagos?<span class="pm"></span></summary><p>Não. Todas as modalidades de atendimento oferecidas pelo Serviço-Escola são gratuitas.</p></details>
         <details class="q"><summary>Como funciona a inscrição?<span class="pm"></span></summary><p>A pessoa interessada — ou mãe, pai ou responsável legal, no caso de menores de idade ou pessoas sob curatela — deve comparecer nas datas divulgadas, portando documento de identidade com foto. Para menores, também é preciso apresentar documento que comprove a guarda ou responsabilidade legal.</p></details>
         <details class="q"><summary>Como é marcada a primeira consulta?<span class="pm"></span></summary><p>Depois da inscrição, a secretaria entra em contato por telefone para agendar a entrevista de triagem. Não existe um prazo fixo para esse contato, já que ele depende da disponibilidade de vagas.</p></details>
         <details class="q"><summary>O que é a triagem?<span class="pm"></span></summary><p>É a etapa inicial de acolhimento, em que a equipe busca compreender a demanda trazida pela pessoa e define o encaminhamento mais adequado: atendimento no próprio Serviço-Escola ou direcionamento a outro serviço da rede.</p></details>
@@ -1094,7 +1110,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
 
       <div class="faq" id="faq-panel-2" role="tabpanel" aria-labelledby="faq-tab-2" hidden>
-        <details class="q" open><summary>Preciso de atendimento urgente. O que eu faço?<span class="pm"></span></summary><p>O Serviço-Escola não realiza atendimentos de urgência ou emergência. Em situações assim, procure o SAMU (192) ou o serviço de saúde mais próximo; para apoio emocional imediato, o CVV (188) atende 24 horas.</p></details>
+        <details class="q"><summary>Preciso de atendimento urgente. O que eu faço?<span class="pm"></span></summary><p>O Serviço-Escola não realiza atendimentos de urgência ou emergência. Em situações assim, procure o SAMU (192) ou o serviço de saúde mais próximo; para apoio emocional imediato, o CVV (188) atende 24 horas.</p></details>
         <details class="q"><summary>Existe atendimento por telefone?<span class="pm"></span></summary><p>Não. Os atendimentos psicológicos acontecem presencialmente, na unidade do Serviço-Escola.</p></details>
         <details class="q"><summary>Quem realiza os atendimentos?<span class="pm"></span></summary><p>Estudantes do último ano do curso de Psicologia, sempre sob supervisão direta de psicólogas e psicólogos docentes com registro ativo no Conselho Regional de Psicologia.</p></details>
         <details class="q"><summary>Por quanto tempo posso ser atendido(a)?<span class="pm"></span></summary><p>O acompanhamento costuma ser de curta ou média duração, podendo variar de algumas semanas a cerca de dois anos, conforme a necessidade identificada em cada caso.</p></details>
@@ -1105,7 +1121,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
 
       <div class="faq" id="faq-panel-3" role="tabpanel" aria-labelledby="faq-tab-3" hidden>
-        <details class="q" open><summary>Quem pode ver o meu prontuário?<span class="pm"></span></summary><p>Somente a equipe responsável pelo seu caso — psicólogo técnico, supervisor e o estudante alocado. Você pode solicitar acesso ao seu próprio prontuário a qualquer momento.</p></details>
+        <details class="q"><summary>Quem pode ver o meu prontuário?<span class="pm"></span></summary><p>Somente a equipe responsável pelo seu caso — psicólogo técnico, supervisor e o estudante alocado. Você pode solicitar acesso ao seu próprio prontuário a qualquer momento.</p></details>
         <details class="q"><summary>Como funciona a supervisão dos atendimentos?<span class="pm"></span></summary><p>Todo atendimento conduzido por um estudante é acompanhado por um supervisor, que tem acesso completo ao andamento do caso e orienta a condução do cuidado.</p></details>
         <details class="q"><summary>O psicólogo técnico e o supervisor acompanham as sessões ao vivo?<span class="pm"></span></summary><p>Não. Nem o psicólogo técnico nem o supervisor participam das sessões de atendimento em si — quem conduz o atendimento é o estudante. O acompanhamento de ambos acontece pelas evoluções: o registro que o estudante faz logo após cada sessão, descrevendo o que foi trabalhado e a condução do caso. É lendo essas evoluções que o psicólogo técnico e o supervisor orientam e supervisionam o andamento do tratamento.</p></details>
         <details class="q"><summary>Posso editar ou apagar alguma informação do meu prontuário?<span class="pm"></span></summary><p>Não. Seu acesso ao prontuário é somente de leitura — você pode consultar seu histórico, mas não pode editar, anexar documentos ou apagar nada. Qualquer registro é feito exclusivamente pela equipe responsável pelo seu caso.</p></details>
