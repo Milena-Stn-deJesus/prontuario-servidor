@@ -28,10 +28,19 @@ section{padding:80px 0}
 .welcome-card{position:relative;overflow:hidden;background:linear-gradient(170deg,var(--sky) 0%,#fff 62%);border:1px solid var(--line);border-radius:36px;padding:56px 48px 52px;text-align:center;box-shadow:var(--shadow)}
 .welcome-card::before{content:"";position:absolute;top:-70px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(62,148,116,.16),rgba(62,148,116,0) 70%)}
 .welcome-card::after{content:"";position:absolute;bottom:-90px;left:-70px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(19,55,42,.08),rgba(19,55,42,0) 70%)}
-.welcome-badge{position:relative;display:inline-flex;align-items:center;gap:10px;background:var(--navy);color:#fff;font-weight:700;font-size:15.5px;letter-spacing:.01em;padding:13px 26px;border-radius:999px;box-shadow:0 16px 32px -14px rgba(19,55,42,.55)}
-.welcome-badge svg{width:20px;height:20px;flex:none}
-.welcome-card h2{position:relative;text-align:center;max-width:540px;margin-inline:auto}
-.welcome-card .lead{position:relative;text-align:center}
+.welcome-deco{position:absolute;pointer-events:none;z-index:0}
+.welcome-deco-ring{top:30px;right:52px;width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(62,148,116,.3)}
+.welcome-deco-dot{bottom:34px;left:44px;width:10px;height:10px;border-radius:50%;background:rgba(62,148,116,.3)}
+.welcome-deco-dash{top:44px;left:38px;width:30px;height:2px;border-radius:2px;background:rgba(19,55,42,.18);transform:rotate(-12deg)}
+.welcome-deco-plus{bottom:40px;right:46px;width:14px;height:14px}
+.welcome-deco-plus::before,.welcome-deco-plus::after{content:"";position:absolute;background:rgba(19,55,42,.22);border-radius:2px}
+.welcome-deco-plus::before{top:50%;left:0;width:100%;height:2px;transform:translateY(-50%)}
+.welcome-deco-plus::after{left:50%;top:0;height:100%;width:2px;transform:translateX(-50%)}
+.welcome-badge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:9px;color:var(--navy);font-family:var(--serif);font-weight:600;font-style:italic;font-size:clamp(19px,2.4vw,24px);letter-spacing:-.01em}
+.welcome-badge svg{width:19px;height:19px;flex:none;color:var(--blue)}
+.welcome-card h2{position:relative;z-index:1;text-align:center;max-width:540px;margin-inline:auto}
+.welcome-card .lead{position:relative;z-index:1;text-align:center}
+.welcome-card .hero-cta{position:relative;z-index:1}
 h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.015em;line-height:1.12;color:var(--navy)}
 h2{font-size:clamp(24px,3.2vw,36px);margin:14px 0 18px}
 .lead{font-size:15.5px;color:var(--muted)}
@@ -845,21 +854,6 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
   <span class="scroll-hint" aria-hidden="true"></span>
 </section>
 
-<!-- CHAMADA PARA INSCRIÇÃO -->
-<section class="welcome-sec">
-  <div class="wrap" style="max-width:760px">
-    <div class="welcome-card">
-      <span class="welcome-badge rv"><svg><use href="#i-wave"/></svg>Primeira vez por aqui?</span>
-      <h2 class="rv d1" style="margin-top:24px">Conheça o Serviço-Escola e inscreva-se para o atendimento</h2>
-      <p class="lead rv d2" style="max-width:520px;margin:0 auto 32px">O atendimento psicológico é gratuito e aberto a pessoas de qualquer idade. Veja como funciona o programa e o passo a passo para se inscrever — da triagem até o início do acompanhamento.</p>
-      <div class="hero-cta rv d3" style="justify-content:center;margin-top:0">
-        <a href="#sobre-nos" class="btn btn-primary">Conhecer o programa<svg><use href="#i-arrow"/></svg></a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
 <!-- PROGRAMA -->
 <section id="programa" style="padding-top:90px">
   <div class="wrap">
@@ -870,6 +864,24 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <article class="verb rv"><span class="n">01</span><span class="ic"><svg><use href="#i-cal"/></svg></span><h3>Agendar</h3><p>Os atendimentos organizados em um calendário claro, para todos saberem quando e onde.</p></article>
       <article class="verb rv d1"><span class="n">02</span><span class="ic"><svg><use href="#i-heart"/></svg></span><h3>Atender</h3><p>Atendimento psicológico conduzido com cuidado, acolhimento e supervisão.</p></article>
       <article class="verb rv d2"><span class="n">03</span><span class="ic"><svg><use href="#i-chart"/></svg></span><h3>Acompanhar</h3><p>Cada caso registrado com segurança, preservando o histórico e a continuidade do cuidado.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- CHAMADA PARA INSCRIÇÃO -->
+<section class="welcome-sec">
+  <div class="wrap" style="max-width:760px">
+    <div class="welcome-card">
+      <span class="welcome-deco welcome-deco-ring" aria-hidden="true"></span>
+      <span class="welcome-deco welcome-deco-dot" aria-hidden="true"></span>
+      <span class="welcome-deco welcome-deco-dash" aria-hidden="true"></span>
+      <span class="welcome-deco welcome-deco-plus" aria-hidden="true"></span>
+      <span class="welcome-badge rv"><svg><use href="#i-wave"/></svg>Primeira vez por aqui?</span>
+      <h2 class="rv d1" style="margin-top:24px">Conheça o Serviço-Escola e inscreva-se para o atendimento</h2>
+      <p class="lead rv d2" style="max-width:520px;margin:0 auto 32px">O atendimento psicológico é gratuito e aberto a pessoas de qualquer idade. Veja como funciona o programa e o passo a passo para se inscrever — da triagem até o início do acompanhamento.</p>
+      <div class="hero-cta rv d3" style="justify-content:center;margin-top:0">
+        <a href="#sobre-nos" class="btn btn-primary">Conhecer o programa<svg><use href="#i-arrow"/></svg></a>
+      </div>
     </div>
   </div>
 </section>
