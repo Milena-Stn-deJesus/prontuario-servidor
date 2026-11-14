@@ -880,6 +880,66 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 @media(max-width:800px){#page-inscricao .enroll-container{width:min(100% - 42px,640px)}#page-inscricao .enroll-intro{padding:115px 0 65px}#page-inscricao .enroll-intro-grid,#page-inscricao .enroll-journey-grid,#page-inscricao .enroll-team-header{grid-template-columns:1fr;gap:22px}#page-inscricao .enroll-intro-copy{padding:0}#page-inscricao .enroll-intro h1{font-size:clamp(43px,10vw,68px)}#page-inscricao .enroll-ornament{margin-top:18px}#page-inscricao .enroll-journey{padding:62px 0 65px}#page-inscricao .enroll-section-side>p{max-width:100%}#page-inscricao .enroll-side-art{display:none}#page-inscricao .enroll-timeline{margin-top:18px}#page-inscricao .enroll-notice-section{padding-bottom:70px}#page-inscricao .enroll-notice{padding:25px 22px;grid-template-columns:1fr;gap:14px}#page-inscricao .enroll-team-section{padding:65px 0 70px}#page-inscricao .enroll-team-header{margin-bottom:35px}#page-inscricao .enroll-team-grid{grid-template-columns:1fr;gap:30px}#page-inscricao .enroll-final-section{padding-bottom:70px}#page-inscricao .enroll-final{min-height:380px;padding:45px 28px}#page-inscricao .enroll-final-arc{right:-300px}}
 @media(max-width:420px){#page-inscricao .enroll-container{width:calc(100% - 34px)}#page-inscricao .enroll-timeline{padding-left:21px}#page-inscricao .enroll-step:before{left:-25px}#page-inscricao .enroll-step summary{grid-template-columns:29px 1fr 23px;gap:9px}#page-inscricao .enroll-step-body{padding-left:38px;padding-right:4px}#page-inscricao .enroll-final-link{gap:10px;width:100%;font-size:12px}}
 @media(prefers-reduced-motion:reduce){#page-inscricao .enroll-design *,#page-inscricao .enroll-design *:before,#page-inscricao .enroll-design *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* Inscrição — ilustrações simbólicas (caminho em 4 etapas e ficha de inscrição) */
+#page-inscricao .enroll-illus{display:block;height:auto;pointer-events:none}
+#page-inscricao .enroll-illus-path{width:min(100%,360px);margin:38px 0 0 -4px}
+#page-inscricao .enroll-illus-form{width:min(100%,250px);margin:40px 0 0 -14px}
+@media(max-width:800px){#page-inscricao .enroll-illus-path{width:min(100%,300px);margin-top:24px}#page-inscricao .enroll-illus-form{display:none}}
+/* Inscrição — chamada final premium */
+#page-inscricao .enroll-final.enroll-final-premium{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:clamp(30px,5vw,76px);align-items:center;min-height:0;padding:clamp(48px,6vw,86px) clamp(30px,6vw,86px);border-radius:30px;background:radial-gradient(90% 120% at 100% 0%,rgba(74,138,110,.55) 0%,rgba(74,138,110,0) 60%),radial-gradient(70% 90% at 0% 100%,rgba(9,32,24,.55) 0%,rgba(9,32,24,0) 65%),linear-gradient(135deg,#143a2d 0%,#1c4738 100%);box-shadow:0 44px 70px -48px rgba(19,55,42,.75)}
+#page-inscricao .enroll-final-premium::before{content:'';position:absolute;inset:12px;border:1px solid rgba(214,190,140,.3);border-radius:20px;pointer-events:none}
+#page-inscricao .enroll-final-premium .enroll-final-content{max-width:none}
+#page-inscricao .enroll-final-premium .enroll-kicker{color:#d6be8c}
+#page-inscricao .enroll-final-premium h2{font-size:clamp(38px,4.6vw,62px);margin:22px 0 20px}
+#page-inscricao .enroll-final-premium h2 em{color:#c3d8c8}
+#page-inscricao .enroll-final-premium p{font-size:15px;color:rgba(233,241,235,.84);max-width:470px;margin:0 0 32px}
+#page-inscricao .enroll-final-premium .enroll-final-link{gap:18px;padding:8px 8px 8px 26px;border-radius:999px;background:#f6f3ea;color:#143a2d;font-size:14px;box-shadow:0 14px 30px -16px rgba(0,0,0,.55)}
+#page-inscricao .enroll-final-premium .enroll-final-link:hover{transform:translateY(-2px);background:#fff}
+#page-inscricao .enroll-final-link-arrow{width:40px;height:40px;border-radius:50%;background:#143a2d;color:#f6f3ea;display:grid;place-items:center;flex:none;transition:transform .25s}
+#page-inscricao .enroll-final-link:hover .enroll-final-link-arrow{transform:translateX(3px)}
+#page-inscricao .enroll-final-card{position:relative;z-index:1;padding:30px 28px 14px;border-radius:22px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#page-inscricao .enroll-final-card-title{display:block;font-size:10px;font-weight:700;letter-spacing:.21em;text-transform:uppercase;color:#d6be8c;margin-bottom:8px}
+#page-inscricao .enroll-final-card ul{list-style:none;margin:0;padding:0}
+#page-inscricao .enroll-final-card li{display:flex;align-items:center;gap:14px;padding:16px 0;font-size:14.5px;line-height:1.5;color:#f3f7f4}
+#page-inscricao .enroll-final-card li+li{border-top:1px solid rgba(255,255,255,.12)}
+#page-inscricao .enroll-final-check{width:30px;height:30px;border-radius:50%;border:1px solid rgba(214,190,140,.6);color:#e3cf9f;display:grid;place-items:center;flex:none}
+#page-inscricao .enroll-final-check svg{width:14px;height:14px}
+@media(max-width:800px){#page-inscricao .enroll-final.enroll-final-premium{grid-template-columns:1fr;padding:46px 28px 34px;border-radius:24px}#page-inscricao .enroll-final-premium::before{inset:9px;border-radius:17px}#page-inscricao .enroll-final-premium .enroll-final-link{width:100%;justify-content:space-between;padding-left:22px;font-size:13.5px}}
+/* Inscrição — etapas em cartões lado a lado */
+#page-inscricao .enroll-steps-sec{padding:76px 0 84px}
+#page-inscricao .enroll-steps-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:44px}
+#page-inscricao .enroll-steps-head h2{font-size:clamp(36px,4.2vw,58px);margin-top:20px}
+#page-inscricao .enroll-steps-head p{font-size:15px;line-height:1.8;color:var(--en-muted);max-width:430px;margin:18px 0 0}
+#page-inscricao .enroll-steps-head .enroll-illus-form{width:170px;margin:0 10px -8px 0;flex:none}
+#page-inscricao .enroll-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;align-items:start}
+#page-inscricao .enroll-card{position:relative;background:#fff;border:1px solid var(--en-line);border-radius:24px;padding:26px 22px 14px;box-shadow:0 18px 34px -30px rgba(19,55,42,.45);transition:transform .3s,box-shadow .3s}
+#page-inscricao .enroll-card:hover{transform:translateY(-5px);box-shadow:0 26px 40px -28px rgba(19,55,42,.5)}
+#page-inscricao .enroll-card:not(:last-child)::after{content:'';position:absolute;top:53px;right:-18px;width:13px;height:13px;border-top:2px solid #9dbcab;border-right:2px solid #9dbcab;transform:rotate(45deg);border-radius:2px;z-index:1}
+#page-inscricao .enroll-card-num{position:absolute;top:18px;right:22px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:40px;line-height:1;color:rgba(78,125,100,.2)}
+#page-inscricao .enroll-card-icon{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;background:#e4f1ea;color:#2f6b54;transform:rotate(-6deg);transition:transform .3s}
+#page-inscricao .enroll-card:hover .enroll-card-icon{transform:rotate(0) scale(1.06)}
+#page-inscricao .enroll-card-icon svg{width:25px;height:25px}
+#page-inscricao .enroll-card-2 .enroll-card-icon{background:#f4ecd9;color:#8a6d2f;transform:rotate(5deg)}
+#page-inscricao .enroll-card-3 .enroll-card-icon{background:#e6eef3;color:#3d6478}
+#page-inscricao .enroll-card-4 .enroll-card-icon{background:#245f49;color:#fff;transform:rotate(5deg)}
+#page-inscricao .enroll-card h3{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:21px;line-height:1.2;letter-spacing:-.02em;margin:22px 0 10px}
+#page-inscricao .enroll-card-short{font-size:14px;line-height:1.65;color:var(--en-muted);margin:0 0 14px;min-height:4.95em}
+#page-inscricao .enroll-card-more{border-top:1px solid var(--en-line)}
+#page-inscricao .enroll-card-more summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:13px 0;font-size:12.5px;font-weight:650;color:#2f6b54}
+#page-inscricao .enroll-card-more summary::-webkit-details-marker{display:none}
+#page-inscricao .enroll-card-more summary:focus-visible{outline:2px solid #638d76;outline-offset:4px;border-radius:4px}
+#page-inscricao .enroll-card-more summary i{width:22px;height:22px;border-radius:50%;background:#e4f1ea;position:relative;flex:none}
+#page-inscricao .enroll-card-more summary i::before,#page-inscricao .enroll-card-more summary i::after{content:'';position:absolute;left:6.5px;top:10px;width:9px;height:2px;border-radius:2px;background:#2f6b54;transition:transform .25s}
+#page-inscricao .enroll-card-more summary i::after{transform:rotate(90deg)}
+#page-inscricao .enroll-card-more[open] summary i::after{transform:rotate(0)}
+#page-inscricao .enroll-card-more-close,#page-inscricao .enroll-card-more[open] .enroll-card-more-open{display:none}
+#page-inscricao .enroll-card-more[open] .enroll-card-more-close{display:inline}
+#page-inscricao .enroll-card-more>p{font-size:13.5px;line-height:1.75;color:var(--en-muted);margin:0 0 14px;animation:enrollReveal .3s ease both}
+#page-inscricao .enroll-notice-section{padding-top:0}
+@media(min-width:1021px){#page-inscricao .enroll-card h3{min-height:2.4em}}
+@media(max-width:1020px){#page-inscricao .enroll-steps{grid-template-columns:repeat(2,minmax(0,1fr))}#page-inscricao .enroll-card:nth-child(2)::after{display:none}#page-inscricao .enroll-card-short{min-height:3.3em}}
+@media(max-width:800px){#page-inscricao .enroll-steps-sec{padding:56px 0 60px}#page-inscricao .enroll-steps-head{margin-bottom:30px}#page-inscricao .enroll-steps-head .enroll-illus-form{display:none}}
+@media(max-width:600px){#page-inscricao .enroll-steps{grid-template-columns:1fr;gap:28px}#page-inscricao .enroll-card-short{min-height:0}#page-inscricao .enroll-card:not(:last-child)::after,#page-inscricao .enroll-card:nth-child(2)::after{display:block;top:auto;right:auto;bottom:-21px;left:44px;transform:rotate(135deg)}}
 </style>
 </head>
 <body>
@@ -1093,26 +1153,84 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     <div class="enroll-container enroll-intro-grid">
       <div class="enroll-intro-heading"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> INSCRIÇÕES · SERVIÇO-ESCOLA</span>
         <h1 id="enroll-title">Um primeiro passo <em>para o cuidado.</em></h1>
-        <div class="enroll-ornament" aria-hidden="true"><span></span><span></span></div>
+        <svg class="enroll-illus enroll-illus-path" aria-hidden="true" viewBox="0 0 380 150" fill="none">
+          <path d="M26 112 C 70 112, 82 62, 128 62 S 190 104, 236 96 S 286 46, 318 44" stroke="#8fb09b" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 9"/>
+          <circle cx="26" cy="112" r="11" stroke="#4e7d64" stroke-opacity=".35"/>
+          <circle cx="26" cy="112" r="5" fill="#4e7d64"/>
+          <circle cx="128" cy="62" r="6" fill="#f9fbfa" stroke="#4e7d64" stroke-width="1.5"/>
+          <circle cx="236" cy="96" r="6" fill="#f9fbfa" stroke="#4e7d64" stroke-width="1.5"/>
+          <circle cx="334" cy="44" r="30" fill="#8fb09b" fill-opacity=".16"/>
+          <circle cx="334" cy="44" r="22" fill="#f9fbfa" stroke="#4e7d64" stroke-width="1.5"/>
+          <path d="M334 54c-7-4.6-11-8.4-11-13a6 6 0 0 1 11-3.2A6 6 0 0 1 345 41c0 4.6-4 8.4-11 13Z" stroke="#4e7d64" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M300 14l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2Z" fill="#b59a66" fill-opacity=".7"/>
+          <circle cx="372" cy="78" r="2.5" fill="#b59a66" fill-opacity=".6"/>
+          <g font-family="Inter,system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="1.5" fill="#7a9b86">
+            <text x="17" y="141">01</text><text x="119" y="91">02</text><text x="227" y="125">03</text><text x="325" y="93">04</text>
+          </g>
+        </svg>
       </div>
       <div class="enroll-intro-copy"><p>O Serviço-Escola de Psicologia da Faculdade de Ciências Médicas da Santa Casa de São Paulo oferece atendimento psicológico gratuito à comunidade, realizado por estudantes do último ano de Psicologia sob supervisão direta de professoras e professores psicólogos. É, ao mesmo tempo, um espaço de cuidado e um espaço de formação: quem procura o serviço recebe acompanhamento qualificado, e quem está se formando pratica sob orientação constante.</p><p>O funcionamento dos Serviços-Escola e a supervisão dos estágios em Psicologia são regulamentados pela <b>Resolução CFP nº 5, de 3 de fevereiro de 2025</b>, do Conselho Federal de Psicologia, que estabelece as condições adequadas à prática do estágio e garante aos usuários o direito à informação sobre o atendimento, o prontuário e as normas do serviço.</p></div>
     </div>
   </section>
-  <section class="enroll-journey" aria-labelledby="enroll-journey-title">
-    <div class="enroll-container enroll-journey-grid">
-      <div class="enroll-section-side"><span class="enroll-kicker">01 / O PROCESSO</span><h2 id="enroll-journey-title">Como funciona<br><em>a inscrição</em></h2><p>Conheça cada etapa do processo, da inscrição ao início do acompanhamento.</p><span class="enroll-side-art" aria-hidden="true"></span></div>
-      <div class="enroll-timeline" aria-label="Etapas do processo de inscrição"><details class="enroll-step" open>
-<summary><span class="enroll-step-number">01</span><span class="enroll-step-name">Inscrição</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
-<div class="enroll-step-body"><p>Pode ser feita de duas formas: inscrição on-line seguida de validação presencial, ou inscrição somente presencial. Pessoas de qualquer idade podem se inscrever; menores de idade ou pessoas sob curatela precisam comparecer acompanhadas de mãe, pai ou responsável legal, com documento de identidade e, quando for o caso, documento que comprove a responsabilidade legal.</p></div></details>
-<details class="enroll-step" >
-<summary><span class="enroll-step-number">02</span><span class="enroll-step-name">Triagem</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
-<div class="enroll-step-body"><p>Depois da inscrição, a pessoa é chamada para uma ou mais entrevistas de triagem, que acolhem a demanda trazida e indicam o encaminhamento mais adequado — para atendimento aqui no Serviço-Escola ou para outro serviço da rede.</p></div></details>
-<details class="enroll-step" >
-<summary><span class="enroll-step-number">03</span><span class="enroll-step-name">Fila de espera</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
-<div class="enroll-step-body"><p>A inscrição não garante início imediato do atendimento. Como a procura costuma ser maior do que o número de vagas, a pessoa entra em uma fila de espera até que haja disponibilidade para o início do acompanhamento.</p></div></details>
-<details class="enroll-step" >
-<summary><span class="enroll-step-number">04</span><span class="enroll-step-name">Início do acompanhamento</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
-<div class="enroll-step-body"><p>Quando surge uma vaga, a pessoa passa a ser atendida por um(a) estudante, sob supervisão de um(a) psicólogo(a) docente. As sessões costumam ocorrer uma vez por semana, com duração entre 50 minutos e 1h30, e a duração total do acompanhamento varia conforme a necessidade de cada caso.</p></div></details></div>
+  <section class="enroll-journey enroll-steps-sec" aria-labelledby="enroll-journey-title">
+    <div class="enroll-container">
+      <div class="enroll-steps-head">
+        <div class="enroll-steps-head-copy"><span class="enroll-kicker">01 / O PROCESSO</span><h2 id="enroll-journey-title">Como funciona <em>a inscrição</em></h2><p>Conheça cada etapa do processo, da inscrição ao início do acompanhamento.</p></div>
+        <svg class="enroll-illus enroll-illus-form" aria-hidden="true" viewBox="0 0 260 250" fill="none">
+          <circle cx="122" cy="128" r="104" fill="#8fb09b" fill-opacity=".13"/>
+          <path d="M32 64a104 104 0 0 1 60-36" stroke="#b59a66" stroke-opacity=".55" stroke-linecap="round"/>
+          <rect x="62" y="48" width="124" height="164" rx="12" fill="#fbfcfb" stroke="#4e7d64" stroke-width="1.5"/>
+          <rect x="98" y="36" width="52" height="24" rx="8" fill="#dfeae3" stroke="#4e7d64" stroke-width="1.5"/>
+          <circle cx="124" cy="48" r="3" fill="#4e7d64"/>
+          <circle cx="86" cy="92" r="9" fill="#4e7d64"/>
+          <path d="M81.5 92l3.2 3.2 5.8-6.4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M106 88h58M106 97h36" stroke="#a7bcad" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="86" cy="128" r="9" fill="#4e7d64"/>
+          <path d="M81.5 128l3.2 3.2 5.8-6.4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M106 124h58M106 133h44" stroke="#a7bcad" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="86" cy="164" r="8.25" stroke="#4e7d64" stroke-width="1.5"/>
+          <path d="M106 160h34" stroke="#a7bcad" stroke-width="2" stroke-linecap="round"/>
+          <path d="M84 192c6-7 10 6 16 0s9-6 14 0" stroke="#4e7d64" stroke-width="1.3" stroke-linecap="round" stroke-opacity=".7"/>
+          <g transform="rotate(38 196 150)">
+            <rect x="188" y="92" width="16" height="92" rx="3" fill="#f3ead6" stroke="#4e7d64" stroke-width="1.5"/>
+            <path d="M188 106h16" stroke="#4e7d64" stroke-width="1.5"/>
+            <path d="M188 184l8 18 8-18Z" fill="#fbfcfb" stroke="#4e7d64" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M193 195.5l3 6.5 3-6.5Z" fill="#4e7d64"/>
+          </g>
+          <path d="M214 60l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4Z" fill="#b59a66" fill-opacity=".7"/>
+          <circle cx="40" cy="186" r="3" fill="#8fb09b"/>
+        </svg>
+      </div>
+      <ol class="enroll-steps" aria-label="Etapas do processo de inscrição">
+        <li class="enroll-card enroll-card-1">
+          <span class="enroll-card-num" aria-hidden="true">01</span>
+          <span class="enroll-card-icon" aria-hidden="true"><svg><use href="#i-pencil"/></svg></span>
+          <h3>Inscrição</h3>
+          <p class="enroll-card-short">On-line com validação presencial, ou direto na unidade.</p>
+          <details class="enroll-card-more"><summary><span class="enroll-card-more-open">Saiba mais</span><span class="enroll-card-more-close">Mostrar menos</span><i aria-hidden="true"></i></summary><p>Pode ser feita de duas formas: inscrição on-line seguida de validação presencial, ou inscrição somente presencial. Pessoas de qualquer idade podem se inscrever; menores de idade ou pessoas sob curatela precisam comparecer acompanhadas de mãe, pai ou responsável legal, com documento de identidade e, quando for o caso, documento que comprove a responsabilidade legal.</p></details>
+        </li>
+        <li class="enroll-card enroll-card-2">
+          <span class="enroll-card-num" aria-hidden="true">02</span>
+          <span class="enroll-card-icon" aria-hidden="true"><svg><use href="#i-search"/></svg></span>
+          <h3>Triagem</h3>
+          <p class="enroll-card-short">Entrevistas que acolhem a sua demanda e indicam o melhor encaminhamento.</p>
+          <details class="enroll-card-more"><summary><span class="enroll-card-more-open">Saiba mais</span><span class="enroll-card-more-close">Mostrar menos</span><i aria-hidden="true"></i></summary><p>Depois da inscrição, a pessoa é chamada para uma ou mais entrevistas de triagem, que acolhem a demanda trazida e indicam o encaminhamento mais adequado — para atendimento aqui no Serviço-Escola ou para outro serviço da rede.</p></details>
+        </li>
+        <li class="enroll-card enroll-card-3">
+          <span class="enroll-card-num" aria-hidden="true">03</span>
+          <span class="enroll-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <h3>Fila de espera</h3>
+          <p class="enroll-card-short">Você aguarda até surgir uma vaga para começar.</p>
+          <details class="enroll-card-more"><summary><span class="enroll-card-more-open">Saiba mais</span><span class="enroll-card-more-close">Mostrar menos</span><i aria-hidden="true"></i></summary><p>A inscrição não garante início imediato do atendimento. Como a procura costuma ser maior do que o número de vagas, a pessoa entra em uma fila de espera até que haja disponibilidade para o início do acompanhamento.</p></details>
+        </li>
+        <li class="enroll-card enroll-card-4">
+          <span class="enroll-card-num" aria-hidden="true">04</span>
+          <span class="enroll-card-icon" aria-hidden="true"><svg><use href="#i-heart"/></svg></span>
+          <h3>Início do acompanhamento</h3>
+          <p class="enroll-card-short">Sessões semanais com estudante, sob supervisão docente.</p>
+          <details class="enroll-card-more"><summary><span class="enroll-card-more-open">Saiba mais</span><span class="enroll-card-more-close">Mostrar menos</span><i aria-hidden="true"></i></summary><p>Quando surge uma vaga, a pessoa passa a ser atendida por um(a) estudante, sob supervisão de um(a) psicólogo(a) docente. As sessões costumam ocorrer uma vez por semana, com duração entre 50 minutos e 1h30, e a duração total do acompanhamento varia conforme a necessidade de cada caso.</p></details>
+        </li>
+      </ol>
     </div>
   </section>
   <section class="enroll-notice-section" aria-labelledby="enroll-notice-title">
@@ -1120,7 +1238,17 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
   </section>
   <section class="enroll-team-section" aria-labelledby="enroll-team-title"><div class="enroll-container"><div class="enroll-team-header"><div><span class="enroll-kicker">02 / RESPONSABILIDADE TÉCNICA</span><h2 id="enroll-team-title">Cuidado com <em>responsabilidade.</em></h2></div><p>Todo o atendimento é acompanhado por profissionais psicólogos com registro ativo no Conselho Regional de Psicologia.</p></div>
   <div class="enroll-team-grid"><article class="enroll-person"><span class="enroll-person-index">01 / EQUIPE TÉCNICA</span><h3>Fernanda Lacerda Monteiro</h3><p>Psicóloga técnica responsável — CRP 06/118452</p></article><article class="enroll-person"><span class="enroll-person-index">02 / EQUIPE TÉCNICA</span><h3>Thiago Azevedo Ribeiro</h3><p>Supervisor de estágio e docente da FCMSCSP — CRP 06/97213</p></article></div></div></section>
-  <section class="enroll-final-section" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final"><span class="enroll-final-arc" aria-hidden="true"></span><div class="enroll-final-content"><span class="enroll-kicker">03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p><a href="" class="enroll-final-link" onclick="if(!this.getAttribute('href')){event.preventDefault();}">Acessar formulário de inscrição <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div></div></section>
+  <section class="enroll-final-section" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final enroll-final-premium">
+        <div class="enroll-final-content"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> 03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p><a href="" class="enroll-final-link" onclick="if(!this.getAttribute('href')){event.preventDefault();}"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a></div>
+        <aside class="enroll-final-card" aria-label="O que você encontra no Serviço-Escola">
+          <span class="enroll-final-card-title">O que você encontra</span>
+          <ul>
+            <li><span class="enroll-final-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Atendimento psicológico gratuito</span></li>
+            <li><span class="enroll-final-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Para pessoas de qualquer idade</span></li>
+            <li><span class="enroll-final-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Estudantes supervisionados por psicólogos docentes</span></li>
+          </ul>
+        </aside>
+      </div></div></section>
 </main>
 </div>
 
