@@ -797,6 +797,89 @@ footer{margin-top:120px}
 }
 body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 10px 30px -15px rgba(0,0,0,.5)}
 .page[hidden]{display:none}
+
+/* Inscrição — estilos isolados: nenhuma regra altera as demais páginas */
+#page-inscricao .enroll-design{--en-ink:#203e37;--en-muted:#64746c;--en-line:rgba(35,79,65,.18);color:var(--en-ink);overflow:hidden}
+#page-inscricao .enroll-container{width:min(1120px,calc(100% - 72px));margin-inline:auto}
+#page-inscricao .enroll-design h1,#page-inscricao .enroll-design h2,#page-inscricao .enroll-design h3{color:var(--en-ink);letter-spacing:-.035em;line-height:1.1;margin:0}
+#page-inscricao .enroll-design h1,#page-inscricao .enroll-design h2{font-family:Georgia,'Times New Roman',serif;font-weight:400}
+#page-inscricao .enroll-design em{font-weight:400;color:#739685}
+#page-inscricao .enroll-kicker{display:inline-flex;align-items:center;gap:12px;font-size:10px;font-weight:700;letter-spacing:.21em;text-transform:uppercase;color:#547d6b}
+#page-inscricao .enroll-kicker-line{width:25px;height:1px;background:currentColor}
+#page-inscricao .enroll-intro{padding:160px 0 108px;position:relative}
+#page-inscricao .enroll-intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(48px,7vw,118px);align-items:center}
+#page-inscricao .enroll-intro h1{font-size:clamp(46px,5.6vw,83px);max-width:620px;margin-top:29px}
+#page-inscricao .enroll-intro-copy{padding-top:35px}
+#page-inscricao .enroll-intro-copy p{font-size:15px;line-height:1.9;color:var(--en-muted);margin:0 0 19px}
+#page-inscricao .enroll-intro-copy b{font-weight:650;color:var(--en-ink)}
+/* Inscricao — refinamento exclusivamente ornamental (2026-11) */
+#page-inscricao .enroll-ornament{width:174px;height:74px;margin-top:31px;isolation:isolate}
+#page-inscricao .enroll-ornament span{width:108px;height:108px;top:0;left:0;border:1px solid rgba(83,126,105,.48);border-right-color:transparent;border-bottom-color:transparent;transform:rotate(-23deg);border-radius:50%}
+#page-inscricao .enroll-ornament span+span{width:81px;height:81px;left:67px;top:15px;border-color:rgba(171,148,101,.48);border-left-color:transparent;border-top-color:transparent;transform:rotate(24deg);opacity:1}
+#page-inscricao .enroll-ornament:after{content:'';position:absolute;left:127px;top:9px;width:5px;height:5px;border-radius:50%;background:#9eaF9e;opacity:.8}
+#page-inscricao .enroll-side-art{position:relative;width:190px;height:190px;margin:53px 0 0 20px;border:1px solid rgba(89,130,105,.37);border-left-color:transparent;border-bottom-color:transparent;transform:rotate(-28deg)}
+#page-inscricao .enroll-side-art:before{content:'';position:absolute;inset:22px;border:1px solid rgba(177,151,105,.36);border-right-color:transparent;border-top-color:transparent;border-radius:50%;transform:rotate(48deg)}
+#page-inscricao .enroll-side-art:after{content:'';position:absolute;left:91px;top:-11px;width:1px;height:40px;background:rgba(103,144,115,.45);transform:rotate(28deg)}
+#page-inscricao .enroll-final-arc{width:510px;height:510px;right:-155px;top:-115px;border:1px solid rgba(227,242,230,.24);border-left-color:transparent;border-bottom-color:transparent;transform:rotate(-20deg);pointer-events:none}
+#page-inscricao .enroll-final-arc:after{inset:47px;border:1px solid rgba(209,197,157,.23);border-top-color:transparent;border-right-color:transparent;transform:rotate(25deg)}
+#page-inscricao .enroll-final-arc:before{content:'';position:absolute;inset:104px;border:1px solid rgba(227,242,230,.12);border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;transform:rotate(15deg)}
+@media(max-width:800px){#page-inscricao .enroll-ornament{width:150px;height:64px;margin-top:18px}#page-inscricao .enroll-side-art{display:none}#page-inscricao .enroll-final-arc{right:-350px;top:-90px;opacity:.55}}
+#page-inscricao .enroll-ornament{position:relative;width:100px;height:45px;margin-top:35px}
+#page-inscricao .enroll-ornament span{position:absolute;width:56px;height:56px;border:1px solid #a7bcad;border-radius:50%;border-right-color:transparent;border-bottom-color:transparent;transform:rotate(-40deg)}
+#page-inscricao .enroll-ornament span+span{left:32px;top:6px;transform:rotate(140deg);opacity:.55}
+#page-inscricao .enroll-journey{padding:90px 0 95px;border-top:1px solid var(--en-line)}
+#page-inscricao .enroll-journey-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(55px,10vw,160px)}
+#page-inscricao .enroll-section-side{position:relative}
+#page-inscricao .enroll-section-side h2,#page-inscricao .enroll-team-header h2{font-size:clamp(38px,4.2vw,61px);margin-top:22px}
+#page-inscricao .enroll-section-side>p{font-size:15px;line-height:1.85;color:var(--en-muted);max-width:280px;margin-top:23px}
+#page-inscricao .enroll-side-art{display:block;width:145px;height:145px;border:1px solid rgba(95,143,116,.26);border-radius:50%;border-right-color:transparent;transform:rotate(-32deg);margin:55px 0 0 45px}
+#page-inscricao .enroll-timeline{position:relative;border-left:1px solid var(--en-line);padding-left:30px}
+#page-inscricao .enroll-step{border-bottom:1px solid var(--en-line);position:relative}
+#page-inscricao .enroll-step:first-child{border-top:1px solid var(--en-line)}
+#page-inscricao .enroll-step:before{content:'';position:absolute;width:7px;height:7px;border-radius:50%;background:#b3c7b9;left:-34px;top:29px;transition:background .3s,transform .3s}
+#page-inscricao .enroll-step[open]:before{background:#4e7d64;transform:scale(1.4)}
+#page-inscricao .enroll-step summary{display:grid;grid-template-columns:46px 1fr 25px;gap:14px;align-items:center;padding:26px 0;cursor:pointer;list-style:none;outline-offset:5px}
+#page-inscricao .enroll-step summary::-webkit-details-marker{display:none}
+#page-inscricao .enroll-step summary:focus-visible,#page-inscricao .enroll-final-link:focus-visible{outline:2px solid #638d76;outline-offset:5px;border-radius:3px}
+#page-inscricao .enroll-step-number{font-size:12px;color:#7a9b86;letter-spacing:.08em}
+#page-inscricao .enroll-step-name{font-size:clamp(19px,2vw,24px);font-family:Georgia,'Times New Roman',serif;color:var(--en-ink);transition:color .2s}
+#page-inscricao .enroll-step summary:hover .enroll-step-name{color:#729a83}
+#page-inscricao .enroll-step-toggle{width:23px;height:23px;border:1px solid var(--en-line);border-radius:50%;position:relative}
+#page-inscricao .enroll-step-toggle:before,#page-inscricao .enroll-step-toggle:after{content:'';position:absolute;top:10px;left:6px;width:9px;height:1px;background:var(--en-ink);transition:transform .25s}
+#page-inscricao .enroll-step-toggle:after{transform:rotate(90deg)}
+#page-inscricao .enroll-step[open] .enroll-step-toggle:after{transform:rotate(0)}
+#page-inscricao .enroll-step-body{padding:0 35px 27px 60px;animation:enrollReveal .35s ease both}
+#page-inscricao .enroll-step-body p{font-size:14px;line-height:1.9;color:var(--en-muted);margin:0}
+@keyframes enrollReveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+#page-inscricao .enroll-notice-section{padding:0 0 115px}
+#page-inscricao .enroll-notice{display:grid;grid-template-columns:52px 1fr;gap:25px;padding:37px 44px;border-left:3px solid #769b83;background:rgba(143,176,155,.10)}
+#page-inscricao .enroll-notice-symbol{width:44px;height:44px;border:1px solid var(--en-line);border-radius:50%;display:grid;place-items:center}
+#page-inscricao .enroll-notice-symbol svg{width:20px;height:20px}
+#page-inscricao .enroll-notice h2{font-size:29px;margin:12px 0}
+#page-inscricao .enroll-notice p{font-size:14px;line-height:1.85;color:var(--en-muted);max-width:770px;margin:0}
+#page-inscricao .enroll-team-section{padding:88px 0 110px;border-top:1px solid var(--en-line)}
+#page-inscricao .enroll-team-header{display:grid;grid-template-columns:1fr .7fr;gap:70px;align-items:end;margin-bottom:55px}
+#page-inscricao .enroll-team-header>p{color:var(--en-muted);line-height:1.8;font-size:15px;margin:0}
+#page-inscricao .enroll-team-grid{display:grid;grid-template-columns:1fr 1fr;gap:35px}
+#page-inscricao .enroll-person{padding:25px 0 5px;border-top:1px solid #8ba999}
+#page-inscricao .enroll-person-index{font-size:10px;letter-spacing:.17em;color:#739382}
+#page-inscricao .enroll-person h3{font-size:clamp(22px,2.3vw,30px);font-family:Georgia,'Times New Roman',serif;font-weight:400;margin:19px 0 11px}
+#page-inscricao .enroll-person p{font-size:13px;color:var(--en-muted);line-height:1.7;margin:0}
+#page-inscricao .enroll-final-section{padding:0 0 110px}
+#page-inscricao .enroll-final{background:#244b3e;position:relative;overflow:hidden;min-height:410px;display:flex;align-items:center;padding:65px clamp(30px,7vw,90px)}
+#page-inscricao .enroll-final-content{position:relative;z-index:1;max-width:690px}
+#page-inscricao .enroll-final .enroll-kicker{color:#bad0bf}
+#page-inscricao .enroll-final h2{font-size:clamp(42px,5vw,68px);color:#fff;margin:21px 0}
+#page-inscricao .enroll-final h2 em{color:#b5cbb8}
+#page-inscricao .enroll-final p{font-size:14px;color:#d8e4db;line-height:1.85;max-width:520px;margin:0 0 29px}
+#page-inscricao .enroll-final-link{display:inline-flex;align-items:center;justify-content:space-between;gap:28px;padding:16px 21px;background:#f5f5ed;color:#244b3e;font-size:13px;font-weight:650;text-decoration:none;transition:transform .25s,background .25s}
+#page-inscricao .enroll-final-link:hover{transform:translateY(-3px);background:#e5efe5}
+#page-inscricao .enroll-final-link svg{width:17px;height:17px}
+#page-inscricao .enroll-final-arc{position:absolute;width:490px;height:490px;border:1px solid rgba(227,242,230,.22);border-radius:50%;right:-95px;top:-40px}
+#page-inscricao .enroll-final-arc:after{content:'';position:absolute;inset:50px;border:1px solid rgba(227,242,230,.16);border-radius:50%;border-bottom-color:transparent}
+@media(max-width:800px){#page-inscricao .enroll-container{width:min(100% - 42px,640px)}#page-inscricao .enroll-intro{padding:115px 0 65px}#page-inscricao .enroll-intro-grid,#page-inscricao .enroll-journey-grid,#page-inscricao .enroll-team-header{grid-template-columns:1fr;gap:22px}#page-inscricao .enroll-intro-copy{padding:0}#page-inscricao .enroll-intro h1{font-size:clamp(43px,10vw,68px)}#page-inscricao .enroll-ornament{margin-top:18px}#page-inscricao .enroll-journey{padding:62px 0 65px}#page-inscricao .enroll-section-side>p{max-width:100%}#page-inscricao .enroll-side-art{display:none}#page-inscricao .enroll-timeline{margin-top:18px}#page-inscricao .enroll-notice-section{padding-bottom:70px}#page-inscricao .enroll-notice{padding:25px 22px;grid-template-columns:1fr;gap:14px}#page-inscricao .enroll-team-section{padding:65px 0 70px}#page-inscricao .enroll-team-header{margin-bottom:35px}#page-inscricao .enroll-team-grid{grid-template-columns:1fr;gap:30px}#page-inscricao .enroll-final-section{padding-bottom:70px}#page-inscricao .enroll-final{min-height:380px;padding:45px 28px}#page-inscricao .enroll-final-arc{right:-300px}}
+@media(max-width:420px){#page-inscricao .enroll-container{width:calc(100% - 34px)}#page-inscricao .enroll-timeline{padding-left:21px}#page-inscricao .enroll-step:before{left:-25px}#page-inscricao .enroll-step summary{grid-template-columns:29px 1fr 23px;gap:9px}#page-inscricao .enroll-step-body{padding-left:38px;padding-right:4px}#page-inscricao .enroll-final-link{gap:10px;width:100%;font-size:12px}}
+@media(prefers-reduced-motion:reduce){#page-inscricao .enroll-design *,#page-inscricao .enroll-design *:before,#page-inscricao .enroll-design *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -1005,76 +1088,40 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 </div>
 
 <div id="page-inscricao" class="page" hidden>
-<!-- INSCREVA-SE -->
-<section style="padding-top:150px;padding-bottom:10px">
-  <div class="wrap" style="max-width:760px">
-    <span class="eyebrow">Inscreva-se</span>
-    <h2>Inscreva-se no Serviço-Escola de Psicologia</h2>
-    <p class="lead">O Serviço-Escola de Psicologia da Faculdade de Ciências Médicas da Santa Casa de São Paulo oferece atendimento psicológico gratuito à comunidade, realizado por estudantes do último ano de Psicologia sob supervisão direta de professoras e professores psicólogos. É, ao mesmo tempo, um espaço de cuidado e um espaço de formação: quem procura o serviço recebe acompanhamento qualificado, e quem está se formando pratica sob orientação constante.</p>
-    <p class="lead" style="margin-top:14px">O funcionamento dos Serviços-Escola e a supervisão dos estágios em Psicologia são regulamentados pela <b>Resolução CFP nº 5, de 3 de fevereiro de 2025</b>, do Conselho Federal de Psicologia, que estabelece as condições adequadas à prática do estágio e garante aos usuários o direito à informação sobre o atendimento, o prontuário e as normas do serviço.</p>
-  </div>
-</section>
-
-<!-- COMO SE INSCREVER -->
-<section style="padding-top:30px;padding-bottom:10px">
-  <div class="wrap" style="max-width:760px">
-    <span class="eyebrow">Como se inscrever</span>
-    <h2 style="margin-bottom:28px">O passo a passo da inscrição</h2>
-    <div class="contact-cards">
-      <div class="cc" style="align-items:flex-start">
-        <span class="ic"><svg><use href="#i-file"/></svg></span>
-        <div><b>1. Inscrição</b><span>Pode ser feita de duas formas: inscrição on-line seguida de validação presencial, ou inscrição somente presencial. Pessoas de qualquer idade podem se inscrever; menores de idade ou pessoas sob curatela precisam comparecer acompanhadas de mãe, pai ou responsável legal, com documento de identidade e, quando for o caso, documento que comprove a responsabilidade legal.</span></div>
+<main class="enroll-design" aria-label="Inscrição no Serviço-Escola">
+  <section class="enroll-intro" aria-labelledby="enroll-title">
+    <div class="enroll-container enroll-intro-grid">
+      <div class="enroll-intro-heading"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> INSCRIÇÕES · SERVIÇO-ESCOLA</span>
+        <h1 id="enroll-title">Um primeiro passo <em>para o cuidado.</em></h1>
+        <div class="enroll-ornament" aria-hidden="true"><span></span><span></span></div>
       </div>
-      <div class="cc" style="align-items:flex-start">
-        <span class="ic"><svg><use href="#i-search"/></svg></span>
-        <div><b>2. Triagem</b><span>Depois da inscrição, a pessoa é chamada para uma ou mais entrevistas de triagem, que acolhem a demanda trazida e indicam o encaminhamento mais adequado — para atendimento aqui no Serviço-Escola ou para outro serviço da rede.</span></div>
-      </div>
-      <div class="cc" style="align-items:flex-start">
-        <span class="ic"><svg><use href="#i-cal"/></svg></span>
-        <div><b>3. Fila de espera</b><span>A inscrição não garante início imediato do atendimento. Como a procura costuma ser maior do que o número de vagas, a pessoa entra em uma fila de espera até que haja disponibilidade para o início do acompanhamento.</span></div>
-      </div>
-      <div class="cc" style="align-items:flex-start">
-        <span class="ic"><svg><use href="#i-heart"/></svg></span>
-        <div><b>4. Início do acompanhamento</b><span>Quando surge uma vaga, a pessoa passa a ser atendida por um(a) estudante, sob supervisão de um(a) psicólogo(a) docente. As sessões costumam ocorrer uma vez por semana, com duração entre 50 minutos e 1h30, e a duração total do acompanhamento varia conforme a necessidade de cada caso.</span></div>
-      </div>
+      <div class="enroll-intro-copy"><p>O Serviço-Escola de Psicologia da Faculdade de Ciências Médicas da Santa Casa de São Paulo oferece atendimento psicológico gratuito à comunidade, realizado por estudantes do último ano de Psicologia sob supervisão direta de professoras e professores psicólogos. É, ao mesmo tempo, um espaço de cuidado e um espaço de formação: quem procura o serviço recebe acompanhamento qualificado, e quem está se formando pratica sob orientação constante.</p><p>O funcionamento dos Serviços-Escola e a supervisão dos estágios em Psicologia são regulamentados pela <b>Resolução CFP nº 5, de 3 de fevereiro de 2025</b>, do Conselho Federal de Psicologia, que estabelece as condições adequadas à prática do estágio e garante aos usuários o direito à informação sobre o atendimento, o prontuário e as normas do serviço.</p></div>
     </div>
-    <div class="cc" style="margin-top:14px;background:var(--sky);border-color:var(--sky)">
-      <span class="ic" style="background:#fff"><svg><use href="#i-info"/></svg></span>
-      <div><b>Atenção</b><span>O Serviço-Escola não realiza atendimentos de urgência ou emergência. Em caso de crise, procure o SAMU (192) ou, para apoio emocional e prevenção do suicídio, o CVV (188), disponível 24 horas por dia.</span></div>
+  </section>
+  <section class="enroll-journey" aria-labelledby="enroll-journey-title">
+    <div class="enroll-container enroll-journey-grid">
+      <div class="enroll-section-side"><span class="enroll-kicker">01 / O PROCESSO</span><h2 id="enroll-journey-title">Como funciona<br><em>a inscrição</em></h2><p>Conheça cada etapa do processo, da inscrição ao início do acompanhamento.</p><span class="enroll-side-art" aria-hidden="true"></span></div>
+      <div class="enroll-timeline" aria-label="Etapas do processo de inscrição"><details class="enroll-step" open>
+<summary><span class="enroll-step-number">01</span><span class="enroll-step-name">Inscrição</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
+<div class="enroll-step-body"><p>Pode ser feita de duas formas: inscrição on-line seguida de validação presencial, ou inscrição somente presencial. Pessoas de qualquer idade podem se inscrever; menores de idade ou pessoas sob curatela precisam comparecer acompanhadas de mãe, pai ou responsável legal, com documento de identidade e, quando for o caso, documento que comprove a responsabilidade legal.</p></div></details>
+<details class="enroll-step" >
+<summary><span class="enroll-step-number">02</span><span class="enroll-step-name">Triagem</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
+<div class="enroll-step-body"><p>Depois da inscrição, a pessoa é chamada para uma ou mais entrevistas de triagem, que acolhem a demanda trazida e indicam o encaminhamento mais adequado — para atendimento aqui no Serviço-Escola ou para outro serviço da rede.</p></div></details>
+<details class="enroll-step" >
+<summary><span class="enroll-step-number">03</span><span class="enroll-step-name">Fila de espera</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
+<div class="enroll-step-body"><p>A inscrição não garante início imediato do atendimento. Como a procura costuma ser maior do que o número de vagas, a pessoa entra em uma fila de espera até que haja disponibilidade para o início do acompanhamento.</p></div></details>
+<details class="enroll-step" >
+<summary><span class="enroll-step-number">04</span><span class="enroll-step-name">Início do acompanhamento</span><span class="enroll-step-toggle" aria-hidden="true"></span></summary>
+<div class="enroll-step-body"><p>Quando surge uma vaga, a pessoa passa a ser atendida por um(a) estudante, sob supervisão de um(a) psicólogo(a) docente. As sessões costumam ocorrer uma vez por semana, com duração entre 50 minutos e 1h30, e a duração total do acompanhamento varia conforme a necessidade de cada caso.</p></div></details></div>
     </div>
-  </div>
-</section>
-
-<!-- EQUIPE TÉCNICA -->
-<section style="padding-top:30px;padding-bottom:10px">
-  <div class="wrap" style="max-width:760px">
-    <span class="eyebrow">Quem acompanha o serviço</span>
-    <h2 style="margin-bottom:10px">Equipe técnica responsável</h2>
-    <p class="lead" style="margin-bottom:28px">Todo o atendimento é acompanhado por profissionais psicólogos com registro ativo no Conselho Regional de Psicologia.</p>
-    <div class="contact-cards">
-      <div class="cc">
-        <span class="ic"><svg><use href="#i-user"/></svg></span>
-        <div><b>Fernanda Lacerda Monteiro</b><span>Psicóloga técnica responsável — CRP 06/118452</span></div>
-      </div>
-      <div class="cc">
-        <span class="ic"><svg><use href="#i-cap"/></svg></span>
-        <div><b>Thiago Azevedo Ribeiro</b><span>Supervisor de estágio e docente da FCMSCSP — CRP 06/97213</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FORMULÁRIO -->
-<section style="padding-top:10px;padding-bottom:110px">
-  <div class="wrap" style="max-width:760px">
-    <div class="cta">
-      <div><h2>Pronta(o) para se inscrever?</h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p></div>
-      <div class="cta-btns">
-        <a href="" class="btn btn-light" onclick="if(!this.getAttribute('href')){event.preventDefault();}">Acessar formulário de inscrição<svg><use href="#i-arrow"/></svg></a>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
+  <section class="enroll-notice-section" aria-labelledby="enroll-notice-title">
+    <div class="enroll-container"><aside class="enroll-notice"><div class="enroll-notice-symbol" aria-hidden="true"><svg><use href="#i-info"/></svg></div><div><span class="enroll-kicker">INFORMAÇÃO ESSENCIAL</span><h2 id="enroll-notice-title">Antes de continuar</h2><p>O Serviço-Escola não realiza atendimentos de urgência ou emergência. Em caso de crise, procure o SAMU (192) ou, para apoio emocional e prevenção do suicídio, o CVV (188), disponível 24 horas por dia.</p></div></aside></div>
+  </section>
+  <section class="enroll-team-section" aria-labelledby="enroll-team-title"><div class="enroll-container"><div class="enroll-team-header"><div><span class="enroll-kicker">02 / RESPONSABILIDADE TÉCNICA</span><h2 id="enroll-team-title">Cuidado com <em>responsabilidade.</em></h2></div><p>Todo o atendimento é acompanhado por profissionais psicólogos com registro ativo no Conselho Regional de Psicologia.</p></div>
+  <div class="enroll-team-grid"><article class="enroll-person"><span class="enroll-person-index">01 / EQUIPE TÉCNICA</span><h3>Fernanda Lacerda Monteiro</h3><p>Psicóloga técnica responsável — CRP 06/118452</p></article><article class="enroll-person"><span class="enroll-person-index">02 / EQUIPE TÉCNICA</span><h3>Thiago Azevedo Ribeiro</h3><p>Supervisor de estágio e docente da FCMSCSP — CRP 06/97213</p></article></div></div></section>
+  <section class="enroll-final-section" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final"><span class="enroll-final-arc" aria-hidden="true"></span><div class="enroll-final-content"><span class="enroll-kicker">03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p><a href="" class="enroll-final-link" onclick="if(!this.getAttribute('href')){event.preventDefault();}">Acessar formulário de inscrição <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div></div></section>
+</main>
 </div>
 
 <div id="page-faq" class="page" hidden>
