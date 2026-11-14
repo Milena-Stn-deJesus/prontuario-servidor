@@ -24,6 +24,16 @@ a{color:inherit;text-decoration:none}
 section{padding:80px 0}
 .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;letter-spacing:0;color:var(--blue)}
 .eyebrow::before{content:"";width:24px;height:2px;background:currentColor;border-radius:2px;flex:none}
+/* HOME — atalho para a FAQ dentro do bloco do prontuário */
+.access-more{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+.access-more-title{display:block;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.access-more ul{list-style:none;margin:0 0 20px;padding:0}
+.access-more li+li{border-top:1px solid var(--line)}
+.access-more li a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 2px;font-size:15px;font-weight:600;color:var(--navy);transition:color .2s,padding .2s}
+.access-more li a svg{width:16px;height:16px;flex:none;color:var(--blue);transition:transform .2s}
+.access-more li a:hover{color:var(--blue);padding-left:6px}
+.access-more li a:hover svg{transform:translateX(4px)}
+.access-more-btn{font-size:14px}
 .welcome-sec{padding-top:0;padding-bottom:16px}
 .welcome-card{position:relative;overflow:hidden;background:linear-gradient(170deg,var(--sky) 0%,#fff 65%);border:1px solid #dcf0e8;border-radius:28px;padding:60px 48px;text-align:center;box-shadow:0 1px 2px rgba(19,55,42,.04),0 14px 36px -20px rgba(19,55,42,.18)}
 .welcome-arc{position:absolute;pointer-events:none;z-index:0;fill:none}
@@ -1123,6 +1133,15 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         <span class="eyebrow">Como solicitar acesso ao meu prontuário</span>
         <h2>Quero ver meu prontuário. E agora?</h2>
         <p class="lead">O acesso do paciente ao próprio prontuário não é automático — ele é liberado mediante solicitação formal, avaliada pela equipe responsável. Isso garante que a informação seja entregue com o cuidado e o contexto adequados.</p>
+        <div class="access-more">
+          <span class="access-more-title">Outras perguntas que as pessoas costumam fazer</span>
+          <ul>
+            <li><a href="#faq" onclick="faqSetTab(3)"><span>Quem pode ver o meu prontuário?</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+            <li><a href="#faq" onclick="faqSetTab(3)"><span>Posso editar ou apagar alguma informação do meu prontuário?</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+            <li><a href="#faq" onclick="faqSetTab(3)"><span>Como sei se minha consulta está confirmada?</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+          </ul>
+          <a href="#faq" class="btn btn-outline access-more-btn">Ver todas as perguntas frequentes<svg><use href="#i-arrow"/></svg></a>
+        </div>
       </div>
     </div>
   </div>
