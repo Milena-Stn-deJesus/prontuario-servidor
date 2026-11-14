@@ -225,6 +225,14 @@ h2{font-size:clamp(24px,3.2vw,36px);margin:14px 0 18px}
 .sobre-bg-art{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.07;z-index:0;pointer-events:none}
 #page-sobre{position:relative}
 #page-sobre>section{position:relative;z-index:1}
+/* FAQ — título centralizado com as perguntas logo abaixo */
+#page-faq .faq-grid{grid-template-columns:1fr;gap:40px;max-width:860px}
+#page-faq .faq-side{align-items:center;text-align:center}
+#page-faq .faq-kicker{margin-bottom:20px}
+#page-faq .faq-kicker::after{content:"";width:24px;height:2px;background:currentColor;border-radius:2px;flex:none}
+#page-faq .faq-title{text-align:center;margin:0;font-size:clamp(28px,3.4vw,44px)}
+#page-faq .faq-tabs{justify-content:center}
+@media(max-width:600px){#page-faq .faq-grid{gap:28px}#page-faq .faq-tabs{justify-content:flex-start}}
 .faq-bg-art{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.05;z-index:0;pointer-events:none}
 #page-faq{position:relative}
 #page-faq>section{position:relative;z-index:1}
