@@ -955,7 +955,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 @media(max-width:900px){#page-inscricao .enroll-intro{display:block;min-height:0;padding:118px 0 86vw}#page-inscricao .enroll-intro-grid{padding-left:0}#page-inscricao .enroll-intro::before{bottom:-17.9vw;height:118.2vw;background-size:210% auto}#page-inscricao .enroll-intro::after{height:8vw}#page-inscricao .enroll-intro h1{font-size:clamp(38px,9vw,52px)}}
 /* Inscrição — aviso de urgência compacto e em cor de alerta */
 #page-inscricao .enroll-notice-section{padding:0 0 84px}
-#page-inscricao .enroll-notice{grid-template-columns:40px 1fr;gap:16px;align-items:start;max-width:900px;padding:18px 24px 18px 20px;background:#fff1d0;border:1px solid #f1cb74;border-left:5px solid #e39a12;border-radius:16px;box-shadow:0 14px 26px -22px rgba(160,104,0,.6)}
+#page-inscricao .enroll-notice{grid-template-columns:40px 1fr;gap:16px;align-items:start;max-width:none;padding:18px 24px 18px 20px;background:#fff1d0;border:1px solid #f1cb74;border-left:5px solid #e39a12;border-radius:16px;box-shadow:0 14px 26px -22px rgba(160,104,0,.6)}
 #page-inscricao .enroll-notice-symbol{width:40px;height:40px;border:none;background:#e39a12;color:#fff}
 #page-inscricao .enroll-notice h2{font-family:var(--sans);font-size:15.5px;font-weight:700;letter-spacing:0;line-height:1.3;color:#7a4a00;margin:1px 0 4px}
 #page-inscricao .enroll-notice p{font-size:13.5px;line-height:1.65;color:#5e4a22;max-width:none}
@@ -972,6 +972,13 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 #page-inscricao .enroll-team-compact .enroll-person h3{font-size:18px;margin:0 0 4px}
 #page-inscricao .enroll-team-compact .enroll-person p{font-size:12.5px;line-height:1.5}
 @media(max-width:900px){#page-inscricao .enroll-team-strip{grid-template-columns:1fr;padding:24px 22px}#page-inscricao .enroll-team-compact .enroll-person{padding:16px 0 0;border-left:none;border-top:1px solid var(--en-line)}}
+/* Inscrição — espaçamento vertical mais enxuto entre os blocos */
+#page-inscricao .enroll-journey.enroll-steps-sec{padding:60px 0 36px}
+#page-inscricao .enroll-steps-head{margin-bottom:34px}
+#page-inscricao .enroll-notice-section{padding:0 0 28px}
+#page-inscricao .enroll-team-section.enroll-team-compact{padding:0 0 36px}
+#page-inscricao .enroll-final-section{padding:0 0 76px}
+@media(max-width:800px){#page-inscricao .enroll-journey.enroll-steps-sec{padding:46px 0 30px}#page-inscricao .enroll-final-section{padding-bottom:56px}}
 </style>
 </head>
 <body>
