@@ -182,7 +182,7 @@ def _enviar_confirmacao_reagendamento(destinatario, nome_paciente, nova_data):
     corpo = (
         "Olá, %s!\n\n"
         "Sua consulta na Clínica-Escola de Psicologia foi reagendada.\n\n"
-        "Nova data: %s\n\n"
+        "Nova data e horário: %s\n\n"
         "Em caso de dúvidas, entre em contato com a equipe pelo site.\n\n"
         "Este é um e-mail automático — não é necessário responder."
     ) % (nome_paciente or "paciente", nova_data)

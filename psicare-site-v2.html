@@ -680,7 +680,7 @@ footer{margin-top:120px}
    da tabela — precisa de largura própria pro input de data, diferente do
    .eq-input padrão (que é width:100%, bom em formulário mas não numa célula). */
 .eq-reagendar-action{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.eq-reagendar-action input[type="date"]{width:auto;min-width:0;padding:7px 10px;font-size:12.5px}
+.eq-reagendar-action input[type="date"],.eq-reagendar-action input[type="time"]{width:auto;min-width:0;padding:7px 10px;font-size:12.5px}
 .eq-case-open svg{width:13px;height:13px;color:var(--blue)}
 .eq-case-open:hover{border-color:var(--blue);background:var(--sky);transform:translateY(-1px)}
 .dash-record{border:1px solid var(--line);border-radius:16px;padding:24px;height:100%}
@@ -3310,7 +3310,8 @@ route();
       const action = r.status === 'confirmado'
         ? ''
         : '<div class="eq-reagendar-action">'
-          + '<input type="date" class="eq-input" data-reagendar-data="'+esc(r._id)+'">'
+          + '<input type="date" class="eq-input" aria-label="Nova data" data-reagendar-data="'+esc(r._id)+'">'
+          + '<input type="time" class="eq-input" aria-label="Novo horário" data-reagendar-hora="'+esc(r._id)+'">'
           + '<button type="button" class="eq-case-open" data-reagendar-confirmar="'+esc(r._id)+'"><svg><use href="#i-arrow"/></svg>Confirmar</button>'
           + '</div>';
       return '<tr><td>'+esc(r.paciente)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.solicitado_em)+'</td><td>'+badge+'</td><td>'+action+'</td></tr>';
@@ -3327,10 +3328,16 @@ route();
         if(dateInput) dateInput.focus();
         return;
       }
+      const timeInput = reagendamentosBody.querySelector('[data-reagendar-hora="'+reqId+'"]');
+      const novaHora = timeInput ? timeInput.value : '';
+      if(!novaHora){
+        if(timeInput) timeInput.focus();
+        return;
+      }
       const novaDataBr = (function(iso){
         const partes = iso.split('-');
         return partes.length===3 ? (partes[2]+'/'+partes[1]+'/'+partes[0]) : iso;
-      })(novaData);
+      })(novaData) + ' às ' + novaHora.replace(':','h');
       btn.disabled = true;
       window.apiConfirmarReagendamento(reqId, novaDataBr).then(function(resp){
         const fila = window.PRONTUARIO_REAGENDAMENTOS || [];
@@ -3340,8 +3347,8 @@ route();
         if(reagendamentosMsg){
           reagendamentosMsg.hidden = false;
           reagendamentosMsg.textContent = resp.enviado_email
-            ? 'Data confirmada e e-mail enviado ao paciente.'
-            : 'Data confirmada no sistema — porém o e-mail NÃO foi enviado (SMTP não configurado no servidor; veja as instruções no topo do server.py).';
+            ? 'Data e horário confirmados e e-mail enviado ao paciente.'
+              : 'Data e horário confirmados no sistema — porém o e-mail NÃO foi enviado (SMTP não configurado no servidor; veja as instruções no topo do server.py).';
         }
       }).catch(function(err){
         console.warn('Não foi possível confirmar o reagendamento no servidor:', err);
