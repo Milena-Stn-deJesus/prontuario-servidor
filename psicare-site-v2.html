@@ -670,10 +670,10 @@ footer{margin-top:120px}
 .eq-tec .eq-side::after{content:"";position:absolute;left:0;right:0;bottom:64px;height:210px;background:#dff0e7;-webkit-mask:var(--eq-art) center 62%/260% auto no-repeat,linear-gradient(to top,#000 45%,transparent 100%);-webkit-mask-composite:source-in;mask:var(--eq-art) center 62%/260% auto no-repeat,linear-gradient(to top,#000 45%,transparent 100%);mask-composite:intersect;opacity:.2;pointer-events:none}
 .eq-tec .eq-side>*{position:relative;z-index:1}
 .eq-tec .eq-side-brand{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 6px}
-.eq-side-logo{width:46px;height:46px;object-fit:contain;filter:brightness(0) invert(1);opacity:.92;margin-bottom:10px}
-.eq-side-logo:not([src]){display:none}
-.eq-tec .eq-side-brand b{font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:.06em}
-.eq-tec .eq-side-brand small{margin-top:4px;font-size:11px;color:#b9d2c6}
+.eq-side-logo{width:84px;height:auto;color:#eef5f0;margin-bottom:12px}
+.eq-tec .eq-side-brand{padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.2)}
+.eq-tec .eq-side-brand b{font-family:var(--serif);font-weight:400;font-size:23px;letter-spacing:.03em;line-height:1.1}
+.eq-tec .eq-side-brand small{margin-top:8px;font-size:12.5px;line-height:1.4;color:#d5e6dd}
 .eq-tec .eq-side-link{border-radius:10px;font-size:13.5px}
 .eq-tec .eq-side-link.is-active{background:#e3ecdf;color:var(--navy);font-weight:600}
 .eq-tec .eq-side-link.is-active .eq-side-count{background:var(--navy);color:#fff}
@@ -721,7 +721,7 @@ footer{margin-top:120px}
 .eq-tec .dash-table th{border-bottom-color:var(--tc-line)}
 .eq-tec .dash-table td{border-bottom-color:var(--tc-line)}
 .eq-tec .eq-tec-title,.eq-tec .dash-hist-head h3,.eq-tec .eq-pt-head-title h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--navy)}
-@media(max-width:900px){.eq-tec .eq-side::after{display:none}.eq-tec .eq-side-brand{flex-direction:row;align-items:center;gap:10px;text-align:left}.eq-side-logo{width:32px;height:32px;margin:0}.eq-tec .eq-main{padding:24px 18px 30px}}
+@media(max-width:900px){.eq-tec .eq-side::after{display:none}.eq-tec .eq-side-brand{flex-direction:row;align-items:center;gap:10px;text-align:left}.eq-side-logo{width:44px;margin:0}.eq-tec .eq-side-brand{padding-bottom:0;border-bottom:0}.eq-tec .eq-side-brand b{font-size:18px}.eq-tec .eq-main{padding:24px 18px 30px}}
 .eq-head-actions{display:flex;align-items:center;gap:18px;flex:none}
 .eq-notif{position:relative}
 .eq-notif-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--navy);display:grid;place-items:center;cursor:pointer;transition:border-color .2s,background .2s}
@@ -2076,7 +2076,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <div class="auth-card auth-dash" id="eq-dash-card">
         <aside class="eq-side eq-tec-only" id="eq-side" aria-label="Navegação do painel técnico">
           <div class="eq-side-top">
-            <div class="eq-side-brand"><img class="eq-side-logo" id="eq-side-logo" alt="" aria-hidden="true"><b>FCMSCSP</b><small>Prontuário Eletrônico de Psicologia</small></div>
+            <div class="eq-side-brand"><svg class="eq-side-logo" viewBox="0 0 96 70" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 66h88M8 62h80M12 62V30h72v32"/><path d="M10 30h76M12 26h72"/><path d="M32 62V26M64 62V26"/><path d="M30 26L48 12l18 14"/><path d="M48 12V6M46 6h4"/><circle cx="48" cy="20.5" r="2.4"/><path d="M38 62V36M44 62V36M52 62V36M58 62V36M36 36h24"/><path d="M45 62V50a3 3 0 0 1 6 0v12"/><path d="M16 36h4v8h-4zM24 36h4v8h-4zM16 49h4v8h-4zM24 49h4v8h-4zM68 36h4v8h-4zM76 36h4v8h-4zM68 49h4v8h-4zM76 49h4v8h-4z"/></svg><b>FCMSCSP</b><small>Prontuário Eletrônico<br>de Psicologia</small></div>
             <button type="button" class="eq-side-toggle" id="eq-side-toggle" aria-expanded="false" aria-controls="eq-side-nav">Menu</button>
           </div>
           <nav class="eq-side-nav" id="eq-side-nav">
@@ -3697,9 +3697,6 @@ route();
     const avatar = document.getElementById('eq-avatar');
     if(avatar) avatar.textContent = initials(String(currentName || '').replace(/^(Dra?\.|Prof\.?a?)\s+/i, ''));
     /* Emblema e desenho do prédio: reaproveitam imagens que o site já tem. */
-    const logo = document.getElementById('eq-side-logo');
-    const emblema = document.querySelector('img[alt="FCMSCSP"]');
-    if(logo && emblema && !logo.getAttribute('src')) logo.src = emblema.src;
     /* O desenho vira uma máscara (traço opaco, fundo transparente) feita uma única vez em canvas,
        para poder ser pintado claro na barra lateral e escuro no fundo do painel. */
     const arte = document.querySelector('img.faq-bg-art');
