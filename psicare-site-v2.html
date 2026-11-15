@@ -652,6 +652,7 @@ footer{margin-top:120px}
 
 /* Indicadores de acompanhamento */
 .eq-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.eq-stats-row[hidden]{display:none}
 .eq-stat-card{border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:4px}
 .eq-stat-value{font-size:28px;font-weight:700;color:var(--navy);line-height:1}
 .eq-stat-label{font-size:12.5px;color:var(--muted)}
@@ -1988,10 +1989,10 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <h3 id="eq-cases-title">Casos</h3>
           </div>
           <div class="eq-cases-filter" id="eq-cases-filter" hidden>
-            <label for="eq-cases-student">Estudante</label>
+            <label for="eq-cases-student">Casos de</label>
             <select class="eq-select" id="eq-cases-student"></select>
           </div>
-          <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha um estudante para ver os casos dele.</p>
+          <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha o estudante para acompanhar os casos dele.</p>
           <table class="dash-table">
             <caption class="sr-only">Lista de casos acessíveis ao perfil logado, com paciente, estudante, supervisor e status</caption>
             <thead>
@@ -3247,7 +3248,7 @@ route();
     });
     const nomes = Object.keys(grupos).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
     if(casesStudentSel && casesStudentSel!=='__todos' && !grupos[casesStudentSel]) casesStudentSel = '';
-    casesStudentSelect.innerHTML = '<option value="">Selecione um estudante…</option>'
+    casesStudentSelect.innerHTML = '<option value="">Selecione o estudante…</option>'
       + nomes.map(function(n){
           const g = grupos[n];
           return '<option value="'+esc(n)+'">'+esc(n)+' — '+g.total+(g.total===1?' caso':' casos')+', '+g.ativos+(g.ativos===1?' ativo':' ativos')+'</option>';
@@ -3387,7 +3388,7 @@ route();
     } else if(role === 'supervisor'){
       if(roleEyebrow) roleEyebrow.textContent = 'Painel do supervisor';
       if(greetingEl) greetingEl.textContent = 'Olá, ' + displayName + '!';
-      if(casesTitle) casesTitle.textContent = 'Casos do serviço';
+      if(casesTitle) casesTitle.textContent = 'Acompanhar caso';
       rows.forEach(r=> r.hidden = false);
       if(casesTable) casesTable.classList.remove('eq-hide-estudante-col');
       if(calEyebrow) calEyebrow.textContent = 'Agenda do serviço';
@@ -3400,7 +3401,7 @@ route();
     } else {
       if(roleEyebrow) roleEyebrow.textContent = 'Painel técnico';
       if(greetingEl) greetingEl.textContent = 'Olá, ' + displayName + '!';
-      if(casesTitle) casesTitle.textContent = 'Casos do serviço';
+      if(casesTitle) casesTitle.textContent = 'Acompanhar caso';
       rows.forEach(r=> r.hidden = false);
       if(casesTable) casesTable.classList.remove('eq-hide-estudante-col');
       if(calEyebrow) calEyebrow.textContent = 'Agenda do serviço';
@@ -3415,6 +3416,8 @@ route();
     }
     applyCasesFilter();
     renderNotifs();
+    const statsRow = document.getElementById('eq-stats-row');
+    if(statsRow) statsRow.hidden = (role === 'estudante');
     const quickActions = document.getElementById('eq-quick-actions');
     if(quickActions) quickActions.hidden = !newPatientCard || newPatientCard.hidden;
     resetCalendarView();
