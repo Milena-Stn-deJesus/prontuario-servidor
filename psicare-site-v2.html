@@ -594,8 +594,20 @@ footer{margin-top:120px}
 .eq-quick-actions{display:flex;justify-content:flex-end;margin:-6px 0 20px}
 .eq-quick-actions .btn{padding:11px 20px;font-size:14px}
 .eq-cases-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}
-.eq-cases-filter label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.eq-cases-filter .eq-select{width:auto;flex:1 1 260px;max-width:440px;padding:10px 14px;font-size:14px}
+.eq-cases-filter .btn{padding:10px 20px;font-size:14px}
+.eq-cases-filter .btn[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.eq-students-search{margin:10px 0 0}
+.eq-students-search[hidden]{display:none}
+.eq-students-search .eq-input{padding:10px 14px;font-size:14px}
+.eq-cases-current{font-family:var(--serif);font-size:17px;color:var(--navy)}
+.eq-students{list-style:none;margin:10px 0 4px;padding:0;max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:14px}
+.eq-students[hidden]{display:none}
+.eq-students li+li{border-top:1px solid var(--line)}
+.eq-student-item{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;text-align:left;background:none;border:0;padding:13px 18px;font-family:var(--sans);cursor:pointer;transition:background .2s}
+.eq-student-item:hover,.eq-student-item.is-current{background:var(--sky)}
+.eq-student-item b{display:block;font-size:14.5px;font-weight:600;color:var(--navy)}
+.eq-student-item small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.eq-student-count{font-size:12.5px;color:var(--muted);white-space:nowrap}
 #eq-cases-table-card table[hidden]{display:none}
 
 /* Minha agenda — calendário compacto + atendimentos do dia, lado a lado */
@@ -1989,10 +2001,17 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <h3 id="eq-cases-title">Casos</h3>
           </div>
           <div class="eq-cases-filter" id="eq-cases-filter" hidden>
-            <label for="eq-cases-student">Casos de</label>
-            <select class="eq-select" id="eq-cases-student"></select>
+            <button type="button" class="btn btn-outline" id="eq-cases-toggle" aria-expanded="false" aria-controls="eq-cases-students">Escolher estudante</button>
+            <button type="button" class="btn btn-outline" id="eq-cases-ativos" aria-pressed="false">Pacientes ativos</button>
+            <span class="eq-cases-current" id="eq-cases-current" hidden></span>
           </div>
-          <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha o estudante para acompanhar os casos dele.</p>
+          <div class="eq-students-search" id="eq-cases-search-box" hidden>
+            <label class="sr-only" for="eq-cases-search">Buscar estudante pelo nome</label>
+            <input type="search" class="eq-input" id="eq-cases-search" placeholder="Buscar estudante pelo nome…" autocomplete="off">
+          </div>
+          <ul class="eq-students" id="eq-cases-students" hidden></ul>
+          <p class="eq-pt-empty" id="eq-cases-search-empty" hidden>Nenhum estudante encontrado com esse nome.</p>
+          <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha um estudante para acompanhar os casos dele, ou veja todos os pacientes ativos.</p>
           <table class="dash-table">
             <caption class="sr-only">Lista de casos acessíveis ao perfil logado, com paciente, estudante, supervisor e status</caption>
             <thead>
@@ -3227,14 +3246,39 @@ route();
      um estudante e só então aparecem os casos dele. Assim a tela continua
      curta mesmo com muitos estudantes e pacientes. */
   let casesStudentSel = '';
+  let casesListOpen = false;
   const casesFilterBox = document.getElementById('eq-cases-filter');
-  const casesStudentSelect = document.getElementById('eq-cases-student');
+  const casesToggle = document.getElementById('eq-cases-toggle');
+  const casesCurrent = document.getElementById('eq-cases-current');
+  const casesStudents = document.getElementById('eq-cases-students');
   const casesHint = document.getElementById('eq-cases-hint');
+  const casesAtivosBtn = document.getElementById('eq-cases-ativos');
+  const casesSearchBox = document.getElementById('eq-cases-search-box');
+  const casesSearch = document.getElementById('eq-cases-search');
+  const casesSearchEmpty = document.getElementById('eq-cases-search-empty');
+  const semAcento = function(t){ return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim(); };
+  /* Filtra a lista de estudantes pelo que foi digitado (sem diferenciar acento ou maiúscula). */
+  function filtrarEstudantes(){
+    if(!casesStudents) return;
+    const termo = semAcento(casesSearch ? casesSearch.value : '');
+    let visiveis = 0;
+    Array.from(casesStudents.children).forEach(function(li){
+      const btn = li.querySelector('[data-student]');
+      const especial = btn && btn.dataset.student.indexOf('__')===0;
+      const bate = !termo || (!especial && semAcento(btn ? btn.dataset.student : '').indexOf(termo) !== -1);
+      li.hidden = !bate;
+      if(bate && !especial) visiveis++;
+    });
+    if(casesSearchEmpty) casesSearchEmpty.hidden = !(casesListOpen && termo && visiveis===0);
+  }
   function applyCasesFilter(){
-    if(!casesBody || !casesFilterBox || !casesStudentSelect) return;
+    if(!casesBody || !casesFilterBox || !casesStudents) return;
     const rows = Array.from(casesBody.querySelectorAll('tr'));
     if(currentRole!=='tecnico' && currentRole!=='supervisor'){
       casesFilterBox.hidden = true;
+      casesStudents.hidden = true;
+      if(casesSearchBox) casesSearchBox.hidden = true;
+      if(casesSearchEmpty) casesSearchEmpty.hidden = true;
       if(casesHint) casesHint.hidden = true;
       if(casesTable){ casesTable.hidden = false; casesTable.classList.remove('eq-hide-estudante-only'); }
       return;
@@ -3246,25 +3290,74 @@ route();
       g.total++;
       if(r.querySelector('.dash-badge-ok')) g.ativos++;
     });
-    const nomes = Object.keys(grupos).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
-    if(casesStudentSel && casesStudentSel!=='__todos' && !grupos[casesStudentSel]) casesStudentSel = '';
-    casesStudentSelect.innerHTML = '<option value="">Selecione o estudante…</option>'
-      + nomes.map(function(n){
-          const g = grupos[n];
-          return '<option value="'+esc(n)+'">'+esc(n)+' — '+g.total+(g.total===1?' caso':' casos')+', '+g.ativos+(g.ativos===1?' ativo':' ativos')+'</option>';
-        }).join('')
-      + '<option value="__todos">Todos os estudantes ('+rows.length+(rows.length===1?' caso':' casos')+')</option>';
-    casesStudentSelect.value = casesStudentSel;
-    rows.forEach(function(r){
-      r.hidden = !(casesStudentSel==='__todos' || (casesStudentSel && nomeDe(r)===casesStudentSel));
-    });
+    /* Ordem alfabética, ignorando acentos e maiúsculas. */
+    const nomes = Object.keys(grupos).sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
+    if(casesStudentSel && casesStudentSel.indexOf('__')!==0 && !grupos[casesStudentSel]) casesStudentSel = '';
+    /* RA: só aparece quando o cadastro do estudante tiver esse dado. */
+    const raDe = window.PRONTUARIO_ESTUDANTES_RA || {};
+    const contagem = function(total, ativos){ return total+(total===1?' caso':' casos')+' · '+ativos+(ativos===1?' ativo':' ativos'); };
+    casesStudents.innerHTML = nomes.map(function(n){
+        const g = grupos[n];
+        return '<li><button type="button" class="eq-student-item'+(n===casesStudentSel?' is-current':'')+'" data-student="'+esc(n)+'"><span><b>'+esc(n)+'</b>'+(raDe[n]?'<small>RA '+esc(raDe[n])+'</small>':'')+'</span><span class="eq-student-count">'+contagem(g.total,g.ativos)+'</span></button></li>';
+      }).join('')
+      + '<li><button type="button" class="eq-student-item'+(casesStudentSel==='__todos'?' is-current':'')+'" data-student="__todos"><span><b>Todos os estudantes</b></span><span class="eq-student-count">'+rows.length+(rows.length===1?' caso':' casos')+'</span></button></li>';
     casesFilterBox.hidden = false;
-    if(casesHint) casesHint.hidden = !!casesStudentSel;
+    casesStudents.hidden = !casesListOpen;
+    if(casesSearchBox) casesSearchBox.hidden = !casesListOpen;
+    filtrarEstudantes();
+    const ehEstudante = !!casesStudentSel && casesStudentSel.indexOf('__')!==0;
+    const totalAtivos = rows.filter(function(r){ return !!r.querySelector('.dash-badge-ok'); }).length;
+    if(casesAtivosBtn){
+      casesAtivosBtn.textContent = 'Pacientes ativos (' + totalAtivos + ')';
+      casesAtivosBtn.setAttribute('aria-pressed', casesStudentSel==='__ativos' && !casesListOpen ? 'true' : 'false');
+    }
+    if(casesToggle){
+      casesToggle.textContent = casesListOpen ? 'Fechar lista' : (ehEstudante ? 'Trocar estudante' : 'Escolher estudante');
+      casesToggle.setAttribute('aria-expanded', casesListOpen ? 'true' : 'false');
+    }
+    if(casesCurrent){
+      casesCurrent.hidden = !casesStudentSel || casesListOpen;
+      casesCurrent.textContent = casesStudentSel==='__todos' ? 'Todos os estudantes'
+        : casesStudentSel==='__ativos' ? 'Todos os pacientes ativos'
+        : ('Casos de ' + casesStudentSel);
+    }
+    rows.forEach(function(r){
+      r.hidden = !(casesStudentSel==='__todos'
+        || (casesStudentSel==='__ativos' && !!r.querySelector('.dash-badge-ok'))
+        || (ehEstudante && nomeDe(r)===casesStudentSel));
+    });
+    if(casesHint) casesHint.hidden = !!casesStudentSel || casesListOpen;
     if(casesTable){
-      casesTable.hidden = !casesStudentSel;
-      casesTable.classList.toggle('eq-hide-estudante-only', !!casesStudentSel && casesStudentSel!=='__todos');
+      casesTable.hidden = !casesStudentSel || casesListOpen;
+      casesTable.classList.toggle('eq-hide-estudante-only', ehEstudante);
     }
   }
+  if(casesToggle){
+    casesToggle.addEventListener('click', function(){
+      casesListOpen = !casesListOpen;
+      if(casesSearch) casesSearch.value = '';
+      applyCasesFilter();
+      if(casesListOpen && casesSearch) casesSearch.focus();
+    });
+  }
+  if(casesSearch) casesSearch.addEventListener('input', filtrarEstudantes);
+  if(casesAtivosBtn){
+    casesAtivosBtn.addEventListener('click', function(){
+      casesStudentSel = (casesStudentSel==='__ativos' && !casesListOpen) ? '' : '__ativos';
+      casesListOpen = false;
+      applyCasesFilter();
+    });
+  }
+  if(casesStudents){
+    casesStudents.addEventListener('click', function(e){
+      const item = e.target.closest('[data-student]');
+      if(!item) return;
+      casesStudentSel = item.dataset.student;
+      casesListOpen = false;
+      applyCasesFilter();
+    });
+  }
+
   /* Notificações do técnico: tudo o que os pacientes pediram e ainda está
      pendente (solicitação de prontuário e pedido de reagendamento). */
   const notifBox = document.getElementById('eq-notif');
@@ -3338,12 +3431,6 @@ route();
       if(nome) setTimeout(function(){ nome.focus({preventScroll:true}); }, 450);
     });
   }
-  if(casesStudentSelect){
-    casesStudentSelect.addEventListener('change', function(){
-      casesStudentSel = casesStudentSelect.value;
-      applyCasesFilter();
-    });
-  }
 
   function canManageCase(caso){
     if(currentRole==='tecnico' || currentRole==='supervisor') return true;
@@ -3370,6 +3457,7 @@ route();
     currentRole = role;
     currentName = displayName;
     casesStudentSel = '';
+    casesListOpen = false;
     syncCasesTable();
     const rows = casesBody ? Array.from(casesBody.querySelectorAll('tr')) : [];
     if(role === 'estudante'){
