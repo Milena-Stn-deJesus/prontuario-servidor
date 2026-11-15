@@ -576,6 +576,21 @@ footer{margin-top:120px}
 #eq-cases-title{font-size:20px;font-weight:700;color:var(--navy)}
 .eq-hide-estudante-col .eq-col-estudante,.eq-hide-estudante-col .eq-col-supervisor{display:none}
 .eq-hide-estudante-only .eq-col-estudante{display:none}
+.eq-head-actions{display:flex;align-items:center;gap:18px;flex:none}
+.eq-notif{position:relative}
+.eq-notif-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--navy);display:grid;place-items:center;cursor:pointer;transition:border-color .2s,background .2s}
+.eq-notif-btn:hover,.eq-notif-btn[aria-expanded="true"]{border-color:var(--blue);background:var(--sky)}
+.eq-notif-btn svg{width:19px;height:19px}
+.eq-notif-count{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#c8452f;color:#fff;font-size:11.5px;font-weight:700;line-height:20px;text-align:center;box-shadow:0 0 0 2px #fff}
+.eq-notif-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:30;width:min(340px,calc(100vw - 48px));background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px 8px 8px}
+.eq-notif-title{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px 8px}
+.eq-notif-list{list-style:none;margin:0;padding:0;max-height:320px;overflow-y:auto}
+.eq-notif-item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:12px;padding:10px;font-family:var(--sans);cursor:pointer;transition:background .2s}
+.eq-notif-item:hover{background:var(--sky)}
+.eq-notif-dot{width:8px;height:8px;border-radius:50%;background:#c8452f;flex:none;margin-top:6px}
+.eq-notif-item b{display:block;font-size:13.5px;font-weight:600;color:var(--navy);line-height:1.35}
+.eq-notif-item small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.eq-notif-empty{font-size:13px;color:var(--muted);padding:6px 10px 10px;margin:0}
 .eq-quick-actions{display:flex;justify-content:flex-end;margin:-6px 0 20px}
 .eq-quick-actions .btn{padding:11px 20px;font-size:14px}
 .eq-cases-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}
@@ -1906,7 +1921,20 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <h2 id="eq-dash-greeting">Olá!</h2>
             <p class="eq-dash-sub" id="eq-dash-sub" hidden></p>
           </div>
-          <a href="#" class="auth-link-sm">Sair</a>
+          <div class="eq-head-actions">
+            <div class="eq-notif" id="eq-notif" hidden>
+              <button type="button" class="eq-notif-btn" id="eq-notif-btn" aria-haspopup="true" aria-expanded="false" aria-controls="eq-notif-panel" aria-label="Notificações">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <span class="eq-notif-count" id="eq-notif-count" hidden>0</span>
+              </button>
+              <div class="eq-notif-panel" id="eq-notif-panel" hidden>
+                <div class="eq-notif-title">Notificações</div>
+                <ul class="eq-notif-list" id="eq-notif-list"></ul>
+                <p class="eq-notif-empty" id="eq-notif-empty" hidden>Nenhuma pendência no momento.</p>
+              </div>
+            </div>
+            <a href="#" class="auth-link-sm">Sair</a>
+          </div>
         </div>
 
         <div class="eq-quick-actions" id="eq-quick-actions" hidden>
@@ -3236,6 +3264,70 @@ route();
       casesTable.classList.toggle('eq-hide-estudante-only', !!casesStudentSel && casesStudentSel!=='__todos');
     }
   }
+  /* Notificações do técnico: tudo o que os pacientes pediram e ainda está
+     pendente (solicitação de prontuário e pedido de reagendamento). */
+  const notifBox = document.getElementById('eq-notif');
+  const notifBtn = document.getElementById('eq-notif-btn');
+  const notifPanel = document.getElementById('eq-notif-panel');
+  const notifList = document.getElementById('eq-notif-list');
+  const notifEmpty = document.getElementById('eq-notif-empty');
+  const notifCount = document.getElementById('eq-notif-count');
+  function fecharNotifs(){
+    if(notifPanel) notifPanel.hidden = true;
+    if(notifBtn) notifBtn.setAttribute('aria-expanded','false');
+  }
+  function renderNotifs(){
+    if(!notifBox || !notifList) return;
+    if(currentRole !== 'tecnico'){ notifBox.hidden = true; fecharNotifs(); return; }
+    const itens = [];
+    (window.PRONTUARIO_SOLICITACOES || []).forEach(function(req){
+      if(req.status !== 'liberado') itens.push({alvo:'eq-requests-card', titulo:'Solicitação de prontuário — '+(req.paciente||'paciente'), detalhe:'Pedido em '+(req.data||'—')});
+    });
+    (window.PRONTUARIO_REAGENDAMENTOS || []).forEach(function(r){
+      if(r.status !== 'confirmado') itens.push({alvo:'eq-reagendamentos-card', titulo:'Pedido de reagendamento — '+(r.paciente||'paciente'), detalhe:'Pedido em '+(r.solicitado_em||'—')});
+    });
+    notifBox.hidden = false;
+    notifList.innerHTML = itens.map(function(it){
+      return '<li><button type="button" class="eq-notif-item" data-notif-alvo="'+esc(it.alvo)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(it.titulo)+'</b><small>'+esc(it.detalhe)+'</small></span></button></li>';
+    }).join('');
+    if(notifEmpty) notifEmpty.hidden = itens.length > 0;
+    if(notifCount){ notifCount.hidden = itens.length === 0; notifCount.textContent = itens.length > 99 ? '99+' : String(itens.length); }
+    if(notifBtn) notifBtn.setAttribute('aria-label', itens.length ? ('Notificações: '+itens.length+(itens.length===1?' pendência':' pendências')) : 'Notificações: nenhuma pendência');
+  }
+  if(notifBtn && notifPanel){
+    notifBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const abrir = notifPanel.hidden;
+      notifPanel.hidden = !abrir;
+      notifBtn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+    });
+    notifPanel.addEventListener('click', function(e){
+      e.stopPropagation();
+      const item = e.target.closest('[data-notif-alvo]');
+      if(!item) return;
+      const alvo = document.getElementById(item.dataset.notifAlvo);
+      fecharNotifs();
+      if(alvo) alvo.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+    document.addEventListener('click', fecharNotifs);
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') fecharNotifs(); });
+  }
+  /* Enquanto o técnico está com o painel aberto, busca pedidos novos a cada
+     minuto, para a notificação aparecer sem precisar sair e entrar de novo. */
+  setInterval(function(){
+    const painel = document.getElementById('eq-success');
+    if(currentRole !== 'tecnico' || !painel || painel.hidden || document.hidden) return;
+    Promise.all([window.apiGetSolicitacoes(), window.apiGetReagendamentos()]).then(function(res){
+      window.PRONTUARIO_SOLICITACOES.length = 0;
+      res[0].forEach(function(item){ window.PRONTUARIO_SOLICITACOES.push(item); });
+      window.PRONTUARIO_REAGENDAMENTOS.length = 0;
+      res[1].forEach(function(item){ window.PRONTUARIO_REAGENDAMENTOS.push(item); });
+      if(!reagendamentosBody || !reagendamentosBody.contains(document.activeElement)) renderReagendamentos();
+      renderRequests();
+      renderNotifs();
+    }).catch(function(err){ console.info('Notificações: não foi possível buscar pedidos novos agora.', err); });
+  }, 60000);
+
   const quickNewPatient = document.getElementById('eq-quick-newpatient');
   if(quickNewPatient){
     quickNewPatient.addEventListener('click', function(){
@@ -3322,6 +3414,7 @@ route();
       renderReagendamentos();
     }
     applyCasesFilter();
+    renderNotifs();
     const quickActions = document.getElementById('eq-quick-actions');
     if(quickActions) quickActions.hidden = !newPatientCard || newPatientCard.hidden;
     resetCalendarView();
@@ -3353,6 +3446,7 @@ route();
         : '<button type="button" class="eq-case-open" data-req="'+esc(req._id)+'"><svg><use href="#i-arrow"/></svg>Liberar acesso</button>';
       return '<tr><td>'+esc(req.paciente)+'</td><td>'+esc(req.protocolo)+'</td><td>'+esc(req.data)+'</td><td>'+badge+'</td><td>'+action+'</td></tr>';
     }).join('');
+    renderNotifs();
   }
   if(requestsBody){
     requestsBody.addEventListener('click', function(e){
@@ -3395,6 +3489,7 @@ route();
           + '</div>';
       return '<tr><td>'+esc(r.paciente)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.solicitado_em)+'</td><td>'+badge+'</td><td>'+action+'</td></tr>';
     }).join('');
+    renderNotifs();
   }
   if(reagendamentosBody){
     reagendamentosBody.addEventListener('click', function(e){
