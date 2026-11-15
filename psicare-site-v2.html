@@ -576,6 +576,94 @@ footer{margin-top:120px}
 #eq-cases-title{font-size:20px;font-weight:700;color:var(--navy)}
 .eq-hide-estudante-col .eq-col-estudante,.eq-hide-estudante-col .eq-col-supervisor{display:none}
 .eq-hide-estudante-only .eq-col-estudante{display:none}
+/* ===== PAINEL TÉCNICO — barra lateral e visões ===== */
+.auth-dash:not(.eq-tec) .eq-tec-only{display:none!important}
+.auth-wrap.wide.eq-tec-wide{max-width:1240px}
+.auth-dash.eq-tec{display:grid;grid-template-columns:228px minmax(0,1fr);padding:0;overflow:hidden}
+.eq-tec[data-view="painel"] [data-in]:not([data-in~="painel"]),
+.eq-tec[data-view="pacientes"] [data-in]:not([data-in~="pacientes"]),
+.eq-tec[data-view="estudantes"] [data-in]:not([data-in~="estudantes"]),
+.eq-tec[data-view="agenda"] [data-in]:not([data-in~="agenda"]),
+.eq-tec[data-view="solicitacoes"] [data-in]:not([data-in~="solicitacoes"]),
+.eq-tec[data-view="cadastro"] [data-in]:not([data-in~="cadastro"]){display:none!important}
+.eq-side{background:var(--navy);color:#cfe3da;padding:28px 14px 18px;display:flex;flex-direction:column;gap:24px}
+.eq-side-brand{padding:0 10px}
+.eq-side-brand b{display:block;font-family:var(--serif);font-weight:500;font-size:17px;line-height:1.25;color:#fff}
+.eq-side-brand small{display:block;margin-top:5px;font-size:11px;line-height:1.45;color:#9fc3b3}
+.eq-side-nav{display:flex;flex-direction:column;gap:3px}
+.eq-side-link{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:12px;background:none;color:#cfe3da;font-family:var(--sans);font-size:14px;font-weight:500;text-align:left;text-decoration:none;cursor:pointer;transition:background .2s,color .2s}
+.eq-side-link svg{width:18px;height:18px;flex:none}
+.eq-side-link:hover{background:rgba(255,255,255,.07);color:#fff}
+.eq-side-link:focus-visible,.eq-tec-qbtn:focus-visible,.eq-pend-item:focus-visible,.eq-tec-link:focus-visible{outline:2px solid #8fc4aa;outline-offset:2px}
+.eq-side-link.is-active{background:rgba(143,196,170,.2);color:#fff}
+.eq-side-count{margin-left:auto;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:rgba(233,190,78,.22);color:#f1d590;font-size:11.5px;font-weight:700;line-height:22px;text-align:center}
+.eq-side-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
+.eq-side-toggle{display:none;border:1px solid rgba(255,255,255,.28);background:none;color:#fff;font-family:var(--sans);font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer}
+.eq-main{padding:32px 36px 36px;min-width:0}
+.auth-dash:not(.eq-tec) .eq-main{display:contents}
+.eq-tec .dash-head{margin-bottom:22px}
+.eq-tec .eq-head-actions .auth-link-sm{display:none}
+.eq-tec .eq-dash-sub{margin-top:6px}
+.eq-tec .eq-stat-card{display:grid;grid-template-columns:auto 1fr;column-gap:14px;row-gap:3px;align-items:center;padding:16px 18px}
+.eq-stat-ic{grid-row:1 / span 2;width:40px;height:40px;border-radius:12px;background:var(--sky);color:var(--blue);display:grid;place-items:center}
+.eq-stat-ic svg{width:19px;height:19px}
+.eq-tec .eq-stat-value{font-size:26px;font-weight:600}
+.eq-tec .eq-cal-topline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.eq-tec-link{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:4px 0;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--blue);cursor:pointer}
+.eq-tec-link svg{width:14px;height:14px;transition:transform .2s}
+.eq-tec-link:hover svg{transform:translateX(3px)}
+.eq-tec-block{padding:0;margin-bottom:24px}
+.eq-tec-h{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.eq-tec-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.eq-tec-qbtn{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--navy);font-family:var(--sans);font-size:14px;font-weight:600;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
+.eq-tec-qbtn svg{width:18px;height:18px;flex:none;color:var(--blue)}
+.eq-tec-qbtn:hover{border-color:var(--blue);background:var(--sky)}
+.eq-tec-row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+.eq-tec-panel{border:1px solid var(--line);border-radius:18px;padding:20px 22px 12px;min-height:0}
+.eq-tec-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.eq-tec-panel-head .eq-tec-h{margin:0}
+.eq-pend{display:flex;flex-direction:column}
+.eq-pend-item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:14px;width:100%;padding:14px 4px;border:0;border-top:1px solid var(--line);background:none;font-family:var(--sans);text-align:left;cursor:pointer;transition:background .2s}
+.eq-pend-item:first-child{border-top:0}
+.eq-pend-item:hover{background:var(--sky)}
+.eq-pend-ic{width:38px;height:38px;border-radius:12px;background:var(--sky);color:var(--blue);display:grid;place-items:center}
+.eq-pend-ic svg{width:18px;height:18px}
+.eq-pend-txt b{display:block;font-size:14.5px;font-weight:600;color:var(--navy)}
+.eq-pend-txt small{display:block;font-size:12.5px;line-height:1.45;color:var(--muted);margin-top:2px}
+.eq-pend-count{min-width:30px;height:30px;padding:0 9px;border-radius:999px;background:#eef1f0;color:#5b6b64;font-size:13.5px;font-weight:700;line-height:30px;text-align:center}
+.eq-pend-count.has{background:var(--navy);color:#fff}
+.eq-pend-go{width:15px;height:15px;color:var(--muted)}
+.eq-recent{list-style:none;margin:0;padding:0}
+.eq-recent li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.eq-recent li:first-child{border-top:0}
+.eq-recent b{display:block;font-size:14px;font-weight:600;color:var(--navy)}
+.eq-recent small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.eq-recent-side{display:flex;align-items:center;gap:10px;flex:none}
+.eq-tec-page-head{margin-bottom:18px}
+.eq-tec-title{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--navy)}
+.eq-tec-page-head p{font-size:14px;line-height:1.55;color:var(--muted);margin-top:6px;max-width:560px}
+.eq-tec-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.eq-tec-control{display:flex;flex-direction:column;gap:5px;min-width:170px}
+.eq-tec-control-grow{flex:1 1 220px}
+.eq-tec-control label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.eq-tec-control .eq-input,.eq-tec-control .eq-select{padding:10px 13px;font-size:14px}
+.eq-tec-pager{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:14px;font-size:13px;color:var(--muted)}
+.eq-tec-pager[hidden]{display:none}
+.eq-tec-pager button:disabled{opacity:.45;cursor:default}
+.eq-tec .eq-pt-card{margin-top:0}
+@media(max-width:1000px){.eq-tec-row{grid-template-columns:1fr}.eq-tec-quick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){
+  .auth-dash.eq-tec{grid-template-columns:1fr}
+  .eq-side{padding:14px 16px;gap:10px}
+  .eq-side-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .eq-side-brand{padding:0}
+  .eq-side-brand small{display:none}
+  .eq-side-toggle{display:inline-flex}
+  .eq-side:not(.is-open) .eq-side-nav,.eq-side:not(.is-open) .eq-side-foot{display:none}
+  .eq-side-foot{margin-top:0}
+  .eq-main{padding:24px 18px 26px}
+}
+@media(max-width:520px){.eq-recent li{flex-direction:column;align-items:flex-start;gap:8px}.eq-tec-quick{grid-template-columns:1fr}.eq-pend-item{grid-template-columns:auto 1fr auto}.eq-pend-go{display:none}}
 .eq-head-actions{display:flex;align-items:center;gap:18px;flex:none}
 .eq-notif{position:relative}
 .eq-notif-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--navy);display:grid;place-items:center;cursor:pointer;transition:border-color .2s,background .2s}
@@ -1927,7 +2015,24 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     <div class="auth-wrap wide">
       <a href="#" class="auth-back"><svg><use href="#i-arrow"/></svg>Voltar para o início</a>
 
-      <div class="auth-card auth-dash">
+      <div class="auth-card auth-dash" id="eq-dash-card">
+        <aside class="eq-side eq-tec-only" id="eq-side" aria-label="Navegação do painel técnico">
+          <div class="eq-side-top">
+            <div class="eq-side-brand"><b>Prontuário Eletrônico</b><small>Clínica-Escola de Psicologia · FCMSCSP</small></div>
+            <button type="button" class="eq-side-toggle" id="eq-side-toggle" aria-expanded="false" aria-controls="eq-side-nav">Menu</button>
+          </div>
+          <nav class="eq-side-nav" id="eq-side-nav">
+            <button type="button" class="eq-side-link" data-view="painel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</button>
+            <button type="button" class="eq-side-link" data-view="pacientes"><svg aria-hidden="true"><use href="#i-user"/></svg>Pacientes</button>
+            <button type="button" class="eq-side-link" data-view="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg>Estudantes</button>
+            <button type="button" class="eq-side-link" data-view="agenda"><svg aria-hidden="true"><use href="#i-cal"/></svg>Agenda</button>
+            <button type="button" class="eq-side-link" data-view="solicitacoes"><svg aria-hidden="true"><use href="#i-file"/></svg>Solicitações<span class="eq-side-count" id="eq-side-count" hidden>0</span></button>
+          </nav>
+          <div class="eq-side-foot">
+            <a href="#" class="eq-side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Sair</a>
+          </div>
+        </aside>
+        <div class="eq-main">
         <div class="dash-head">
           <div>
             <span class="eyebrow" id="eq-role-eyebrow">Painel da equipe</span>
@@ -1950,28 +2055,28 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </div>
         </div>
 
-        <div class="eq-quick-actions" id="eq-quick-actions" hidden>
-          <button type="button" class="btn btn-primary" id="eq-quick-newpatient"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button>
-        </div>
-
-        <div class="eq-stats-row" id="eq-stats-row">
+        <div class="eq-stats-row" id="eq-stats-row" data-in="painel">
           <div class="eq-stat-card">
+            <span class="eq-stat-ic eq-tec-only" aria-hidden="true"><svg><use href="#i-heart"/></svg></span>
             <span class="eq-stat-value" id="eq-stat-ativos">0</span>
             <span class="eq-stat-label">Casos ativos</span>
           </div>
           <div class="eq-stat-card">
+            <span class="eq-stat-ic eq-tec-only" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg></span>
             <span class="eq-stat-value" id="eq-stat-encerrados">0</span>
             <span class="eq-stat-label">Casos encerrados</span>
           </div>
           <div class="eq-stat-card">
+            <span class="eq-stat-ic eq-tec-only" aria-hidden="true"><svg><use href="#i-chart"/></svg></span>
             <span class="eq-stat-value" id="eq-stat-total">0</span>
             <span class="eq-stat-label">Total acompanhado</span>
           </div>
         </div>
 
-        <div class="eq-cal-card" id="eq-cal-card">
+        <div class="eq-cal-card" id="eq-cal-card" data-in="painel agenda">
           <div class="eq-cal-topline">
             <span class="eyebrow" id="eq-cal-eyebrow">Agenda do serviço</span>
+            <button type="button" class="eq-tec-link eq-tec-only" data-in="painel" data-goto="agenda">Abrir agenda<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
           </div>
           <div class="eq-cal-body">
             <div class="eq-cal-left">
@@ -1995,7 +2100,65 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </div>
         </div>
 
-        <div class="dash-hist" id="eq-cases-table-card">
+        <section class="eq-tec-block eq-tec-only" data-in="painel" aria-labelledby="eq-tec-quick-title">
+          <h3 class="eq-tec-h" id="eq-tec-quick-title">Acesso rápido</h3>
+          <div class="eq-tec-quick" id="eq-tec-quick">
+            <button type="button" class="eq-tec-qbtn" data-quick="cadastro"><svg aria-hidden="true"><use href="#i-plus"/></svg><span>Cadastrar paciente</span></button>
+            <button type="button" class="eq-tec-qbtn" data-quick="buscar"><svg aria-hidden="true"><use href="#i-search"/></svg><span>Buscar paciente</span></button>
+            <button type="button" class="eq-tec-qbtn" data-quick="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg><span>Lista de estudantes</span></button>
+            <button type="button" class="eq-tec-qbtn" data-quick="prontuarios"><svg aria-hidden="true"><use href="#i-file"/></svg><span>Consultar prontuários</span></button>
+          </div>
+        </section>
+
+        <div class="eq-tec-row eq-tec-only" data-in="painel">
+          <section class="eq-tec-panel" aria-labelledby="eq-tec-pend-title">
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-pend-title">Pendências</h3><button type="button" class="eq-tec-link" data-goto="solicitacoes">Ver todas as solicitações<svg aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
+            <div class="eq-pend" id="eq-tec-pend">
+              <button type="button" class="eq-pend-item" data-pend="eq-requests-card">
+                <span class="eq-pend-ic" aria-hidden="true"><svg><use href="#i-file"/></svg></span>
+                <span class="eq-pend-txt"><b>Solicitações de prontuário</b><small>Pacientes que pediram acesso ao próprio prontuário.</small></span>
+                <span class="eq-pend-count" id="eq-pend-sol">0</span>
+                <svg class="eq-pend-go" aria-hidden="true"><use href="#i-arrow"/></svg>
+              </button>
+              <button type="button" class="eq-pend-item" data-pend="eq-reagendamentos-card">
+                <span class="eq-pend-ic" aria-hidden="true"><svg><use href="#i-refresh"/></svg></span>
+                <span class="eq-pend-txt"><b>Pedidos de reagendamento</b><small>Pacientes que pediram outra data para a consulta.</small></span>
+                <span class="eq-pend-count" id="eq-pend-reag">0</span>
+                <svg class="eq-pend-go" aria-hidden="true"><use href="#i-arrow"/></svg>
+              </button>
+            </div>
+          </section>
+          <section class="eq-tec-panel" aria-labelledby="eq-tec-recent-title">
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-recent-title">Acompanhamentos recentes</h3></div>
+            <ul class="eq-recent" id="eq-tec-recent"></ul>
+            <p class="eq-pt-empty" id="eq-tec-recent-empty" hidden>Ainda não há acompanhamentos registrados.</p>
+          </section>
+        </div>
+
+        <div class="dash-hist eq-tec-only" id="eq-tec-students-card" data-in="estudantes">
+          <div class="eq-tec-page-head">
+            <h3 class="eq-tec-title">Estudantes</h3>
+            <p>Consulte os estudantes vinculados à Clínica-Escola e acompanhe a distribuição dos pacientes.</p>
+          </div>
+          <div class="eq-tec-controls">
+            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-tec-st-search">Buscar</label><input type="search" class="eq-input" id="eq-tec-st-search" placeholder="Nome ou RA" autocomplete="off"></div>
+            <div class="eq-tec-control"><label for="eq-tec-st-sup">Supervisor</label><select class="eq-select" id="eq-tec-st-sup"><option value="">Todos</option></select></div>
+            <div class="eq-tec-control"><label for="eq-tec-st-sort">Ordenar por</label><select class="eq-select" id="eq-tec-st-sort"><option value="az">Nome (A–Z)</option><option value="za">Nome (Z–A)</option><option value="mais">Mais pacientes</option></select></div>
+          </div>
+          <table class="dash-table">
+            <caption class="sr-only">Estudantes cadastrados, com RA, supervisor e quantidade de pacientes vinculados</caption>
+            <thead><tr><th scope="col">Estudante</th><th scope="col">RA</th><th scope="col">Supervisor</th><th scope="col">Pacientes</th><th scope="col"><span class="sr-only">Ação</span></th></tr></thead>
+            <tbody id="eq-tec-st-body"></tbody>
+          </table>
+          <p class="eq-pt-empty" id="eq-tec-st-empty" hidden>Nenhum estudante encontrado com esses critérios.</p>
+          <div class="eq-tec-pager" id="eq-tec-st-pager" hidden>
+            <button type="button" class="eq-case-open" id="eq-tec-st-prev">Anterior</button>
+            <span id="eq-tec-st-page"></span>
+            <button type="button" class="eq-case-open" id="eq-tec-st-next">Próxima</button>
+          </div>
+        </div>
+
+        <div class="dash-hist" id="eq-cases-table-card" data-in="pacientes">
           <div class="dash-hist-head">
             <svg><use href="#i-chart"/></svg>
             <h3 id="eq-cases-title">Casos</h3>
@@ -2005,6 +2168,11 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <button type="button" class="btn btn-outline" id="eq-cases-ativos" aria-pressed="false">Pacientes ativos</button>
             <span class="eq-cases-current" id="eq-cases-current" hidden></span>
           </div>
+          <div class="eq-students-search eq-tec-only">
+            <label class="sr-only" for="eq-cases-patient">Buscar paciente pelo nome</label>
+            <input type="search" class="eq-input" id="eq-cases-patient" placeholder="Buscar paciente pelo nome…" autocomplete="off">
+          </div>
+          <p class="eq-pt-empty" id="eq-cases-patient-empty" hidden>Nenhum paciente encontrado com esse nome.</p>
           <div class="eq-students-search" id="eq-cases-search-box" hidden>
             <label class="sr-only" for="eq-cases-search">Buscar estudante pelo nome ou RA</label>
             <input type="search" class="eq-input" id="eq-cases-search" placeholder="Buscar estudante pelo nome ou RA…" autocomplete="off">
@@ -2048,7 +2216,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <p class="eq-pt-empty" id="eq-pt-empty" hidden>Nenhum paciente encontrado com esses critérios.</p>
         </div>
 
-        <div class="dash-hist" id="eq-requests-card" hidden>
+        <div class="dash-hist" id="eq-requests-card" data-in="solicitacoes" hidden>
           <div class="dash-hist-head">
             <svg><use href="#i-file"/></svg>
             <h3>Solicitações de prontuário</h3>
@@ -2063,7 +2231,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <p class="eq-pt-empty" id="eq-requests-empty" hidden>Nenhuma solicitação de prontuário pendente no momento.</p>
         </div>
 
-        <div class="dash-hist" id="eq-reagendamentos-card" hidden>
+        <div class="dash-hist" id="eq-reagendamentos-card" data-in="solicitacoes" hidden>
           <div class="dash-hist-head">
             <svg><use href="#i-refresh"/></svg>
             <h3>Pedidos de reagendamento</h3>
@@ -2079,7 +2247,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <p class="eq-pt-empty" id="eq-reagendamentos-msg" hidden></p>
         </div>
 
-        <div class="eq-pt-card" id="eq-newpatient-card" hidden>
+        <div class="eq-pt-card" id="eq-newpatient-card" data-in="cadastro" hidden>
           <div class="eq-pt-head">
             <div class="eq-pt-head-title">
               <svg><use href="#i-plus"/></svg>
@@ -2112,6 +2280,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <div class="eq-form-actions"><button type="submit" class="btn btn-primary"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button></div>
             <p class="eq-case-export-msg" id="eq-newpatient-msg" hidden></p>
           </form>
+        </div>
         </div>
       </div>
 
@@ -3245,6 +3414,8 @@ route();
       tr.innerHTML = caseRowHtml(caseId, caso);
     });
     applyCasesFilter();
+    renderTecStudents();
+    renderTecRecent();
   }
 
   /* Técnico e supervisor não veem mais a lista inteira de uma vez: escolhem
@@ -3312,6 +3483,10 @@ route();
     if(casesSearchBox) casesSearchBox.hidden = !casesListOpen;
     filtrarEstudantes();
     const ehEstudante = !!casesStudentSel && casesStudentSel.indexOf('__')!==0;
+    const casesPatient = document.getElementById('eq-cases-patient');
+    const casesPatientEmpty = document.getElementById('eq-cases-patient-empty');
+    if(casesPatient && casesStudentSel!=='__busca' && casesPatient.value) casesPatient.value = '';
+    const termoPaciente = casesStudentSel==='__busca' ? semAcento(casesPatient ? casesPatient.value : '') : '';
     const totalAtivos = rows.filter(function(r){ return !!r.querySelector('.dash-badge-ok'); }).length;
     if(casesAtivosBtn){
       casesAtivosBtn.textContent = 'Pacientes ativos (' + totalAtivos + ')';
@@ -3325,16 +3500,20 @@ route();
       casesCurrent.hidden = !casesStudentSel || casesListOpen;
       casesCurrent.textContent = casesStudentSel==='__todos' ? 'Todos os estudantes'
         : casesStudentSel==='__ativos' ? 'Todos os pacientes ativos'
+        : casesStudentSel==='__busca' ? 'Resultado da busca'
         : ('Casos de ' + casesStudentSel + (raDe[casesStudentSel] ? ' · RA ' + raDe[casesStudentSel] : ''));
     }
     rows.forEach(function(r){
       r.hidden = !(casesStudentSel==='__todos'
         || (casesStudentSel==='__ativos' && !!r.querySelector('.dash-badge-ok'))
+        || (casesStudentSel==='__busca' && semAcento(r.cells[0] ? r.cells[0].textContent : '').indexOf(termoPaciente)!==-1)
         || (ehEstudante && nomeDe(r)===casesStudentSel));
     });
+    const semResultado = casesStudentSel==='__busca' && !rows.some(function(r){ return !r.hidden; });
+    if(casesPatientEmpty) casesPatientEmpty.hidden = !semResultado || casesListOpen;
     if(casesHint) casesHint.hidden = !!casesStudentSel || casesListOpen;
     if(casesTable){
-      casesTable.hidden = !casesStudentSel || casesListOpen;
+      casesTable.hidden = !casesStudentSel || casesListOpen || semResultado;
       casesTable.classList.toggle('eq-hide-estudante-only', ehEstudante);
     }
   }
@@ -3393,6 +3572,7 @@ route();
     if(notifEmpty) notifEmpty.hidden = itens.length > 0;
     if(notifCount){ notifCount.hidden = itens.length === 0; notifCount.textContent = itens.length > 99 ? '99+' : String(itens.length); }
     if(notifBtn) notifBtn.setAttribute('aria-label', itens.length ? ('Notificações: '+itens.length+(itens.length===1?' pendência':' pendências')) : 'Notificações: nenhuma pendência');
+    renderTecPend();
   }
   if(notifBtn && notifPanel){
     notifBtn.addEventListener('click', function(e){
@@ -3407,6 +3587,7 @@ route();
       if(!item) return;
       const alvo = document.getElementById(item.dataset.notifAlvo);
       fecharNotifs();
+      if(currentRole === 'tecnico'){ tecView = 'solicitacoes'; applyTecView(); }
       if(alvo) alvo.scrollIntoView({behavior:'smooth', block:'center'});
     });
     document.addEventListener('click', fecharNotifs);
@@ -3428,15 +3609,215 @@ route();
     }).catch(function(err){ console.info('Notificações: não foi possível buscar pedidos novos agora.', err); });
   }, 60000);
 
-  const quickNewPatient = document.getElementById('eq-quick-newpatient');
-  if(quickNewPatient){
-    quickNewPatient.addEventListener('click', function(){
-      const card = document.getElementById('eq-newpatient-card');
-      const nome = document.getElementById('eq-np-nome');
-      if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
-      if(nome) setTimeout(function(){ nome.focus({preventScroll:true}); }, 450);
+  /* ===== PAINEL TÉCNICO: barra lateral, visões, pendências, estudantes ===== */
+  var tecView = 'painel';
+  var tecStPage = 1;
+  var TEC_ST_POR_PAGINA = 8;
+  function tecCard(){ return document.getElementById('eq-dash-card'); }
+  function applyTecView(){
+    const card = tecCard();
+    if(!card) return;
+    const ehTec = currentRole === 'tecnico';
+    card.classList.toggle('eq-tec', ehTec);
+    const wrapEl = card.closest('.auth-wrap');
+    if(wrapEl) wrapEl.classList.toggle('eq-tec-wide', ehTec);
+    if(!ehTec){ card.removeAttribute('data-view'); return; }
+    card.setAttribute('data-view', tecView);
+    card.querySelectorAll('.eq-side-link[data-view]').forEach(function(b){
+      const on = b.dataset.view === tecView;
+      b.classList.toggle('is-active', on);
+      if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
     });
+    const side = document.getElementById('eq-side');
+    const sideToggle = document.getElementById('eq-side-toggle');
+    if(side) side.classList.remove('is-open');
+    if(sideToggle) sideToggle.setAttribute('aria-expanded','false');
+    if(dashSub){ dashSub.textContent = 'Gestão clínica e acadêmica da Clínica-Escola.'; dashSub.hidden = false; }
+    renderTecPend();
+    renderTecStudents();
+    renderTecRecent();
   }
+  function setTecView(view){
+    tecView = view;
+    applyTecView();
+    const card = tecCard();
+    if(card){
+      const topo = card.getBoundingClientRect().top + window.scrollY - 110;
+      if(window.scrollY > topo) window.scrollTo({top: topo, behavior:'smooth'});
+    }
+  }
+  function renderTecPend(){
+    const nSol = (window.PRONTUARIO_SOLICITACOES || []).filter(function(r){ return r.status !== 'liberado'; }).length;
+    const nReag = (window.PRONTUARIO_REAGENDAMENTOS || []).filter(function(r){ return r.status !== 'confirmado'; }).length;
+    [['eq-pend-sol', nSol], ['eq-pend-reag', nReag]].forEach(function(par){
+      const el = document.getElementById(par[0]);
+      if(!el) return;
+      el.textContent = String(par[1]);
+      el.classList.toggle('has', par[1] > 0);
+      el.setAttribute('aria-label', par[1] + (par[1]===1 ? ' pendente' : ' pendentes'));
+    });
+    const sideCount = document.getElementById('eq-side-count');
+    if(sideCount){ sideCount.hidden = (nSol + nReag) === 0; sideCount.textContent = String(nSol + nReag); }
+  }
+  function tecDataMs(br){
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(br || ''));
+    return m ? new Date(+m[3], +m[2]-1, +m[1]).getTime() : 0;
+  }
+  /* Acompanhamentos recentes: só identificação, estudante, situação e data da
+     última movimentação — nenhum conteúdo clínico aparece aqui. */
+  function renderTecRecent(){
+    const lista = document.getElementById('eq-tec-recent');
+    const vazio = document.getElementById('eq-tec-recent-empty');
+    if(!lista) return;
+    const itens = Object.keys(CASOS).map(function(id){
+      const c = CASOS[id] || {};
+      let ms = tecDataMs(c.abertura), txt = c.abertura || '';
+      (c.evolucoes || []).forEach(function(ev){
+        const t = tecDataMs(ev && ev.data);
+        if(t > ms){ ms = t; txt = String(ev.data).slice(0,10); }
+      });
+      return {id:id, c:c, ms:ms, txt:txt};
+    }).sort(function(a,b){ return b.ms - a.ms; }).slice(0,5);
+    lista.innerHTML = itens.map(function(it){
+      const badge = it.c.status==='Ativo' ? 'dash-badge-ok' : 'dash-badge-muted';
+      return '<li><span><b>'+esc(it.c.paciente)+'</b><small>'+(it.c.estudante ? 'Estudante: '+esc(it.c.estudante) : 'Sem estudante')+(it.txt ? ' · '+esc(it.txt) : '')+'</small></span>'
+        + '<span class="eq-recent-side"><span class="dash-badge '+badge+'">'+esc(it.c.status)+'</span><button type="button" class="eq-case-open" data-case="'+esc(it.id)+'" aria-label="Ver caso de '+esc(it.c.paciente)+'">Ver caso<svg><use href="#i-arrow"/></svg></button></span></li>';
+    }).join('');
+    if(vazio) vazio.hidden = itens.length > 0;
+  }
+  /* Página "Estudantes": junta o cadastro (nome + RA) com a distribuição de
+     pacientes que já existe nos casos. Nada aqui é inventado. */
+  function renderTecStudents(){
+    const corpo = document.getElementById('eq-tec-st-body');
+    if(!corpo || !casesBody) return;
+    const busca = document.getElementById('eq-tec-st-search');
+    const selSup = document.getElementById('eq-tec-st-sup');
+    const selOrd = document.getElementById('eq-tec-st-sort');
+    const vazio = document.getElementById('eq-tec-st-empty');
+    const pager = document.getElementById('eq-tec-st-pager');
+    const raDe = window.PRONTUARIO_ESTUDANTES_RA || {};
+    const mapa = {};
+    Object.keys(raDe).forEach(function(n){ mapa[n] = {nome:n, sups:[], total:0, ativos:0}; });
+    Array.from(casesBody.querySelectorAll('tr')).forEach(function(r){
+      const n = r.dataset.estudante;
+      if(!n) return;
+      const e = mapa[n] || (mapa[n] = {nome:n, sups:[], total:0, ativos:0});
+      const supCel = r.querySelector('.eq-col-supervisor');
+      const sup = supCel ? supCel.textContent.trim() : '';
+      if(sup && e.sups.indexOf(sup) === -1) e.sups.push(sup);
+      e.total++;
+      if(r.querySelector('.dash-badge-ok')) e.ativos++;
+    });
+    let lista = Object.keys(mapa).map(function(n){ return mapa[n]; });
+    if(selSup){
+      const atual = selSup.value;
+      const sups = [];
+      lista.forEach(function(e){ e.sups.forEach(function(sp){ if(sups.indexOf(sp) === -1) sups.push(sp); }); });
+      sups.sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
+      selSup.innerHTML = '<option value="">Todos</option>' + sups.map(function(sp){ return '<option value="'+esc(sp)+'">'+esc(sp)+'</option>'; }).join('');
+      selSup.value = sups.indexOf(atual) !== -1 ? atual : '';
+    }
+    const termo = semAcento(busca ? busca.value : '');
+    const supFiltro = selSup ? selSup.value : '';
+    lista = lista.filter(function(e){
+      if(supFiltro && e.sups.indexOf(supFiltro) === -1) return false;
+      if(!termo) return true;
+      return semAcento(e.nome).indexOf(termo) !== -1 || String(raDe[e.nome] || '').indexOf(termo) !== -1;
+    });
+    const ordem = selOrd ? selOrd.value : 'az';
+    lista.sort(function(a,b){
+      if(ordem === 'mais' && b.total !== a.total) return b.total - a.total;
+      const c = a.nome.localeCompare(b.nome,'pt-BR',{sensitivity:'base'});
+      return ordem === 'za' ? -c : c;
+    });
+    const paginas = Math.max(1, Math.ceil(lista.length / TEC_ST_POR_PAGINA));
+    if(tecStPage > paginas) tecStPage = paginas;
+    const fatia = lista.slice((tecStPage-1)*TEC_ST_POR_PAGINA, tecStPage*TEC_ST_POR_PAGINA);
+    corpo.innerHTML = fatia.map(function(e){
+      const pacientes = e.total ? (e.total + (e.total===1?' paciente':' pacientes') + ' · ' + e.ativos + (e.ativos===1?' ativo':' ativos')) : 'Nenhum paciente vinculado';
+      const acao = e.total ? '<button type="button" class="eq-case-open" data-ver-estudante="'+esc(e.nome)+'" aria-label="Ver casos de '+esc(e.nome)+'">Ver casos<svg><use href="#i-arrow"/></svg></button>' : '';
+      return '<tr><td>'+esc(e.nome)+'</td><td>'+(raDe[e.nome] ? esc(raDe[e.nome]) : '—')+'</td><td>'+(e.sups.length ? esc(e.sups.join(', ')) : '—')+'</td><td>'+pacientes+'</td><td>'+acao+'</td></tr>';
+    }).join('');
+    if(vazio) vazio.hidden = lista.length > 0;
+    if(pager){
+      pager.hidden = paginas <= 1;
+      const info = document.getElementById('eq-tec-st-page');
+      const prev = document.getElementById('eq-tec-st-prev');
+      const next = document.getElementById('eq-tec-st-next');
+      if(info) info.textContent = 'Página ' + tecStPage + ' de ' + paginas;
+      if(prev) prev.disabled = tecStPage <= 1;
+      if(next) next.disabled = tecStPage >= paginas;
+    }
+  }
+  (function(){
+    const card = tecCard();
+    if(!card) return;
+    card.addEventListener('click', function(e){
+      const nav = e.target.closest('.eq-side-link[data-view], [data-goto]');
+      if(nav){ setTecView(nav.dataset.view || nav.dataset.goto); return; }
+      const quick = e.target.closest('[data-quick]');
+      if(quick){
+        const q = quick.dataset.quick;
+        if(q === 'cadastro'){
+          setTecView('cadastro');
+          const nome = document.getElementById('eq-np-nome');
+          if(nome) setTimeout(function(){ nome.focus(); }, 80);
+        } else if(q === 'buscar'){
+          setTecView('pacientes');
+          const campo = document.getElementById('eq-cases-patient');
+          if(campo) setTimeout(function(){ campo.focus(); }, 80);
+        } else if(q === 'estudantes'){
+          setTecView('estudantes');
+        } else if(q === 'prontuarios'){
+          casesStudentSel = '__ativos';
+          casesListOpen = false;
+          applyCasesFilter();
+          setTecView('pacientes');
+        }
+        return;
+      }
+      const pend = e.target.closest('[data-pend]');
+      if(pend){
+        setTecView('solicitacoes');
+        const alvo = document.getElementById(pend.dataset.pend);
+        if(alvo) alvo.scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+      const verEst = e.target.closest('[data-ver-estudante]');
+      if(verEst){
+        casesStudentSel = verEst.dataset.verEstudante;
+        casesListOpen = false;
+        applyCasesFilter();
+        setTecView('pacientes');
+        return;
+      }
+      const recente = e.target.closest('#eq-tec-recent .eq-case-open');
+      if(recente){ openCase(recente.dataset.case); return; }
+      if(e.target.closest('#eq-tec-st-prev')){ tecStPage = Math.max(1, tecStPage-1); renderTecStudents(); return; }
+      if(e.target.closest('#eq-tec-st-next')){ tecStPage++; renderTecStudents(); return; }
+    });
+    const sideToggle = document.getElementById('eq-side-toggle');
+    const side = document.getElementById('eq-side');
+    if(sideToggle && side){
+      sideToggle.addEventListener('click', function(){
+        const abrir = !side.classList.contains('is-open');
+        side.classList.toggle('is-open', abrir);
+        sideToggle.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      });
+    }
+    ['eq-tec-st-search','eq-tec-st-sup','eq-tec-st-sort'].forEach(function(id){
+      const el = document.getElementById(id);
+      if(el) el.addEventListener(id === 'eq-tec-st-search' ? 'input' : 'change', function(){ tecStPage = 1; renderTecStudents(); });
+    });
+    const campoPaciente = document.getElementById('eq-cases-patient');
+    if(campoPaciente){
+      campoPaciente.addEventListener('input', function(){
+        casesStudentSel = campoPaciente.value.trim() ? '__busca' : '';
+        casesListOpen = false;
+        applyCasesFilter();
+      });
+    }
+  })();
 
   function canManageCase(caso){
     if(currentRole==='tecnico' || currentRole==='supervisor') return true;
@@ -3464,6 +3845,7 @@ route();
     currentName = displayName;
     casesStudentSel = '';
     casesListOpen = false;
+    tecView = 'painel';
     syncCasesTable();
     const rows = casesBody ? Array.from(casesBody.querySelectorAll('tr')) : [];
     if(role === 'estudante'){
@@ -3512,8 +3894,7 @@ route();
     renderNotifs();
     const statsRow = document.getElementById('eq-stats-row');
     if(statsRow) statsRow.hidden = (role === 'estudante');
-    const quickActions = document.getElementById('eq-quick-actions');
-    if(quickActions) quickActions.hidden = !newPatientCard || newPatientCard.hidden;
+    applyTecView();
     resetCalendarView();
     renderCalendar();
     renderStats();
