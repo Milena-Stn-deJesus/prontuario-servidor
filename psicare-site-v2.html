@@ -2006,11 +2006,11 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <span class="eq-cases-current" id="eq-cases-current" hidden></span>
           </div>
           <div class="eq-students-search" id="eq-cases-search-box" hidden>
-            <label class="sr-only" for="eq-cases-search">Buscar estudante pelo nome</label>
-            <input type="search" class="eq-input" id="eq-cases-search" placeholder="Buscar estudante pelo nome…" autocomplete="off">
+            <label class="sr-only" for="eq-cases-search">Buscar estudante pelo nome ou RA</label>
+            <input type="search" class="eq-input" id="eq-cases-search" placeholder="Buscar estudante pelo nome ou RA…" autocomplete="off">
           </div>
           <ul class="eq-students" id="eq-cases-students" hidden></ul>
-          <p class="eq-pt-empty" id="eq-cases-search-empty" hidden>Nenhum estudante encontrado com esse nome.</p>
+          <p class="eq-pt-empty" id="eq-cases-search-empty" hidden>Nenhum estudante encontrado com esse nome ou RA.</p>
           <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha um estudante para acompanhar os casos dele, ou veja todos os pacientes ativos.</p>
           <table class="dash-table">
             <caption class="sr-only">Lista de casos acessíveis ao perfil logado, com paciente, estudante, supervisor e status</caption>
@@ -2282,6 +2282,11 @@ window.apiUpdateSolicitacao = function(reqId, payload){
 };
 window.apiGetReagendamentos = function(){
   return _apiFetch('/api/reagendamentos');
+};
+/* Cadastro de estudantes (nome + RA) — só técnico e supervisor têm acesso. */
+window.PRONTUARIO_ESTUDANTES_RA = {};
+window.apiGetEstudantes = function(){
+  return _apiFetch('/api/estudantes');
 };
 window.apiCreateReagendamento = function(payload){
   return _apiFetch('/api/reagendamentos', {
@@ -3265,7 +3270,8 @@ route();
     Array.from(casesStudents.children).forEach(function(li){
       const btn = li.querySelector('[data-student]');
       const especial = btn && btn.dataset.student.indexOf('__')===0;
-      const bate = !termo || (!especial && semAcento(btn ? btn.dataset.student : '').indexOf(termo) !== -1);
+      const raTxt = btn ? String((window.PRONTUARIO_ESTUDANTES_RA || {})[btn.dataset.student] || '') : '';
+      const bate = !termo || (!especial && (semAcento(btn ? btn.dataset.student : '').indexOf(termo) !== -1 || raTxt.indexOf(termo) !== -1));
       li.hidden = !bate;
       if(bate && !especial) visiveis++;
     });
@@ -3319,7 +3325,7 @@ route();
       casesCurrent.hidden = !casesStudentSel || casesListOpen;
       casesCurrent.textContent = casesStudentSel==='__todos' ? 'Todos os estudantes'
         : casesStudentSel==='__ativos' ? 'Todos os pacientes ativos'
-        : ('Casos de ' + casesStudentSel);
+        : ('Casos de ' + casesStudentSel + (raDe[casesStudentSel] ? ' · RA ' + raDe[casesStudentSel] : ''));
     }
     rows.forEach(function(r){
       r.hidden = !(casesStudentSel==='__todos'
@@ -4487,6 +4493,16 @@ route();
           window.showServerOfflineBanner();
         })
       ]).then(function(){
+        /* RA dos estudantes: só é pedido para técnico e supervisor (o servidor recusa os demais). */
+        if(sessao.role !== 'tecnico' && sessao.role !== 'supervisor') return;
+        return window.apiGetEstudantes().then(function(lista){
+          const mapa = {};
+          (lista || []).forEach(function(e){ if(e && e.nome) mapa[e.nome] = e.ra; });
+          window.PRONTUARIO_ESTUDANTES_RA = mapa;
+        }).catch(function(err){
+          console.warn('Não foi possível carregar o cadastro de estudantes:', err);
+        });
+      }).then(function(){
         if(emailLower==='tecnico@exemplo.com'){
           applyRole('tecnico', sessao.nome || 'Fernando Ricci');
           showCard('success');

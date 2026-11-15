@@ -243,25 +243,47 @@ def _hash_senha(senha):
     return derivado.hex()
 
 
-def _conta(role, nome, senha):
-    return {"role": role, "nome": nome, "senha_hash": _hash_senha(senha)}
+def _conta(role, nome, senha, ra=None):
+    conta = {"role": role, "nome": nome, "senha_hash": _hash_senha(senha)}
+    if ra:
+        # RA (registro acadêmico): identificador único do estudante.
+        conta["ra"] = ra
+    return conta
 
 
 CONTAS = {
     # equipe
     "tecnico@exemplo.com": _conta("tecnico", "Fernando Ricci", "senha123"),
     "supervisor@exemplo.com": _conta("supervisor", "Dra. Patrícia Novaes", "senha123"),
-    "estudante@exemplo.com": _conta("estudante", "Ana Beatriz Lima", "senha123"),
+    "estudante@exemplo.com": _conta("estudante", "Ana Beatriz Lima", "senha123", ra="202501117"),
     # primeiro acesso da equipe (senha temporária = RA/matrícula)
     "novo.tecnico@exemplo.com": _conta("tecnico", "Novo Técnico", "202601001"),
     "novo.supervisor@exemplo.com": _conta("supervisor", "Novo Supervisor", "202601002"),
-    "novo.estudante@exemplo.com": _conta("estudante", "Novo Estudante", "202601234"),
+    "novo.estudante@exemplo.com": _conta("estudante", "Novo Estudante", "202601234", ra="202601234"),
     # paciente
     "paciente@exemplo.com": _conta("paciente", "Maria Fernanda Alves", "senha123"),
     "carlos@exemplo.com": _conta("paciente", "Carlos Eduardo Mendes", "senha123"),
     # primeiro acesso do paciente (senha temporária = CPF)
     "novo@exemplo.com": _conta("paciente", "Pedro Henrique Souza", "11122233344"),
 }
+
+# Estudantes que aparecem nos casos de demonstração mas ainda não têm conta de
+# acesso. O RA é o identificador único do estudante (nome -> RA).
+ESTUDANTES_SEM_CONTA = {
+    "Rafael Augusto Pires": "202501142",
+}
+
+
+def _lista_estudantes():
+    """Cadastro de estudantes (nome + RA), em ordem alfabética pelo nome."""
+    estudantes = {}
+    for conta in CONTAS.values():
+        if conta.get("role") == "estudante" and conta.get("ra"):
+            estudantes[conta["nome"]] = conta["ra"]
+    for nome, ra in ESTUDANTES_SEM_CONTA.items():
+        estudantes.setdefault(nome, ra)
+    return [{"nome": nome, "ra": estudantes[nome]} for nome in sorted(estudantes, key=lambda n: n.casefold())]
+
 
 # Sessões ativas: token -> {"email", "role", "nome", "criado_em"}. Guardadas só
 # na memória do processo (zeram se o servidor reiniciar) — suficiente para um
@@ -672,6 +694,15 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "GET /api/solicitacoes")
                 return
             self._send_json(fila)
+            return
+
+        if path == "/api/estudantes":
+            # Só técnico e supervisor consultam o cadastro de estudantes (nome + RA).
+            sessao = self._exigir_papel({"tecnico", "supervisor"})
+            if sessao is None:
+                return
+            _registrar_auditoria(sessao, "listagem de estudantes")
+            self._send_json(_lista_estudantes())
             return
 
         if path == "/api/reagendamentos":
