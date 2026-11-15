@@ -664,6 +664,64 @@ footer{margin-top:120px}
   .eq-main{padding:24px 18px 26px}
 }
 @media(max-width:520px){.eq-recent li{flex-direction:column;align-items:flex-start;gap:8px}.eq-tec-quick{grid-template-columns:1fr}.eq-pend-item{grid-template-columns:auto 1fr auto}.eq-pend-go{display:none}}
+/* ===== PAINEL TÉCNICO — acabamento visual (creme, serifada, emblema, desenho do prédio) ===== */
+.auth-dash.eq-tec{--tc-bg:#f6f2e8;--tc-card:#fdfbf6;--tc-line:#e6dfcf;--tc-tint:#ebe7d8;background:var(--tc-bg);border-color:var(--tc-line)}
+.eq-tec .eq-side{position:relative;overflow:hidden;padding:26px 14px 18px}
+.eq-tec .eq-side::after{content:"";position:absolute;left:0;right:0;bottom:64px;height:210px;background:#dff0e7;-webkit-mask:var(--eq-art) center 62%/260% auto no-repeat,linear-gradient(to top,#000 45%,transparent 100%);-webkit-mask-composite:source-in;mask:var(--eq-art) center 62%/260% auto no-repeat,linear-gradient(to top,#000 45%,transparent 100%);mask-composite:intersect;opacity:.2;pointer-events:none}
+.eq-tec .eq-side>*{position:relative;z-index:1}
+.eq-tec .eq-side-brand{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 6px}
+.eq-side-logo{width:46px;height:46px;object-fit:contain;filter:brightness(0) invert(1);opacity:.92;margin-bottom:10px}
+.eq-side-logo:not([src]){display:none}
+.eq-tec .eq-side-brand b{font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:.06em}
+.eq-tec .eq-side-brand small{margin-top:4px;font-size:11px;color:#b9d2c6}
+.eq-tec .eq-side-link{border-radius:10px;font-size:13.5px}
+.eq-tec .eq-side-link.is-active{background:#e3ecdf;color:var(--navy);font-weight:600}
+.eq-tec .eq-side-link.is-active .eq-side-count{background:var(--navy);color:#fff}
+.eq-tec .eq-main{position:relative;padding:34px 38px 40px}
+.eq-tec .eq-main::after{content:"";position:absolute;right:0;bottom:0;width:min(520px,70%);height:230px;background:linear-gradient(to top left,rgba(47,107,84,.3) 5%,rgba(47,107,84,0) 75%);-webkit-mask:var(--eq-art) right 58%/150% auto no-repeat;mask:var(--eq-art) right 58%/150% auto no-repeat;pointer-events:none}
+.eq-tec .eq-main>*{position:relative;z-index:1}
+.eq-tec .eq-main>.dash-head{z-index:5}
+.eq-tec .dash-head .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#5d7a6c}
+.eq-tec .dash-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(28px,3vw,38px);letter-spacing:-.01em;color:var(--navy);margin-top:10px}
+.eq-tec .eq-dash-sub{font-size:14.5px;color:#4f6259;max-width:none}
+.eq-avatar{width:42px;height:42px;border-radius:50%;background:#dfe9df;color:var(--navy);display:grid;place-items:center;font-size:14px;font-weight:700;letter-spacing:.02em}
+.eq-tec .eq-notif-btn{background:var(--tc-card);border-color:var(--tc-line)}
+.eq-tec .eq-stat-card,.eq-tec .eq-cal-card,.eq-tec .eq-tec-panel,.eq-tec .dash-hist,.eq-tec .eq-pt-card{background:var(--tc-card);border:1px solid var(--tc-line);border-radius:16px;box-shadow:0 1px 2px rgba(19,55,42,.03)}
+.eq-tec .eq-stats-row{gap:16px;margin-bottom:20px}
+.eq-tec .eq-stat-card{padding:18px 20px;column-gap:16px}
+.eq-tec .eq-stat-ic{width:46px;height:46px;border-radius:50%;background:none;border:1.5px solid #9db8a9;color:#2f6b54}
+.eq-tec .eq-stat-ic svg{width:20px;height:20px}
+.eq-tec .eq-stat-value{font-family:var(--serif);font-size:32px;font-weight:600;line-height:1}
+.eq-tec .eq-stat-label{font-size:13px;color:#4f6259}
+.eq-tec .eq-cal-card{padding:22px 24px;margin-bottom:20px}
+.eq-tec #eq-cal-eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--navy)}
+.eq-tec #eq-cal-eyebrow::before{width:20px;height:20px;border-radius:0;background:none;-webkit-mask:none;content:"";background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6b54' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E") center/contain no-repeat}
+.eq-tec .eq-cal-appt,.eq-tec .eq-cal-appt:last-child{background:#fff;border:1px solid var(--tc-line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.eq-tec .eq-tec-h{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--navy);margin:0 0 14px}
+.eq-tec .eq-tec-h svg{width:20px;height:20px;flex:none;color:#2f6b54}
+.eq-tec .eq-tec-block{background:var(--tc-tint);border:1px solid var(--tc-line);border-radius:16px;padding:20px 22px 22px;margin-bottom:20px}
+.eq-tec .eq-tec-quick{gap:14px}
+.eq-tec .eq-tec-qbtn{flex-direction:column;justify-content:center;gap:10px;min-height:96px;padding:16px 12px;text-align:center;background:var(--tc-card);border-color:var(--tc-line);border-radius:14px;font-size:13.5px;line-height:1.3}
+.eq-tec .eq-tec-qbtn svg{width:24px;height:24px;color:#2f6b54}
+.eq-tec .eq-tec-qbtn:hover{background:#fff;border-color:#9db8a9;transform:translateY(-2px)}
+.eq-tec .eq-tec-qbtn{transition:border-color .2s,background .2s,transform .2s}
+.eq-tec .eq-tec-panel{padding:20px 22px 16px}
+.eq-tec .eq-tec-panel-head{margin-bottom:6px}
+.eq-tec .eq-tec-panel-head .eq-tec-h{margin:0}
+.eq-pend-badge{font-size:12px;font-weight:700;color:#2f6b54;background:#dfe9df;border-radius:999px;padding:5px 12px}
+.eq-tec .eq-pend-item{border-top-color:var(--tc-line);border-radius:10px;padding:14px 6px}
+.eq-tec .eq-pend-item:hover,.eq-recent-row:hover{background:#f1ede1}
+.eq-tec .eq-pend-ic{background:none;border:1.5px solid #c9d6cc;border-radius:10px;color:#2f6b54}
+.eq-tec .eq-pend-count:not(.has){background:#ece8dc;color:#6f7b72}
+.eq-tec-foot-link{margin-top:10px}
+.eq-tec .eq-recent li{display:block;padding:0;border-top-color:var(--tc-line)}
+.eq-recent-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;width:100%;padding:13px 6px;border:0;border-radius:10px;background:none;font-family:var(--sans);text-align:left;cursor:pointer;transition:background .2s}
+.eq-recent-row:focus-visible{outline:2px solid #8fc4aa;outline-offset:2px}
+.eq-recent-when{font-size:12.5px;color:#6f7b72;white-space:nowrap}
+.eq-tec .dash-table th{border-bottom-color:var(--tc-line)}
+.eq-tec .dash-table td{border-bottom-color:var(--tc-line)}
+.eq-tec .eq-tec-title,.eq-tec .dash-hist-head h3,.eq-tec .eq-pt-head-title h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--navy)}
+@media(max-width:900px){.eq-tec .eq-side::after{display:none}.eq-tec .eq-side-brand{flex-direction:row;align-items:center;gap:10px;text-align:left}.eq-side-logo{width:32px;height:32px;margin:0}.eq-tec .eq-main{padding:24px 18px 30px}}
 .eq-head-actions{display:flex;align-items:center;gap:18px;flex:none}
 .eq-notif{position:relative}
 .eq-notif-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--navy);display:grid;place-items:center;cursor:pointer;transition:border-color .2s,background .2s}
@@ -2018,7 +2076,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <div class="auth-card auth-dash" id="eq-dash-card">
         <aside class="eq-side eq-tec-only" id="eq-side" aria-label="Navegação do painel técnico">
           <div class="eq-side-top">
-            <div class="eq-side-brand"><b>Prontuário Eletrônico</b><small>Clínica-Escola de Psicologia · FCMSCSP</small></div>
+            <div class="eq-side-brand"><img class="eq-side-logo" id="eq-side-logo" alt="" aria-hidden="true"><b>FCMSCSP</b><small>Prontuário Eletrônico de Psicologia</small></div>
             <button type="button" class="eq-side-toggle" id="eq-side-toggle" aria-expanded="false" aria-controls="eq-side-nav">Menu</button>
           </div>
           <nav class="eq-side-nav" id="eq-side-nav">
@@ -2051,6 +2109,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
                 <p class="eq-notif-empty" id="eq-notif-empty" hidden>Nenhuma pendência no momento.</p>
               </div>
             </div>
+            <span class="eq-avatar eq-tec-only" id="eq-avatar" aria-hidden="true"></span>
             <a href="#" class="auth-link-sm">Sair</a>
           </div>
         </div>
@@ -2076,7 +2135,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         <div class="eq-cal-card" id="eq-cal-card" data-in="painel agenda">
           <div class="eq-cal-topline">
             <span class="eyebrow" id="eq-cal-eyebrow">Agenda do serviço</span>
-            <button type="button" class="eq-tec-link eq-tec-only" data-in="painel" data-goto="agenda">Abrir agenda<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+            <button type="button" class="eq-tec-link eq-tec-only" data-in="painel" data-goto="agenda">Ver agenda<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
           </div>
           <div class="eq-cal-body">
             <div class="eq-cal-left">
@@ -2101,7 +2160,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         </div>
 
         <section class="eq-tec-block eq-tec-only" data-in="painel" aria-labelledby="eq-tec-quick-title">
-          <h3 class="eq-tec-h" id="eq-tec-quick-title">Acesso rápido</h3>
+          <h3 class="eq-tec-h" id="eq-tec-quick-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Acesso rápido</h3>
           <div class="eq-tec-quick" id="eq-tec-quick">
             <button type="button" class="eq-tec-qbtn" data-quick="cadastro"><svg aria-hidden="true"><use href="#i-plus"/></svg><span>Cadastrar paciente</span></button>
             <button type="button" class="eq-tec-qbtn" data-quick="buscar"><svg aria-hidden="true"><use href="#i-search"/></svg><span>Buscar paciente</span></button>
@@ -2112,7 +2171,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 
         <div class="eq-tec-row eq-tec-only" data-in="painel">
           <section class="eq-tec-panel" aria-labelledby="eq-tec-pend-title">
-            <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-pend-title">Pendências</h3><button type="button" class="eq-tec-link" data-goto="solicitacoes">Ver todas as solicitações<svg aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-pend-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg>Pendências</h3><span class="eq-pend-badge" id="eq-pend-badge" hidden></span></div>
             <div class="eq-pend" id="eq-tec-pend">
               <button type="button" class="eq-pend-item" data-pend="eq-requests-card">
                 <span class="eq-pend-ic" aria-hidden="true"><svg><use href="#i-file"/></svg></span>
@@ -2127,11 +2186,13 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
                 <svg class="eq-pend-go" aria-hidden="true"><use href="#i-arrow"/></svg>
               </button>
             </div>
+            <button type="button" class="eq-tec-link eq-tec-foot-link" data-goto="solicitacoes">Ver todas as pendências<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
           </section>
           <section class="eq-tec-panel" aria-labelledby="eq-tec-recent-title">
-            <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-recent-title">Acompanhamentos recentes</h3></div>
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-recent-title"><svg aria-hidden="true"><use href="#i-file"/></svg>Últimos registros</h3></div>
             <ul class="eq-recent" id="eq-tec-recent"></ul>
-            <p class="eq-pt-empty" id="eq-tec-recent-empty" hidden>Ainda não há acompanhamentos registrados.</p>
+            <p class="eq-pt-empty" id="eq-tec-recent-empty" hidden>Ainda não há registros nos casos.</p>
+            <button type="button" class="eq-tec-link eq-tec-foot-link" data-goto="pacientes">Ver pacientes<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
           </section>
         </div>
 
@@ -3633,6 +3694,31 @@ route();
     if(side) side.classList.remove('is-open');
     if(sideToggle) sideToggle.setAttribute('aria-expanded','false');
     if(dashSub){ dashSub.textContent = 'Gestão clínica e acadêmica da Clínica-Escola.'; dashSub.hidden = false; }
+    const avatar = document.getElementById('eq-avatar');
+    if(avatar) avatar.textContent = initials(String(currentName || '').replace(/^(Dra?\.|Prof\.?a?)\s+/i, ''));
+    /* Emblema e desenho do prédio: reaproveitam imagens que o site já tem. */
+    const logo = document.getElementById('eq-side-logo');
+    const emblema = document.querySelector('img[alt="FCMSCSP"]');
+    if(logo && emblema && !logo.getAttribute('src')) logo.src = emblema.src;
+    /* O desenho vira uma máscara (traço opaco, fundo transparente) feita uma única vez em canvas,
+       para poder ser pintado claro na barra lateral e escuro no fundo do painel. */
+    const arte = document.querySelector('img.faq-bg-art');
+    if(arte && !card.style.getPropertyValue('--eq-art') && arte.complete && arte.naturalWidth){
+      try{
+        const w = 720, h = Math.round(720 * arte.naturalHeight / arte.naturalWidth);
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const cx = cv.getContext('2d');
+        cx.drawImage(arte, 0, 0, w, h);
+        const px = cx.getImageData(0, 0, w, h), d = px.data;
+        for(let i = 0; i < d.length; i += 4){
+          const lum = (0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2]) / 255;
+          const a = Math.max(0, Math.min(1, (0.93 - lum) / 0.5));
+          d[i] = d[i+1] = d[i+2] = 0; d[i+3] = Math.round(a * 255);
+        }
+        cx.putImageData(px, 0, 0);
+        card.style.setProperty('--eq-art', 'url("' + cv.toDataURL('image/png') + '")');
+      }catch(err){ console.info('Desenho decorativo do painel não pôde ser preparado.', err); }
+    }
     renderTecPend();
     renderTecStudents();
     renderTecRecent();
@@ -3657,6 +3743,8 @@ route();
       el.classList.toggle('has', par[1] > 0);
       el.setAttribute('aria-label', par[1] + (par[1]===1 ? ' pendente' : ' pendentes'));
     });
+    const pendBadge = document.getElementById('eq-pend-badge');
+    if(pendBadge){ pendBadge.hidden = (nSol + nReag) === 0; pendBadge.textContent = (nSol + nReag) + ((nSol + nReag) === 1 ? ' nova' : ' novas'); }
     const sideCount = document.getElementById('eq-side-count');
     if(sideCount){ sideCount.hidden = (nSol + nReag) === 0; sideCount.textContent = String(nSol + nReag); }
   }
@@ -3672,17 +3760,22 @@ route();
     if(!lista) return;
     const itens = Object.keys(CASOS).map(function(id){
       const c = CASOS[id] || {};
-      let ms = tecDataMs(c.abertura), txt = c.abertura || '';
+      /* Só o TIPO do último registro (atendimento, supervisão...) — nunca o conteúdo. */
+      const tipos = {atendimento:'Atendimento', 'supervisão':'Supervisão', supervisao:'Supervisão', contato:'Contato', 'retificação':'Retificação', retificacao:'Retificação'};
+      let ms = tecDataMs(c.abertura), tipo = 'Abertura do caso';
       (c.evolucoes || []).forEach(function(ev){
         const t = tecDataMs(ev && ev.data);
-        if(t > ms){ ms = t; txt = String(ev.data).slice(0,10); }
+        if(t >= ms){ ms = t; tipo = tipos[String(ev.tipo || '').toLowerCase()] || 'Registro'; }
       });
-      return {id:id, c:c, ms:ms, txt:txt};
+      return {id:id, c:c, ms:ms, tipo:tipo};
     }).sort(function(a,b){ return b.ms - a.ms; }).slice(0,5);
+    const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
     lista.innerHTML = itens.map(function(it){
-      const badge = it.c.status==='Ativo' ? 'dash-badge-ok' : 'dash-badge-muted';
-      return '<li><span><b>'+esc(it.c.paciente)+'</b><small>'+(it.c.estudante ? 'Estudante: '+esc(it.c.estudante) : 'Sem estudante')+(it.txt ? ' · '+esc(it.txt) : '')+'</small></span>'
-        + '<span class="eq-recent-side"><span class="dash-badge '+badge+'">'+esc(it.c.status)+'</span><button type="button" class="eq-case-open" data-case="'+esc(it.id)+'" aria-label="Ver caso de '+esc(it.c.paciente)+'">Ver caso<svg><use href="#i-arrow"/></svg></button></span></li>';
+      const d = it.ms ? new Date(it.ms) : null;
+      const quando = d ? (('0'+d.getDate()).slice(-2) + ' ' + meses[d.getMonth()]) : '';
+      return '<li><button type="button" class="eq-recent-row" data-case="'+esc(it.id)+'" aria-label="Ver caso de '+esc(it.c.paciente)+'">'
+        + '<span class="eq-recent-txt"><b>'+esc(it.c.paciente)+'</b><small>'+esc(it.tipo)+(it.c.estudante ? ' · '+esc(it.c.estudante) : '')+'</small></span>'
+        + '<span class="eq-recent-when">'+esc(quando)+'</span><svg class="eq-pend-go" aria-hidden="true"><use href="#i-arrow"/></svg></button></li>';
     }).join('');
     if(vazio) vazio.hidden = itens.length > 0;
   }
@@ -3792,7 +3885,7 @@ route();
         setTecView('pacientes');
         return;
       }
-      const recente = e.target.closest('#eq-tec-recent .eq-case-open');
+      const recente = e.target.closest('#eq-tec-recent [data-case]');
       if(recente){ openCase(recente.dataset.case); return; }
       if(e.target.closest('#eq-tec-st-prev')){ tecStPage = Math.max(1, tecStPage-1); renderTecStudents(); return; }
       if(e.target.closest('#eq-tec-st-next')){ tecStPage++; renderTecStudents(); return; }
