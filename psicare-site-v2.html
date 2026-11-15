@@ -2260,7 +2260,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
               <div class="eq-field"><label for="eq-np-abertura">Data de abertura</label><input type="text" class="eq-input" id="eq-np-abertura" placeholder="dd/mm/aaaa"></div>
             </div>
             <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-np-estudante">Estudante responsável</label>
+              <div class="eq-field"><label for="eq-np-estudante">Alocar para o estudante</label>
                 <select class="eq-select" id="eq-np-estudante">
                   <option value="Ana Beatriz Lima">Ana Beatriz Lima</option>
                   <option value="Rafael Augusto Pires">Rafael Augusto Pires</option>
@@ -3636,6 +3636,7 @@ route();
     renderTecPend();
     renderTecStudents();
     renderTecRecent();
+    fillNpEstudantes();
   }
   function setTecView(view){
     tecView = view;
@@ -4011,6 +4012,33 @@ route();
   }
 
   /* CADASTRAR PACIENTE — técnico-exclusivo: abre um novo caso e adiciona à tabela de casos */
+  /* Lista de estudantes para alocação: cadastro (nome + RA) + quem já tem caso,
+     em ordem alfabética, com a carga atual de pacientes ativos de cada um. */
+  const npEstudantesBase = Array.from(document.querySelectorAll('#eq-np-estudante option')).map(function(o){ return o.value; }).filter(Boolean);
+  let npEstudantesPronto = false;
+  function fillNpEstudantes(){
+    const sel = document.getElementById('eq-np-estudante');
+    if(!sel) return;
+    /* Na primeira vez ignora a opção que vinha pré-marcada no HTML: a alocação tem de ser uma escolha. */
+    const atual = npEstudantesPronto ? sel.value : '';
+    npEstudantesPronto = true;
+    const raDe = window.PRONTUARIO_ESTUDANTES_RA || {};
+    const ativos = {};
+    const nomes = npEstudantesBase.slice();
+    Object.keys(raDe).forEach(function(n){ if(nomes.indexOf(n) === -1) nomes.push(n); });
+    Object.keys(CASOS).forEach(function(id){
+      const c = CASOS[id] || {};
+      if(!c.estudante) return;
+      if(nomes.indexOf(c.estudante) === -1) nomes.push(c.estudante);
+      if(c.status === 'Ativo') ativos[c.estudante] = (ativos[c.estudante] || 0) + 1;
+    });
+    nomes.sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
+    sel.innerHTML = '<option value="">Selecione o estudante…</option>' + nomes.map(function(n){
+      const q = ativos[n] || 0;
+      return '<option value="'+esc(n)+'">'+esc(n)+(raDe[n] ? ' — RA '+esc(raDe[n]) : '')+' ('+q+(q===1?' paciente ativo':' pacientes ativos')+')</option>';
+    }).join('');
+    sel.value = nomes.indexOf(atual) !== -1 ? atual : '';
+  }
   const newPatientForm = document.getElementById('eq-newpatient-form');
   if(newPatientForm){
     newPatientForm.addEventListener('submit', function(e){
@@ -4020,9 +4048,15 @@ route();
       if(!nome){ nomeEl.focus(); return; }
       const aberturaEl = document.getElementById('eq-np-abertura');
       const abertura = aberturaEl.value.trim() || formatToday();
-      const estudante = document.getElementById('eq-np-estudante').value;
+      const estudanteEl = document.getElementById('eq-np-estudante');
+      const estudante = estudanteEl.value;
       const supervisor = document.getElementById('eq-np-supervisor').value;
       const msg = document.getElementById('eq-newpatient-msg');
+      if(!estudante){
+        if(msg){ msg.textContent = 'Escolha o estudante que vai acompanhar o paciente.'; msg.hidden = false; }
+        estudanteEl.focus();
+        return;
+      }
       const lgpdConsent = document.getElementById('eq-np-lgpd-consent');
       if(lgpdConsent && !lgpdConsent.checked){
         if(msg){ msg.textContent = 'Confirme que o paciente consentiu com o tratamento dos dados antes de cadastrar.'; msg.hidden = false; }
@@ -4035,8 +4069,10 @@ route();
         CASOS[resp.id] = resp.caso;
         syncCasesTable();
         renderStats();
-        if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a) com sucesso. O caso já aparece na lista de casos do serviço.'; msg.hidden = false; }
+        if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a) e alocado(a) para '+estudante+'. O caso já aparece na lista de pacientes.'; msg.hidden = false; }
         newPatientForm.reset();
+        document.getElementById('eq-np-estudante').value = '';
+        fillNpEstudantes();
       }).catch(function(err){
         console.warn('Não foi possível cadastrar o paciente no servidor:', err);
         window.showServerOfflineBanner();
