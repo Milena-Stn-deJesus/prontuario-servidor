@@ -575,6 +575,13 @@ footer{margin-top:120px}
 .dash-hist-head h3{font-size:15px}
 #eq-cases-title{font-size:20px;font-weight:700;color:var(--navy)}
 .eq-hide-estudante-col .eq-col-estudante,.eq-hide-estudante-col .eq-col-supervisor{display:none}
+.eq-hide-estudante-only .eq-col-estudante{display:none}
+.eq-quick-actions{display:flex;justify-content:flex-end;margin:-6px 0 20px}
+.eq-quick-actions .btn{padding:11px 20px;font-size:14px}
+.eq-cases-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}
+.eq-cases-filter label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.eq-cases-filter .eq-select{width:auto;flex:1 1 260px;max-width:440px;padding:10px 14px;font-size:14px}
+#eq-cases-table-card table[hidden]{display:none}
 
 /* Minha agenda — calendário compacto + atendimentos do dia, lado a lado */
 .eq-cal-card{border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:24px}
@@ -1902,6 +1909,10 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <a href="#" class="auth-link-sm">Sair</a>
         </div>
 
+        <div class="eq-quick-actions" id="eq-quick-actions" hidden>
+          <button type="button" class="btn btn-primary" id="eq-quick-newpatient"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button>
+        </div>
+
         <div class="eq-stats-row" id="eq-stats-row">
           <div class="eq-stat-card">
             <span class="eq-stat-value" id="eq-stat-ativos">0</span>
@@ -1948,6 +1959,11 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <svg><use href="#i-chart"/></svg>
             <h3 id="eq-cases-title">Casos</h3>
           </div>
+          <div class="eq-cases-filter" id="eq-cases-filter" hidden>
+            <label for="eq-cases-student">Estudante</label>
+            <select class="eq-select" id="eq-cases-student"></select>
+          </div>
+          <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha um estudante para ver os casos dele.</p>
           <table class="dash-table">
             <caption class="sr-only">Lista de casos acessíveis ao perfil logado, com paciente, estudante, supervisor e status</caption>
             <thead>
@@ -3175,6 +3191,65 @@ route();
       tr.dataset.estudante = caso.estudante;
       tr.innerHTML = caseRowHtml(caseId, caso);
     });
+    applyCasesFilter();
+  }
+
+  /* Técnico e supervisor não veem mais a lista inteira de uma vez: escolhem
+     um estudante e só então aparecem os casos dele. Assim a tela continua
+     curta mesmo com muitos estudantes e pacientes. */
+  let casesStudentSel = '';
+  const casesFilterBox = document.getElementById('eq-cases-filter');
+  const casesStudentSelect = document.getElementById('eq-cases-student');
+  const casesHint = document.getElementById('eq-cases-hint');
+  function applyCasesFilter(){
+    if(!casesBody || !casesFilterBox || !casesStudentSelect) return;
+    const rows = Array.from(casesBody.querySelectorAll('tr'));
+    if(currentRole!=='tecnico' && currentRole!=='supervisor'){
+      casesFilterBox.hidden = true;
+      if(casesHint) casesHint.hidden = true;
+      if(casesTable){ casesTable.hidden = false; casesTable.classList.remove('eq-hide-estudante-only'); }
+      return;
+    }
+    const nomeDe = function(r){ return r.dataset.estudante || 'Sem estudante'; };
+    const grupos = {};
+    rows.forEach(function(r){
+      const g = grupos[nomeDe(r)] || (grupos[nomeDe(r)] = {total:0, ativos:0});
+      g.total++;
+      if(r.querySelector('.dash-badge-ok')) g.ativos++;
+    });
+    const nomes = Object.keys(grupos).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
+    if(casesStudentSel && casesStudentSel!=='__todos' && !grupos[casesStudentSel]) casesStudentSel = '';
+    casesStudentSelect.innerHTML = '<option value="">Selecione um estudante…</option>'
+      + nomes.map(function(n){
+          const g = grupos[n];
+          return '<option value="'+esc(n)+'">'+esc(n)+' — '+g.total+(g.total===1?' caso':' casos')+', '+g.ativos+(g.ativos===1?' ativo':' ativos')+'</option>';
+        }).join('')
+      + '<option value="__todos">Todos os estudantes ('+rows.length+(rows.length===1?' caso':' casos')+')</option>';
+    casesStudentSelect.value = casesStudentSel;
+    rows.forEach(function(r){
+      r.hidden = !(casesStudentSel==='__todos' || (casesStudentSel && nomeDe(r)===casesStudentSel));
+    });
+    casesFilterBox.hidden = false;
+    if(casesHint) casesHint.hidden = !!casesStudentSel;
+    if(casesTable){
+      casesTable.hidden = !casesStudentSel;
+      casesTable.classList.toggle('eq-hide-estudante-only', !!casesStudentSel && casesStudentSel!=='__todos');
+    }
+  }
+  const quickNewPatient = document.getElementById('eq-quick-newpatient');
+  if(quickNewPatient){
+    quickNewPatient.addEventListener('click', function(){
+      const card = document.getElementById('eq-newpatient-card');
+      const nome = document.getElementById('eq-np-nome');
+      if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+      if(nome) setTimeout(function(){ nome.focus({preventScroll:true}); }, 450);
+    });
+  }
+  if(casesStudentSelect){
+    casesStudentSelect.addEventListener('change', function(){
+      casesStudentSel = casesStudentSelect.value;
+      applyCasesFilter();
+    });
   }
 
   function canManageCase(caso){
@@ -3201,6 +3276,7 @@ route();
   function applyRole(role, displayName){
     currentRole = role;
     currentName = displayName;
+    casesStudentSel = '';
     syncCasesTable();
     const rows = casesBody ? Array.from(casesBody.querySelectorAll('tr')) : [];
     if(role === 'estudante'){
@@ -3245,6 +3321,9 @@ route();
       renderRequests();
       renderReagendamentos();
     }
+    applyCasesFilter();
+    const quickActions = document.getElementById('eq-quick-actions');
+    if(quickActions) quickActions.hidden = !newPatientCard || newPatientCard.hidden;
     resetCalendarView();
     renderCalendar();
     renderStats();
