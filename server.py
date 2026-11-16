@@ -33,6 +33,10 @@ O QUE ESSE ARQUIVO FAZ:
                                         só quando existe uma solicitação já liberada pela
                                         equipe (senão, 403 — a liberação é checada aqui,
                                         no servidor, não só escondendo o botão na tela)
+    POST /api/ativar-conta          -> (convite) cria a senha de uma conta profissional nova
+    GET  /api/admin/resumo | profissionais | historico | minha-conta   -> (só admin_ti)
+    POST /api/admin/profissionais   -> (só admin_ti) cria conta de técnico ou supervisor
+    PUT  /api/admin/profissionais/<e-mail> | /api/admin/minha-conta     -> (só admin_ti)
     POST /api/login                 -> autentica e devolve um token de sessão
     POST /api/logout                -> invalida o token de sessão atual no servidor
     POST /api/recuperar-senha       -> recebe um e-mail, gera uma senha temporária
@@ -95,6 +99,7 @@ COMO RODAR LOCALMENTE:
 """
 
 import hashlib
+import hmac
 import json
 import os
 import re
@@ -311,6 +316,12 @@ MAX_PEDIDOS_RECUPERACAO = 3
 BLOQUEIO_RECUPERACAO_SEGUNDOS = 10 * 60  # 10 minutos
 
 PAPEIS_CASOS = {"tecnico", "supervisor", "estudante"}
+# Perfil da Administração de TI: só gerencia contas profissionais. Não está em
+# NENHUM dos conjuntos de papéis acima nem em nenhum outro usado pelas rotas
+# clínicas — como cada rota só aceita os papéis listados para ela, esse perfil
+# é negado por padrão em tudo que é clínico (pacientes, estudantes, prontuários,
+# inscrições, triagem, agendas, solicitações).
+PAPEIS_ADMIN = {"admin_ti"}
 PAPEIS_SOLICITACOES_LEITURA = {"tecnico", "supervisor"}
 PAPEIS_SOLICITACOES_ESCRITA = {"tecnico", "supervisor"}
 
@@ -346,6 +357,14 @@ reagendamentos_col = db["reagendamentos"]
 # Forms); o psicólogo técnico registra aqui cada resposta que chegou, e a partir
 # daí ela segue o fluxo Recebido -> Analisado -> Triagem -> Cadastro.
 inscricoes_col = db["inscricoes"]
+# Contas profissionais criadas pela Administração de TI (técnico e supervisor) e
+# a própria conta de administração. As contas de demonstração continuam no
+# dicionário CONTAS; o login consulta CONTAS primeiro e, se o e-mail não estiver
+# lá, esta coleção — é o mesmo login, com mais uma fonte de contas.
+contas_col = db["contas"]
+# Histórico das operações administrativas (criar, corrigir, desativar...). Nunca
+# guarda senha, token nem link de convite.
+historico_admin_col = db["historico_admin"]
 # Trilha de auditoria (achado da auditoria de segurança — item pendente que
 # havia sido esquecido no relatório anterior): registra quem fez o quê e
 # quando, numa coleção própria, consultável depois. Antes, o servidor só
@@ -590,6 +609,119 @@ def _evento_inscricao(sessao, acao, detalhe=None):
     if detalhe:
         ev["detalhe"] = detalhe
     return ev
+
+
+
+# ---------- Contas profissionais e Administração de TI ----------
+SITE_URL = os.environ.get("SITE_URL", "https://prontuario-servidor.onrender.com").rstrip("/")
+CONVITE_VALIDADE_SEGUNDOS = 72 * 60 * 60  # 72 horas
+FUNCOES_PROFISSIONAIS = {"tecnico": "Psicólogo técnico", "supervisor": "Supervisor"}
+INSTITUICAO = "Faculdade de Ciências Médicas da Santa Casa de São Paulo"
+FUNCAO_ADMIN = "Administradora de TI / Desenvolvedora da Plataforma"
+
+
+def _hash_senha_salt(senha, salt_hex):
+    """Hash PBKDF2 com sal PRÓPRIO da conta (as contas novas não usam o sal
+    fixo das contas de demonstração)."""
+    return hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"), bytes.fromhex(salt_hex), 200_000).hex()
+
+
+def _validar_senha_nova(senha, role):
+    """Mesmas regras exibidas na tela 'criar nova senha' (6+ caracteres,
+    maiúscula, número e caractere especial). A conta de administração exige
+    mais: 10+ caracteres, por ter poder sobre os acessos."""
+    minimo = 10 if role == "admin_ti" else 6
+    if not isinstance(senha, str) or len(senha) < minimo or len(senha) > 128:
+        return "a senha precisa ter de %d a 128 caracteres" % minimo
+    if not (re.search(r"[A-Z]", senha) and re.search(r"[0-9]", senha) and re.search(r"[^A-Za-z0-9]", senha)):
+        return "a senha precisa ter uma letra maiúscula, um número e um caractere especial"
+    return None
+
+
+def _novo_convite():
+    """Gera um convite de primeiro acesso de uso único. Devolve (token, dados
+    para gravar). Só o HASH do token é guardado; o token em si existe apenas no
+    link entregue à pessoa."""
+    token = secrets.token_urlsafe(32)
+    return token, {
+        "token_hash": hashlib.sha256(token.encode("utf-8")).hexdigest(),
+        "expira_em": time.time() + CONVITE_VALIDADE_SEGUNDOS,
+        "gerado_em_br": _agora_br(),
+    }
+
+
+def _link_convite(token):
+    # O token vai no fragmento (#...), que o navegador nunca envia ao servidor:
+    # assim ele não aparece em log de acesso nenhum.
+    return "%s/#ativar:%s" % (SITE_URL, token)
+
+
+def _enviar_convite(email, nome, role, token):
+    funcao = FUNCOES_PROFISSIONAIS.get(role, "profissional")
+    assunto = "Prontuário Eletrônico — convite para criar sua senha de acesso"
+    corpo = (
+        "Olá, %s!\n\n"
+        "Uma conta de %s foi criada para você no Prontuário Eletrônico de Psicologia "
+        "da Clínica-Escola (FCMSCSP).\n\n"
+        "Para criar sua senha e ativar o acesso, abra o link abaixo (uso único, válido por 72 horas):\n\n"
+        "%s\n\n"
+        "Se você não esperava este convite, ignore este e-mail.\n\n"
+        "Este é um e-mail automático — não é necessário responder."
+    ) % (nome or "profissional", funcao, _link_convite(token))
+    return _enviar_email(email, assunto, corpo)
+
+
+def _encerrar_sessoes(email):
+    for tok in [t for t, s_ in SESSOES.items() if s_.get("email") == email]:
+        SESSOES.pop(tok, None)
+
+
+def _registrar_historico_admin(sessao, acao, alvo_email=None, detalhe=None):
+    try:
+        historico_admin_col.insert_one({
+            "quando": time.time(),
+            "quando_br": _agora_br(),
+            "por_email": (sessao or {}).get("email", ""),
+            "por_nome": (sessao or {}).get("nome", ""),
+            "acao": acao,
+            "alvo_email": alvo_email or "",
+            "detalhe": detalhe or "",
+        })
+    except PyMongoError as exc:
+        print("ERRO (histórico administrativo): %s" % exc)
+
+
+def conta_db_to_json(doc):
+    """Dados administrativos de uma conta — nunca hash, sal nem token."""
+    convite = doc.get("convite") or {}
+    return {
+        "email": doc["_id"],
+        "nome": doc.get("nome", ""),
+        "role": doc.get("role", ""),
+        "funcao": FUNCOES_PROFISSIONAIS.get(doc.get("role"), doc.get("funcao", "")),
+        "crp": doc.get("crp", ""),
+        "status": doc.get("status", ""),
+        "criado_em_br": doc.get("criado_em_br", ""),
+        "convite_expirado": bool(doc.get("status") == "convite_pendente" and convite.get("expira_em", 0) < time.time()),
+    }
+
+
+def _validar_dados_profissional(body):
+    nome = str(body.get("nome", "")).strip()
+    if len(nome) < 3 or len(nome) > 120:
+        return None, "informe o nome completo (de 3 a 120 caracteres)"
+    crp = str(body.get("crp", "")).strip()
+    if crp and not re.match(r"^\d{2}/\d{3,7}$", crp):
+        return None, "o CRP deve ter o formato 06/123456 (região e número)"
+    return {"nome": nome, "crp": crp}, None
+
+
+def _resposta_convite(email_enviado, token):
+    """O link só é devolvido ao painel quando o e-mail NÃO saiu (SMTP não
+    configurado ou falhou): é a única forma de a pessoa receber o convite, e
+    ele é mostrado uma única vez, na tela da administração — nunca no log."""
+    return {"email_enviado": bool(email_enviado), "link": None if email_enviado else _link_convite(token),
+            "validade_horas": CONVITE_VALIDADE_SEGUNDOS // 3600}
 
 
 def caso_doc_to_json(doc):
@@ -917,6 +1049,44 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(_lista_estudantes())
             return
 
+        if path.startswith("/api/admin/"):
+            sessao = self._exigir_papel(PAPEIS_ADMIN)
+            if sessao is None:
+                return
+            try:
+                if path == "/api/admin/resumo":
+                    docs = list(contas_col.find({"role": {"$in": list(FUNCOES_PROFISSIONAIS)}}))
+                    self._send_json({
+                        "tecnicos": sum(1 for d in docs if d["role"] == "tecnico"),
+                        "supervisores": sum(1 for d in docs if d["role"] == "supervisor"),
+                        "ativas": sum(1 for d in docs if d.get("status") == "ativa"),
+                        "convites_pendentes": sum(1 for d in docs if d.get("status") == "convite_pendente"),
+                    })
+                    return
+                if path == "/api/admin/profissionais":
+                    docs = list(contas_col.find({"role": {"$in": list(FUNCOES_PROFISSIONAIS)}}).sort("criado_em", -1))
+                    self._send_json([conta_db_to_json(d) for d in docs])
+                    return
+                if path == "/api/admin/historico":
+                    docs = list(historico_admin_col.find({}).sort("quando", -1))[:300]
+                    for d in docs:
+                        d.pop("_id", None)
+                    self._send_json(docs)
+                    return
+                if path == "/api/admin/minha-conta":
+                    doc = contas_col.find_one({"_id": sessao["email"]})
+                    if not doc:
+                        self._send_error_json(404, "conta não encontrada")
+                        return
+                    self._send_json({"nome": doc.get("nome", ""), "email": doc["_id"], "funcao": doc.get("funcao", FUNCAO_ADMIN),
+                                     "instituicao": doc.get("instituicao", INSTITUICAO), "status": doc.get("status", "")})
+                    return
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET " + path)
+                return
+            self._send_error_json(404, "rota não encontrada")
+            return
+
         if path == "/api/inscricoes":
             # Dados pessoais de candidatos: só o psicólogo técnico acessa.
             sessao = self._exigir_papel({"tecnico"})
@@ -1076,7 +1246,28 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
             conta = CONTAS.get(email)
-            if not conta or conta["senha_hash"] != _hash_senha(senha):
+            if conta is not None:
+                senha_ok = conta["senha_hash"] == _hash_senha(senha)
+            else:
+                # Não é conta de demonstração: procura nas contas gravadas no
+                # banco. Só entra quem está "ativa" e já criou a senha pelo
+                # convite; convite pendente e conta desativada recebem a mesma
+                # resposta genérica de credenciais incorretas.
+                try:
+                    doc_conta = contas_col.find_one({"_id": email}) if EMAIL_REGEX.match(email) else None
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/login")
+                    return
+                senha_ok = False
+                if doc_conta and doc_conta.get("status") == "ativa" and doc_conta.get("senha_hash") and doc_conta.get("salt"):
+                    senha_ok = hmac.compare_digest(doc_conta["senha_hash"], _hash_senha_salt(senha, doc_conta["salt"]))
+                    if senha_ok:
+                        conta = {"role": doc_conta["role"], "nome": doc_conta["nome"]}
+                else:
+                    _hash_senha_salt(senha, "00" * 16)  # custo parecido, para não revelar se o e-mail existe
+                if not senha_ok:
+                    conta = None
+            if not conta or not senha_ok:
                 t = TENTATIVAS_LOGIN.setdefault(email, {"falhas": 0, "bloqueado_ate": None})
                 t["falhas"] += 1
                 if t["falhas"] >= MAX_TENTATIVAS:
@@ -1174,6 +1365,98 @@ class Handler(BaseHTTPRequestHandler):
                 print("[recuperar-senha] pedido para e-mail não cadastrado: %s" % email)
 
             self._send_json({"ok": True, "email_enviado": email_enviado})
+            return
+
+        if path == "/api/ativar-conta":
+            # Primeiro acesso por convite: a pessoa abre o link, escolhe a senha
+            # e a conta passa a "ativa". Rota pública de propósito (quem ainda
+            # não tem senha não pode estar logado), mas só funciona com um token
+            # de convite válido, de uso único e dentro do prazo.
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            token = str(body.get("token", "")).strip()
+            senha = body.get("senha", "")
+            invalido = "link de ativação inválido ou expirado — peça um novo convite à Administração de TI"
+            if not (20 <= len(token) <= 100):
+                self._send_error_json(400, invalido)
+                return
+            h = hashlib.sha256(token.encode("utf-8")).hexdigest()
+            try:
+                doc = contas_col.find_one({"convite.token_hash": h, "status": "convite_pendente"})
+                if not doc or (doc.get("convite") or {}).get("expira_em", 0) < time.time():
+                    self._send_error_json(400, invalido)
+                    return
+                erro_senha = _validar_senha_nova(senha, doc.get("role"))
+                if erro_senha:
+                    self._send_error_json(400, erro_senha)
+                    return
+                salt = secrets.token_hex(16)
+                r = contas_col.update_one(
+                    {"_id": doc["_id"], "status": "convite_pendente", "convite.token_hash": h},
+                    {"$set": {"salt": salt, "senha_hash": _hash_senha_salt(senha, salt), "status": "ativa",
+                              "ativada_em_br": _agora_br(), "convite": None}},
+                )
+                if r.matched_count == 0:
+                    self._send_error_json(400, invalido)
+                    return
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/ativar-conta")
+                return
+            _registrar_historico_admin({"email": doc["_id"], "nome": doc.get("nome", "")}, "Primeiro acesso concluído (senha criada)", doc["_id"])
+            _registrar_auditoria({"email": doc["_id"], "nome": doc.get("nome", ""), "role": doc.get("role")}, "ativação de conta por convite")
+            self._send_json({"ok": True, "email": doc["_id"], "nome": doc.get("nome", "")})
+            return
+
+        if path == "/api/admin/profissionais":
+            sessao = self._exigir_papel(PAPEIS_ADMIN)
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            email = str(body.get("email", "")).strip().lower()
+            tipo = str(body.get("tipo", ""))
+            situacao = str(body.get("situacao_inicial", "ativa"))
+            if not EMAIL_REGEX.match(email):
+                self._send_error_json(400, "informe um e-mail profissional válido")
+                return
+            if tipo not in FUNCOES_PROFISSIONAIS:
+                # Só técnico e supervisor: não cria paciente, estudante nem outro administrador.
+                self._send_error_json(400, "o tipo de perfil precisa ser Psicólogo técnico ou Supervisor")
+                return
+            if situacao not in ("ativa", "desativada"):
+                self._send_error_json(400, "situação inicial inválida")
+                return
+            dados, erro = _validar_dados_profissional(body)
+            if erro:
+                self._send_error_json(400, erro)
+                return
+            try:
+                if email in CONTAS or contas_col.find_one({"_id": email}):
+                    self._send_error_json(409, "já existe uma conta com este e-mail")
+                    return
+                doc = {"_id": email, "nome": dados["nome"], "role": tipo, "crp": dados["crp"], "salt": None, "senha_hash": None,
+                       "criado_em": time.time(), "criado_em_br": _agora_br(), "criado_por": sessao["email"]}
+                token = None
+                if situacao == "ativa":
+                    token, convite = _novo_convite()
+                    doc.update(status="convite_pendente", convite=convite)
+                else:
+                    doc.update(status="desativada", convite=None)
+                contas_col.insert_one(dict(doc))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/admin/profissionais")
+                return
+            convite_resp = None
+            if token:
+                convite_resp = _resposta_convite(_enviar_convite(email, dados["nome"], tipo, token), token)
+            _registrar_historico_admin(sessao, "Conta de %s criada (%s)" % (FUNCOES_PROFISSIONAIS[tipo].lower(), "convite gerado" if token else "criada desativada"), email)
+            self._send_json({"profissional": conta_db_to_json(doc), "convite": convite_resp}, 201)
             return
 
         if path == "/api/inscricoes":
@@ -1522,6 +1805,109 @@ class Handler(BaseHTTPRequestHandler):
                 return
             _registrar_auditoria(sessao, "alteração de caso", caso_id=case_id)
             self._send_json(body)
+            return
+
+        if path == "/api/admin/minha-conta":
+            sessao = self._exigir_papel(PAPEIS_ADMIN)
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            nome = str(body.get("nome", "")).strip()
+            if len(nome) < 3 or len(nome) > 120:
+                self._send_error_json(400, "informe o nome completo (de 3 a 120 caracteres)")
+                return
+            try:
+                # Só o nome é editável: perfil, e-mail e função não mudam por aqui.
+                r = contas_col.update_one({"_id": sessao["email"], "role": "admin_ti"}, {"$set": {"nome": nome}})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/admin/minha-conta")
+                return
+            if r.matched_count == 0:
+                self._send_error_json(404, "conta não encontrada")
+                return
+            for sess in SESSOES.values():
+                if sess.get("email") == sessao["email"]:
+                    sess["nome"] = nome
+            _registrar_historico_admin(sessao, "Dados da própria conta atualizados", sessao["email"])
+            self._send_json({"ok": True, "nome": nome})
+            return
+
+        mp = re.match(r"^/api/admin/profissionais/(.+)$", path)
+        if mp:
+            sessao = self._exigir_papel(PAPEIS_ADMIN)
+            if sessao is None:
+                return
+            email = unquote(mp.group(1)).strip().lower()
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            acao = str(body.get("acao", ""))
+            try:
+                doc = contas_col.find_one({"_id": email})
+                # Só contas de técnico e supervisor: a administração não altera
+                # a si mesma nem outros administradores por esta rota.
+                if not doc or doc.get("role") not in FUNCOES_PROFISSIONAIS:
+                    self._send_error_json(404, "conta profissional não encontrada")
+                    return
+                status = doc.get("status")
+                token = None
+                if acao == "atualizar":
+                    dados, erro = _validar_dados_profissional(body)
+                    if erro:
+                        self._send_error_json(400, erro)
+                        return
+                    mudou = [rot for rot, k in (("nome", "nome"), ("CRP", "crp")) if dados[k] != doc.get(k, "")]
+                    if not mudou:
+                        self._send_error_json(400, "nenhuma alteração informada")
+                        return
+                    contas_col.update_one({"_id": email}, {"$set": dados})
+                    for sess in SESSOES.values():
+                        if sess.get("email") == email:
+                            sess["nome"] = dados["nome"]
+                    historico = ("Dados corrigidos", "campos: " + ", ".join(mudou))
+                elif acao == "desativar":
+                    if status == "desativada":
+                        self._send_error_json(409, "a conta já está desativada")
+                        return
+                    # Mantém tudo o que a pessoa produziu; só impede novos acessos,
+                    # derruba as sessões abertas e invalida convites pendentes.
+                    contas_col.update_one({"_id": email}, {"$set": {"status": "desativada", "convite": None, "desativada_em_br": _agora_br()}})
+                    _encerrar_sessoes(email)
+                    historico = ("Conta desativada", "")
+                elif acao == "reativar":
+                    if status != "desativada":
+                        self._send_error_json(409, "só uma conta desativada pode ser reativada")
+                        return
+                    if doc.get("senha_hash"):
+                        contas_col.update_one({"_id": email}, {"$set": {"status": "ativa", "convite": None}})
+                        historico = ("Conta reativada", "")
+                    else:
+                        token, convite = _novo_convite()
+                        contas_col.update_one({"_id": email}, {"$set": {"status": "convite_pendente", "convite": convite}})
+                        historico = ("Conta reativada (novo convite de primeiro acesso)", "")
+                elif acao == "reenviar_convite":
+                    if status != "convite_pendente":
+                        self._send_error_json(409, "só é possível reenviar convite de uma conta com primeiro acesso pendente")
+                        return
+                    token, convite = _novo_convite()  # o convite anterior deixa de valer
+                    contas_col.update_one({"_id": email}, {"$set": {"convite": convite}})
+                    historico = ("Convite de primeiro acesso reenviado", "")
+                else:
+                    self._send_error_json(400, "ação inválida")
+                    return
+                atualizado = contas_col.find_one({"_id": email})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/admin/profissionais")
+                return
+            convite_resp = _resposta_convite(_enviar_convite(email, atualizado.get("nome"), atualizado["role"], token), token) if token else None
+            _registrar_historico_admin(sessao, historico[0], email, historico[1])
+            self._send_json({"profissional": conta_db_to_json(atualizado), "convite": convite_resp})
             return
 
         mi = re.match(r"^/api/inscricoes/(INS-\d{4}-\d{4})$", path)

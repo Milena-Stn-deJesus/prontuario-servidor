@@ -523,6 +523,8 @@ footer{margin-top:120px}
 #eq-forgot[hidden]{display:none!important}
 #eq-forgot-sent[hidden]{display:none!important}
 #eq-firstaccess[hidden]{display:none!important}
+#eq-ativar[hidden]{display:none!important}
+#eq-admin[hidden]{display:none!important}
 .dash-next-empty{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:4px 0 2px}
 .dash-next-empty[hidden]{display:none}
 .dash-next-empty svg{width:28px;height:28px;color:var(--blue)}
@@ -1246,6 +1248,36 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 #page-inscricao .enroll-team-section.enroll-team-compact{padding:0 0 36px}
 #page-inscricao .enroll-final-section{padding:0 0 76px}
 @media(max-width:800px){#page-inscricao .enroll-journey.enroll-steps-sec{padding:46px 0 30px}#page-inscricao .enroll-final-section{padding-bottom:56px}}
+
+/* ===== Administração de TI (somente contas profissionais) ===== */
+.eq-admin[data-aview="visao"] [data-ain]:not([data-ain~="visao"]),
+.eq-admin[data-aview="profissionais"] [data-ain]:not([data-ain~="profissionais"]),
+.eq-admin[data-aview="cadastrar"] [data-ain]:not([data-ain~="cadastrar"]),
+.eq-admin[data-aview="historico"] [data-ain]:not([data-ain~="historico"]),
+.eq-admin[data-aview="conta"] [data-ain]:not([data-ain~="conta"]){display:none!important}
+.eq-admin .eq-side::after,.eq-admin .eq-main::after{display:none}
+.eq-admin .eq-stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.eq-admin .eq-stat-card{grid-template-columns:1fr}
+.eq-adm-scroll{overflow-x:auto}
+.eq-adm-table td:last-child{white-space:normal}
+.eq-adm-table td{vertical-align:top}
+.eq-adm-st{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#e3ecdf;color:#1f4d3a;white-space:nowrap}
+.eq-adm-st.pend{background:#f6e9c4;color:#6b4e00}
+.eq-adm-st.off{background:#ece8dc;color:#5c655f}
+.eq-adm-acts{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:flex-end}
+.eq-adm-msg{margin:0 0 16px;padding:11px 14px;border-radius:12px;background:#e3ecdf;color:#1f4d3a;font-size:14px}
+.eq-adm-msg.err{background:#f6dcd7;color:#7a2a1f}
+.eq-adm-note,.eq-adm-empty{font-size:14px;color:var(--muted);margin:0 0 14px}
+.eq-adm-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
+.eq-adm-edit{margin-top:18px;padding-top:16px;border-top:1px solid var(--tc-line)}
+.eq-adm-edit h4{font-family:var(--serif);font-size:17px;margin:0 0 10px;color:var(--navy)}
+.eq-adm-convite{margin-top:18px;padding:16px 18px;border-radius:14px;background:#fff;border:1px solid var(--tc-line);font-size:14px;line-height:1.55}
+.eq-adm-convite code{display:block;margin:8px 0;padding:10px 12px;border-radius:10px;background:#f6f2e8;word-break:break-all;font-size:12.5px;user-select:all}
+.eq-adm-dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 18px;margin:0 0 18px;font-size:14px}
+.eq-adm-dl dt{color:var(--muted);font-weight:600}
+.eq-adm-dl dd{margin:0;word-break:break-word}
+@media(max-width:1000px){.eq-admin .eq-stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.eq-adm-dl{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1607,7 +1639,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <div class="contact-cards">
         <div class="cc"><span class="ic"><svg><use href="#i-pin"/></svg></span><div><b>Endereço</b><span data-contato="endereco">R. Jesuíno Pascoal, 121 — Consolação, São Paulo – SP, CEP 01224-050</span></div></div>
         <div class="cc"><span class="ic"><svg><use href="#i-phone"/></svg></span><div><b>Telefone</b><span data-contato="telefone">(11) 3466-2500 / (11) 3466-2502</span></div></div>
-        <div class="cc"><span class="ic"><svg><use href="#i-cal"/></svg></span><div><b>Horário</b><span data-contato="horario">Segunda a sexta-feira, das 7h00 às 17h00</span></div></div>
+        <div class="cc"><span class="ic"><svg><use href="#i-cal"/></svg></span><div><b>Horário</b><span data-contato="horario">Segunda a sexta-feira, das 7h às 17h. Em algumas situações, os atendimentos podem ultrapassar esse horário, conforme a necessidade e a demanda da clínica.</span></div></div>
         <div class="cc"><span class="ic"><svg><use href="#i-mail"/></svg></span><div><b>E-mail</b><span data-contato="email">Em breve</span></div></div>
       </div>
     </div>
@@ -2116,6 +2148,150 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     </div>
   </div>
 </section>
+
+<!-- ATIVAÇÃO DE CONTA — convite de primeiro acesso (equipe) -->
+<section class="pac-auth-sec" id="eq-ativar" style="padding-top:150px;padding-bottom:110px;min-height:72vh;display:flex;align-items:center;position:relative;overflow:hidden" hidden>
+  <div class="auth-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <span class="eyebrow">Convite de primeiro acesso</span>
+        <h2>Ative sua conta</h2>
+        <p class="lead">Crie uma senha pessoal para ativar seu acesso. Use pelo menos 10 caracteres, com letra maiúscula, número e caractere especial.</p>
+        <form id="eq-ativar-form" novalidate>
+          <div class="fld">
+            <label for="eq-ativar-senha">Nova senha</label>
+            <div class="fld-box">
+              <svg><use href="#i-lock"/></svg>
+              <input type="password" id="eq-ativar-senha" autocomplete="new-password" placeholder="Crie uma senha">
+            </div>
+          </div>
+          <div class="fld">
+            <label for="eq-ativar-senha2">Confirmar nova senha</label>
+            <div class="fld-box">
+              <svg><use href="#i-lock"/></svg>
+              <input type="password" id="eq-ativar-senha2" autocomplete="new-password" placeholder="Repita a senha">
+            </div>
+          </div>
+          <span class="fld-err auth-form-err" id="eq-ativar-err" role="alert"></span>
+          <button type="submit" class="btn btn-primary auth-submit" id="eq-ativar-btn">Ativar conta<svg><use href="#i-arrow"/></svg></button>
+        </form>
+        <a href="#equipe" class="auth-link-sm" id="eq-ativar-cancel" style="display:inline-block;margin-top:14px">Voltar para o login</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADMINISTRAÇÃO DE TI — somente contas profissionais (sem dados clínicos) -->
+<section id="eq-admin" style="padding-top:150px;padding-bottom:110px;min-height:72vh;display:flex;align-items:center;position:relative;overflow:hidden" hidden>
+  <div class="auth-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="auth-wrap wide eq-tec-wide">
+      <a href="#" class="auth-back"><svg><use href="#i-arrow"/></svg>Voltar para o início</a>
+      <div class="auth-card auth-dash eq-tec eq-admin" id="eq-admin-card" data-aview="visao">
+        <aside class="eq-side" id="eq-adm-side" aria-label="Navegação da administração">
+          <div class="eq-side-top">
+            <div class="eq-side-brand"><img class="eq-side-logo" id="eq-adm-logo" alt="" aria-hidden="true"><b>FCMSCSP</b><small>Prontuário Eletrônico de Psicologia</small></div>
+            <button type="button" class="eq-side-toggle" id="eq-adm-toggle" aria-expanded="false" aria-controls="eq-adm-nav">Menu</button>
+          </div>
+          <nav class="eq-side-nav" id="eq-adm-nav">
+            <button type="button" class="eq-side-link" data-aview-btn="visao"><svg aria-hidden="true"><use href="#i-chart"/></svg>Visão geral</button>
+            <button type="button" class="eq-side-link" data-aview-btn="profissionais"><svg aria-hidden="true"><use href="#i-user"/></svg>Profissionais</button>
+            <button type="button" class="eq-side-link" data-aview-btn="cadastrar"><svg aria-hidden="true"><use href="#i-plus"/></svg>Cadastrar profissional</button>
+            <button type="button" class="eq-side-link" data-aview-btn="historico"><svg aria-hidden="true"><use href="#i-file"/></svg>Histórico administrativo</button>
+            <button type="button" class="eq-side-link" data-aview-btn="conta"><svg aria-hidden="true"><use href="#i-lock"/></svg>Minha conta</button>
+          </nav>
+          <div class="eq-side-foot">
+            <a href="#" class="eq-side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Sair</a>
+          </div>
+        </aside>
+        <div class="eq-main">
+          <div class="dash-head">
+            <div>
+              <span class="eyebrow">Painel administrativo</span>
+              <h2>Administração de TI</h2>
+              <p class="eq-dash-sub">Gerenciamento de acessos profissionais da plataforma.</p>
+            </div>
+          </div>
+          <p class="eq-adm-msg" id="eq-adm-msg" role="status" hidden></p>
+
+          <div data-ain="visao">
+            <div class="eq-stats-row">
+              <div class="eq-stat-card"><span class="eq-stat-value" id="eq-adm-st-tec">–</span><span class="eq-stat-label">Psicólogos técnicos</span></div>
+              <div class="eq-stat-card"><span class="eq-stat-value" id="eq-adm-st-sup">–</span><span class="eq-stat-label">Supervisores</span></div>
+              <div class="eq-stat-card"><span class="eq-stat-value" id="eq-adm-st-ativas">–</span><span class="eq-stat-label">Contas ativas</span></div>
+              <div class="eq-stat-card"><span class="eq-stat-value" id="eq-adm-st-conv">–</span><span class="eq-stat-label">Convites pendentes</span></div>
+            </div>
+          </div>
+
+          <div class="eq-tec-panel" data-ain="profissionais">
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h">Contas profissionais</h3></div>
+            <div class="eq-adm-scroll">
+              <table class="dash-table eq-adm-table">
+                <thead><tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Função</th><th scope="col">Status</th><th scope="col">Criada em</th><th scope="col">Ações</th></tr></thead>
+                <tbody id="eq-adm-prof-body"></tbody>
+              </table>
+            </div>
+            <p class="eq-adm-empty" id="eq-adm-prof-empty" hidden>Nenhuma conta profissional cadastrada ainda.</p>
+            <div class="eq-adm-edit" id="eq-adm-edit" hidden>
+              <h4>Corrigir dados da conta</h4>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-adm-ed-nome">Nome completo</label><input type="text" class="eq-input" id="eq-adm-ed-nome" autocomplete="off"></div>
+                <div class="eq-field"><label for="eq-adm-ed-crp">CRP (opcional)</label><input type="text" class="eq-input" id="eq-adm-ed-crp" placeholder="06/123456" autocomplete="off"></div>
+              </div>
+              <div class="eq-adm-actions"><button type="button" class="btn btn-primary" id="eq-adm-ed-save">Salvar correção</button><button type="button" class="eq-case-open" id="eq-adm-ed-cancel">Cancelar</button></div>
+            </div>
+          </div>
+
+          <div class="eq-tec-panel" data-ain="cadastrar">
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h">Cadastrar profissional</h3></div>
+            <p class="eq-adm-note">Cria apenas contas de psicólogo técnico ou supervisor. A pessoa define a própria senha pelo convite de primeiro acesso.</p>
+            <form id="eq-adm-form" novalidate>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-adm-nome">Nome completo</label><input type="text" class="eq-input" id="eq-adm-nome" autocomplete="off" required></div>
+                <div class="eq-field"><label for="eq-adm-email">E-mail profissional</label><input type="email" class="eq-input" id="eq-adm-email" autocomplete="off" required placeholder="nome@instituicao.edu.br"></div>
+              </div>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-adm-tipo">Tipo de perfil</label><select class="eq-select" id="eq-adm-tipo"><option value="tecnico">Psicólogo técnico</option><option value="supervisor">Supervisor</option></select></div>
+                <div class="eq-field"><label for="eq-adm-crp">Número do CRP (quando aplicável)</label><input type="text" class="eq-input" id="eq-adm-crp" placeholder="06/123456" autocomplete="off"></div>
+              </div>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-adm-sit">Situação inicial da conta</label><select class="eq-select" id="eq-adm-sit"><option value="ativa">Ativa (envia convite de primeiro acesso)</option><option value="desativada">Desativada</option></select></div>
+                <div class="eq-field"></div>
+              </div>
+              <div class="eq-adm-actions"><button type="submit" class="btn btn-primary" id="eq-adm-submit">Cadastrar profissional</button></div>
+            </form>
+            <div class="eq-adm-convite" id="eq-adm-convite" hidden></div>
+          </div>
+
+          <div class="eq-tec-panel" data-ain="historico">
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h">Histórico administrativo</h3></div>
+            <div class="eq-adm-scroll">
+              <table class="dash-table eq-adm-table">
+                <thead><tr><th scope="col">Quando</th><th scope="col">Operação</th><th scope="col">Conta</th><th scope="col">Realizada por</th></tr></thead>
+                <tbody id="eq-adm-hist-body"></tbody>
+              </table>
+            </div>
+            <p class="eq-adm-empty" id="eq-adm-hist-empty" hidden>Nenhuma operação registrada ainda.</p>
+          </div>
+
+          <div class="eq-tec-panel" data-ain="conta">
+            <div class="eq-tec-panel-head"><h3 class="eq-tec-h">Minha conta</h3></div>
+            <dl class="eq-adm-dl" id="eq-adm-conta-dl"></dl>
+            <form id="eq-adm-conta-form" novalidate>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-adm-conta-nome">Nome</label><input type="text" class="eq-input" id="eq-adm-conta-nome" autocomplete="off"></div>
+                <div class="eq-field"></div>
+              </div>
+              <div class="eq-adm-actions"><button type="submit" class="btn btn-primary">Salvar nome</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <!-- PAINEL DA EQUIPE (pós-login) -->
 <section id="eq-success" style="padding-top:150px;padding-bottom:110px;min-height:72vh;display:flex;align-items:center;position:relative;overflow:hidden" hidden>
@@ -2664,6 +2840,22 @@ window.PRONTUARIO_ESTUDANTES_RA = {};
 window.apiGetEstudantes = function(){
   return _apiFetch('/api/estudantes');
 };
+window.apiAdminResumo = function(){ return _apiFetch('/api/admin/resumo'); };
+window.apiAdminProfissionais = function(){ return _apiFetch('/api/admin/profissionais'); };
+window.apiAdminHistorico = function(){ return _apiFetch('/api/admin/historico'); };
+window.apiAdminMinhaConta = function(){ return _apiFetch('/api/admin/minha-conta'); };
+window.apiAdminSalvarMinhaConta = function(p){
+  return _apiFetch('/api/admin/minha-conta', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiAdminCriar = function(p){
+  return _apiFetch('/api/admin/profissionais', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiAdminAtualizar = function(email, p){
+  return _apiFetch('/api/admin/profissionais/' + encodeURIComponent(email), {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiAtivarConta = function(token, senha){
+  return _apiFetch('/api/ativar-conta', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: token, senha: senha})});
+};
 window.apiGetInscricoes = function(){
   return _apiFetch('/api/inscricoes');
 };
@@ -2782,7 +2974,16 @@ function faqSetTab(n){
   }
 }
 
+function capturarAtivacao(){
+  /* O convite chega como #ativar:<token>. O token fica só na memória da página e sai da barra de
+     endereço na hora; por ser fragmento (#), ele nunca é enviado ao servidor nem aparece em logs. */
+  if(location.hash.indexOf('#ativar:')===0){
+    window.__ativarToken = location.hash.slice('#ativar:'.length);
+    try{ history.replaceState(null,'',location.pathname+location.search+'#equipe'); }catch(e){ location.hash = '#equipe'; }
+  }
+}
 function route(){
+  capturarAtivacao();
   const h=location.hash.slice(1);
   let active='home';
   if(h==='sobre-nos')active='sobre';
@@ -3527,7 +3728,9 @@ route();
     caseDetail: document.getElementById('eq-case-section'),
     forgot: document.getElementById('eq-forgot'),
     forgotSent: document.getElementById('eq-forgot-sent'),
-    firstAccess: document.getElementById('eq-firstaccess')
+    firstAccess: document.getElementById('eq-firstaccess'),
+    ativar: document.getElementById('eq-ativar'),
+    admin: document.getElementById('eq-admin')
   };
   const greetingEl = document.getElementById('eq-dash-greeting');
   const roleEyebrow = document.getElementById('eq-role-eyebrow');
@@ -5585,6 +5788,8 @@ route();
     const submitBtn = form.querySelector('button[type="submit"]');
     if(submitBtn) submitBtn.disabled = true;
     window.apiLogin(emailLower, senhaVal).then(function(sessao){
+      /* Administração de TI: painel próprio; nenhuma consulta clínica é feita. */
+      if(sessao.role === 'admin_ti'){ abrirAdmin(sessao); return; }
       /* Busca os casos e as solicitações de novo a CADA login (não só na primeira vez que
          a página carregou) — assim, se outra pessoa cadastrou um paciente ou mudou algo
          nesse meio tempo, quem está logando agora já vê a versão mais atual, mesmo numa
@@ -5752,7 +5957,235 @@ route();
     });
   }
 
+
+  /* ===== ADMINISTRAÇÃO DE TI: contas de técnicos e supervisores (sem dados clínicos) ===== */
+  var admView = 'visao';
+  var admProf = [];
+  var admEditando = null;
+  var admBusy = false;
+  const admCard = document.getElementById('eq-admin-card');
+  const admMsg = document.getElementById('eq-adm-msg');
+  function admAviso(texto, erro){
+    if(!admMsg) return;
+    admMsg.textContent = texto || '';
+    admMsg.classList.toggle('err', !!erro);
+    admMsg.hidden = !texto;
+  }
+  function admStatusHtml(c){
+    if(c.status === 'ativa') return '<span class="eq-adm-st">Ativa</span>';
+    if(c.status === 'convite_pendente') return '<span class="eq-adm-st pend">Convite pendente' + (c.convite_expirado ? ' (expirado)' : '') + '</span>';
+    return '<span class="eq-adm-st off">Desativada</span>';
+  }
+  function admSetView(v){
+    admView = v;
+    if(!admCard) return;
+    admCard.setAttribute('data-aview', v);
+    admCard.querySelectorAll('[data-aview-btn]').forEach(function(b){
+      const on = b.dataset.aviewBtn === v;
+      b.classList.toggle('is-active', on);
+      if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+    });
+    const side = document.getElementById('eq-adm-side'); if(side) side.classList.remove('is-open');
+    const tg = document.getElementById('eq-adm-toggle'); if(tg) tg.setAttribute('aria-expanded','false');
+    admAviso('');
+    if(v === 'visao') admCarregarResumo();
+    if(v === 'profissionais') admCarregarLista();
+    if(v === 'historico') admCarregarHistorico();
+    if(v === 'conta') admCarregarConta();
+  }
+  function admErro(err){ admAviso((err && err.message) || 'Não foi possível concluir a operação.', true); }
+  function admCarregarResumo(){
+    window.apiAdminResumo().then(function(r){
+      document.getElementById('eq-adm-st-tec').textContent = r.tecnicos;
+      document.getElementById('eq-adm-st-sup').textContent = r.supervisores;
+      document.getElementById('eq-adm-st-ativas').textContent = r.ativas;
+      document.getElementById('eq-adm-st-conv').textContent = r.convites_pendentes;
+    }).catch(admErro);
+  }
+  function admCarregarLista(){
+    return window.apiAdminProfissionais().then(function(lista){
+      admProf = lista || [];
+      admRenderLista();
+    }).catch(admErro);
+  }
+  function admRenderLista(){
+    const body = document.getElementById('eq-adm-prof-body');
+    const vazio = document.getElementById('eq-adm-prof-empty');
+    if(!body) return;
+    vazio.hidden = admProf.length > 0;
+    body.innerHTML = admProf.map(function(c){
+      const acoes = [];
+      acoes.push('<button type="button" class="eq-case-open" data-adm-act="editar" data-email="'+esc(c.email)+'">Editar</button>');
+      if(c.status === 'desativada') acoes.push('<button type="button" class="eq-case-open" data-adm-act="reativar" data-email="'+esc(c.email)+'">Reativar</button>');
+      else acoes.push('<button type="button" class="eq-case-open" data-adm-act="desativar" data-email="'+esc(c.email)+'">Desativar</button>');
+      if(c.status === 'convite_pendente') acoes.push('<button type="button" class="eq-case-open" data-adm-act="reenviar_convite" data-email="'+esc(c.email)+'">Reenviar convite</button>');
+      return '<tr><td>'+esc(c.nome)+(c.crp ? '<br><small style="color:var(--muted)">CRP '+esc(c.crp)+'</small>' : '')+'</td><td>'+esc(c.email)+'</td><td>'+esc(c.funcao)+'</td><td>'+admStatusHtml(c)+'</td><td>'+esc(c.criado_em_br || '')+'</td><td><div class="eq-adm-acts">'+acoes.join('')+'</div></td></tr>';
+    }).join('');
+  }
+  function admMostrarConvite(info, email){
+    const box = document.getElementById('eq-adm-convite');
+    if(!box) return;
+    if(!info){ box.hidden = true; box.innerHTML = ''; return; }
+    if(info.email_enviado){
+      box.innerHTML = '<b>Convite enviado por e-mail</b> para ' + esc(email) + '. O link vale por ' + esc(info.validade_horas) + ' horas e é de uso único.';
+    } else {
+      box.innerHTML = '<b>O e-mail não foi enviado</b> (o envio de e-mail ainda não está configurado no servidor). Repasse este link de ativação a ' + esc(email) + ' por um canal seguro. Ele é de uso único, vale por ' + esc(info.validade_horas) + ' horas e <b>não será mostrado de novo</b>.<code>' + esc(info.link) + '</code>';
+    }
+    box.hidden = false;
+  }
+  function admAcao(email, acao){
+    if(admBusy) return;
+    admBusy = true;
+    window.apiAdminAtualizar(email, {acao: acao}).then(function(r){
+      const rot = {desativar:'Conta desativada. Sessões abertas foram encerradas.', reativar:'Conta reativada.', reenviar_convite:'Novo convite gerado. O convite anterior deixou de valer.'};
+      admAviso(rot[acao] || 'Operação concluída.');
+      return admCarregarLista().then(function(){
+        if(r && r.convite){ admSetView('cadastrar'); admMostrarConvite(r.convite, email); admAviso(rot[acao] || ''); }
+      });
+    }).catch(admErro).then(function(){ admBusy = false; });
+  }
+  function admCarregarHistorico(){
+    window.apiAdminHistorico().then(function(h){
+      const body = document.getElementById('eq-adm-hist-body');
+      document.getElementById('eq-adm-hist-empty').hidden = !!(h && h.length);
+      body.innerHTML = (h || []).map(function(x){
+        return '<tr><td>'+esc(x.quando_br)+'</td><td>'+esc(x.acao)+(x.detalhe ? '<br><small style="color:var(--muted)">'+esc(x.detalhe)+'</small>' : '')+'</td><td>'+esc(x.alvo_email || '')+'</td><td>'+esc(x.por_nome || x.por_email || '')+'</td></tr>';
+      }).join('');
+    }).catch(admErro);
+  }
+  function admCarregarConta(){
+    window.apiAdminMinhaConta().then(function(c){
+      document.getElementById('eq-adm-conta-dl').innerHTML =
+        '<dt>E-mail</dt><dd>'+esc(c.email)+'</dd><dt>Função</dt><dd>'+esc(c.funcao)+'</dd><dt>Perfil</dt><dd>Administração de TI</dd><dt>Instituição</dt><dd>'+esc(c.instituicao)+'</dd><dt>Conta criada em</dt><dd>'+esc(c.criado_em_br || '')+'</dd>';
+      document.getElementById('eq-adm-conta-nome').value = c.nome || '';
+    }).catch(admErro);
+  }
+  function abrirAdmin(sessao){
+    currentRole = 'admin_ti';
+    currentName = sessao.nome || '';
+    admMostrarConvite(null);
+    const logo = document.getElementById('eq-adm-logo');
+    const emblema = document.querySelector('img[alt="FCMSCSP"]');
+    if(logo && emblema && !logo.getAttribute('src')) logo.src = emblema.src;
+    showCard('admin');
+    admSetView('visao');
+  }
+  if(admCard){
+    admCard.addEventListener('click', function(e){
+      const nav = e.target.closest('[data-aview-btn]');
+      if(nav){ admSetView(nav.dataset.aviewBtn); return; }
+      const act = e.target.closest('[data-adm-act]');
+      if(!act) return;
+      const email = act.dataset.email, a = act.dataset.admAct;
+      if(a === 'editar'){
+        const c = admProf.find(function(x){ return x.email === email; });
+        if(!c) return;
+        admEditando = email;
+        document.getElementById('eq-adm-ed-nome').value = c.nome || '';
+        document.getElementById('eq-adm-ed-crp').value = c.crp || '';
+        document.getElementById('eq-adm-edit').hidden = false;
+        document.getElementById('eq-adm-ed-nome').focus();
+        return;
+      }
+      if(a === 'desativar' && !window.__admConfirma){
+        /* confirmação em dois toques, sem janela do navegador */
+        window.__admConfirma = email;
+        act.textContent = 'Confirmar desativação';
+        setTimeout(function(){ window.__admConfirma = null; if(act.isConnected) act.textContent = 'Desativar'; }, 5000);
+        return;
+      }
+      window.__admConfirma = null;
+      admAcao(email, a);
+    });
+    document.getElementById('eq-adm-toggle').addEventListener('click', function(){
+      const side = document.getElementById('eq-adm-side');
+      const open = side.classList.toggle('is-open');
+      this.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.getElementById('eq-adm-ed-cancel').addEventListener('click', function(){
+      admEditando = null; document.getElementById('eq-adm-edit').hidden = true;
+    });
+    document.getElementById('eq-adm-ed-save').addEventListener('click', function(){
+      if(!admEditando || admBusy) return;
+      admBusy = true;
+      window.apiAdminAtualizar(admEditando, {acao:'atualizar', nome: document.getElementById('eq-adm-ed-nome').value, crp: document.getElementById('eq-adm-ed-crp').value})
+        .then(function(){ admEditando = null; document.getElementById('eq-adm-edit').hidden = true; admAviso('Dados corrigidos.'); return admCarregarLista(); })
+        .catch(admErro).then(function(){ admBusy = false; });
+    });
+    document.getElementById('eq-adm-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      if(admBusy) return;
+      const payload = {
+        nome: document.getElementById('eq-adm-nome').value,
+        email: document.getElementById('eq-adm-email').value.trim().toLowerCase(),
+        tipo: document.getElementById('eq-adm-tipo').value,
+        crp: document.getElementById('eq-adm-crp').value,
+        situacao_inicial: document.getElementById('eq-adm-sit').value
+      };
+      admBusy = true; admAviso('');
+      window.apiAdminCriar(payload).then(function(r){
+        this_form_reset();
+        admMostrarConvite(r.convite, payload.email);
+        admAviso(r.convite ? 'Conta criada com convite pendente.' : 'Conta criada como desativada (sem convite).');
+      }).catch(admErro).then(function(){ admBusy = false; });
+    });
+    function this_form_reset(){ document.getElementById('eq-adm-form').reset(); }
+    document.getElementById('eq-adm-conta-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      if(admBusy) return;
+      admBusy = true;
+      window.apiAdminSalvarMinhaConta({nome: document.getElementById('eq-adm-conta-nome').value})
+        .then(function(){ admAviso('Nome atualizado.'); admCarregarConta(); })
+        .catch(admErro).then(function(){ admBusy = false; });
+    });
+  }
+  function admLimpar(){
+    admProf = []; admEditando = null; admBusy = false; window.__admConfirma = null;
+    ['eq-adm-prof-body','eq-adm-hist-body','eq-adm-conta-dl','eq-adm-convite'].forEach(function(id){
+      const el = document.getElementById(id); if(el){ el.innerHTML = ''; if(id==='eq-adm-convite') el.hidden = true; }
+    });
+    ['eq-adm-st-tec','eq-adm-st-sup','eq-adm-st-ativas','eq-adm-st-conv'].forEach(function(id){ const el = document.getElementById(id); if(el) el.textContent = '–'; });
+    const f = document.getElementById('eq-adm-form'); if(f) f.reset();
+    const ed = document.getElementById('eq-adm-edit'); if(ed) ed.hidden = true;
+    admAviso('');
+  }
+
+  /* ===== ATIVAÇÃO DE CONTA POR CONVITE ===== */
+  const ativarForm = document.getElementById('eq-ativar-form');
+  const ativarErr = document.getElementById('eq-ativar-err');
+  function checarAtivacao(){
+    if(window.__ativarToken){
+      if(ativarForm) ativarForm.reset();
+      if(ativarErr) ativarErr.classList.remove('show');
+      showCard('ativar');
+    }
+  }
+  if(ativarForm){
+    ativarForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const s1 = document.getElementById('eq-ativar-senha').value;
+      const s2 = document.getElementById('eq-ativar-senha2').value;
+      const erro = function(t){ ativarErr.textContent = t; ativarErr.classList.add('show'); };
+      if(!s1){ erro('Crie uma senha para continuar.'); return; }
+      if(s1 !== s2){ erro('As senhas não conferem.'); return; }
+      const btn = document.getElementById('eq-ativar-btn'); btn.disabled = true;
+      window.apiAtivarConta(window.__ativarToken, s1).then(function(){
+        window.__ativarToken = null;
+        ativarForm.reset();
+        showCard('login');
+        formErr.textContent = 'Conta ativada! Entre com o seu e-mail e a senha que acabou de criar.';
+        formErr.classList.add('show');
+      }).catch(function(err){
+        erro(err.message || 'Não foi possível ativar a conta.');
+      }).then(function(){ btn.disabled = false; });
+    });
+    document.getElementById('eq-ativar-cancel').addEventListener('click', function(){ window.__ativarToken = null; });
+  }
+  window.addEventListener('hashchange', checarAtivacao);
+  checarAtivacao();
+
   function resetEquipeSession(){
+    admLimpar();
     if(typeof window.apiLogout === 'function') window.apiLogout();
     showCard('login');
     form.reset();
