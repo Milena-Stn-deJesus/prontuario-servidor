@@ -1293,6 +1293,17 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 .cf-fld select{width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,.25);font:inherit;background:#fff;color:#222}
 .eq-conf-aviso{background:#fff4d6;color:#5a4100;border:1px solid #e6c14d;border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:.92rem}
 .eq-conf-hist{margin:0 0 12px;padding-left:18px;font-size:.9rem}
+.eq-st-editor{border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 16px}
+.eq-st-editor[hidden]{display:none!important}
+.eq-st-editor-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.eq-st-disp-txt{font-size:.85rem}.eq-st-disp-vazia{font-size:.85rem;opacity:.6}
+.eq-compat{margin:12px 0}
+.eq-compat-t{margin:0 0 8px;font-size:.95rem}
+.eq-compat-dica{font-size:.88rem;opacity:.75;margin:0}
+.eq-compat-l{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px}
+.eq-compat-l li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;flex-wrap:wrap}
+.eq-compat-l li+li{border-top:1px solid var(--line)}
+.eq-compat-ok{color:#1f6b3a;font-size:.88rem}.eq-compat-oc{color:#8a5a00;font-size:.85rem}.eq-compat-sem{opacity:.65;font-size:.88rem}
 </style>
 </head>
 <body>
@@ -2487,9 +2498,16 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <div class="eq-tec-control"><label for="eq-tec-st-sup">Supervisor</label><select class="eq-select" id="eq-tec-st-sup"><option value="">Todos</option></select></div>
             <div class="eq-tec-control"><label for="eq-tec-st-sort">Ordenar por</label><select class="eq-select" id="eq-tec-st-sort"><option value="az">Nome (A–Z)</option><option value="za">Nome (Z–A)</option><option value="mais">Mais pacientes</option></select></div>
           </div>
+          <section class="eq-st-editor" id="eq-st-editor" hidden aria-labelledby="eq-st-editor-t">
+            <h4 id="eq-st-editor-t">Disponibilidade de <span id="eq-st-editor-nome"></span></h4>
+            <p class="eq-np-idnote">Marque os dias e turnos em que o estudante pode atender. Essas informações só servem para sugerir horários compatíveis na hora de alocar um paciente — ninguém é alocado automaticamente.</p>
+            <div id="eq-st-disp"></div>
+            <span class="fld-err auth-form-err" id="eq-st-editor-err" role="alert"></span>
+            <div class="eq-st-editor-btns"><button type="button" class="btn btn-primary" id="eq-st-editor-salvar">Salvar disponibilidade</button><button type="button" class="eq-case-open" id="eq-st-editor-cancelar">Cancelar</button></div>
+          </section>
           <table class="dash-table">
             <caption class="sr-only">Estudantes cadastrados, com RA, supervisor e quantidade de pacientes vinculados</caption>
-            <thead><tr><th scope="col">Estudante</th><th scope="col">RA</th><th scope="col">Supervisor</th><th scope="col">Pacientes</th><th scope="col"><span class="sr-only">Ação</span></th></tr></thead>
+            <thead><tr><th scope="col">Estudante</th><th scope="col">RA</th><th scope="col">Supervisor</th><th scope="col">Pacientes</th><th scope="col">Disponibilidade semanal</th><th scope="col"><span class="sr-only">Ação</span></th></tr></thead>
             <tbody id="eq-tec-st-body"></tbody>
           </table>
           <p class="eq-pt-empty" id="eq-tec-st-empty" hidden>Nenhum estudante encontrado com esses critérios.</p>
@@ -2709,6 +2727,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
                 </select>
               </div>
             </div>
+            <div class="eq-compat" id="eq-np-compat" aria-live="polite"></div>
             <p class="eq-np-idnote">O <b>ID do paciente</b> e a <b>data de abertura</b> do caso são registrados automaticamente pelo sistema ao cadastrar.</p>
             <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5">
               <input type="checkbox" id="eq-np-lgpd-consent" style="margin-top:3px" required>
@@ -2892,6 +2911,9 @@ window.apiGetReagendamentos = function(){
 };
 /* Cadastro de estudantes (nome + RA) — só técnico e supervisor têm acesso. */
 window.PRONTUARIO_ESTUDANTES_RA = {};
+window.apiSalvarDispEstudante = function(ra, lista){
+  return _apiFetch('/api/estudantes/' + encodeURIComponent(ra) + '/disponibilidade', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({disponibilidade: lista})});
+};
 window.apiGetEstudantes = function(){
   return _apiFetch('/api/estudantes');
 };
@@ -4441,7 +4463,10 @@ route();
     corpo.innerHTML = fatia.map(function(e){
       const pacientes = e.total ? (e.total + (e.total===1?' paciente':' pacientes') + ' · ' + e.ativos + (e.ativos===1?' ativo':' ativos')) : 'Nenhum paciente vinculado';
       const acao = e.total ? '<button type="button" class="eq-case-open" data-ver-estudante="'+esc(e.nome)+'" aria-label="Ver casos de '+esc(e.nome)+'">Ver casos<svg><use href="#i-arrow"/></svg></button>' : '';
-      return '<tr><td>'+esc(e.nome)+'</td><td>'+(raDe[e.nome] ? esc(raDe[e.nome]) : '—')+'</td><td>'+(e.sups.length ? esc(e.sups.join(', ')) : '—')+'</td><td>'+pacientes+'</td><td>'+acao+'</td></tr>';
+      const dispE = (window.PRONTUARIO_ESTUDANTES_DISP || {})[e.nome] || [];
+      const dispCel = (dispE.length ? '<span class="eq-st-disp-txt">'+esc(dispTexto(dispE))+'</span>' : '<span class="eq-st-disp-vazia">Não informada</span>') +
+        (raDe[e.nome] ? ' <button type="button" class="eq-case-open" data-editar-disp="'+esc(e.nome)+'" aria-label="Editar disponibilidade de '+esc(e.nome)+'">Editar</button>' : '');
+      return '<tr><td>'+esc(e.nome)+'</td><td>'+(raDe[e.nome] ? esc(raDe[e.nome]) : '—')+'</td><td>'+(e.sups.length ? esc(e.sups.join(', ')) : '—')+'</td><td>'+pacientes+'</td><td>'+dispCel+'</td><td>'+acao+'</td></tr>';
     }).join('');
     if(vazio) vazio.hidden = lista.length > 0;
     if(pager){
@@ -4744,7 +4769,105 @@ route();
       return '<option value="'+esc(n)+'">'+esc(n)+(raDe[n] ? ' — RA '+esc(raDe[n]) : '')+' ('+q+(q===1?' paciente ativo':' pacientes ativos')+')</option>';
     }).join('');
     sel.value = nomes.indexOf(atual) !== -1 ? atual : '';
+    if(typeof renderCompat === 'function') renderCompat();
   }
+
+  /* DISPONIBILIDADE DOS ESTUDANTES E ALOCAÇÃO — o sistema só SUGERE; quem decide é o técnico */
+  function slotDoAgendamento(ag){
+    const d = String(ag.data||'').split('/'), h = String(ag.hora||'').match(/^(\d{1,2})/);
+    if(d.length !== 3 || !h) return null;
+    const dt = new Date(+d[2], +d[1]-1, +d[0]);
+    if(isNaN(dt.getTime())) return null;
+    const dia = ['dom','seg','ter','qua','qui','sex','sab'][dt.getDay()];
+    if(dia === 'dom' || dia === 'sab') return null;
+    const hh = +h[1];
+    return dia + '-' + (hh < 12 ? 'manha' : (hh < 18 ? 'tarde' : 'noite'));
+  }
+  function slotsOcupados(nome){
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const out = [];
+    Object.keys(CASOS).forEach(function(id){
+      const c = CASOS[id] || {};
+      if(c.estudante !== nome || c.status !== 'Ativo') return;
+      (c.agendamentos || []).forEach(function(ag){
+        const d = String(ag.data||'').split('/');
+        const dt = new Date(+d[2], +d[1]-1, +d[0]);
+        if(isNaN(dt.getTime()) || dt < hoje || /cancel/i.test(ag.status||'')) return;
+        const sl = slotDoAgendamento(ag);
+        if(sl && out.indexOf(sl) === -1) out.push(sl);
+      });
+    });
+    return out;
+  }
+  function renderCompat(){
+    const box = document.getElementById('eq-np-compat');
+    if(!box) return;
+    const pac = getDisp('np');
+    const dispDe = window.PRONTUARIO_ESTUDANTES_DISP || {};
+    const nomes = Object.keys(window.PRONTUARIO_ESTUDANTES_RA || {});
+    if(!nomes.length){ box.innerHTML = ''; return; }
+    if(!pac.length){
+      box.innerHTML = '<p class="eq-compat-dica">Marque acima os dias e turnos do paciente para ver quais estudantes têm horários compatíveis.</p>';
+      return;
+    }
+    const ativos = {};
+    Object.keys(CASOS).forEach(function(id){ const c = CASOS[id] || {}; if(c.status === 'Ativo' && c.estudante) ativos[c.estudante] = (ativos[c.estudante]||0) + 1; });
+    const linhas = nomes.map(function(n){
+      const disp = dispDe[n] || [], ocup = slotsOcupados(n);
+      const comum = pac.filter(function(x){ return disp.indexOf(x) !== -1; });
+      const livres = comum.filter(function(x){ return ocup.indexOf(x) === -1; });
+      return {nome:n, informada: disp.length > 0, comum:comum, livres:livres, ocupados: comum.filter(function(x){ return ocup.indexOf(x) !== -1; }), carga: ativos[n]||0};
+    }).sort(function(a,b){ return (b.livres.length - a.livres.length) || (a.carga - b.carga) || a.nome.localeCompare(b.nome,'pt-BR'); });
+    box.innerHTML = '<h4 class="eq-compat-t">Estudantes com horários compatíveis</h4><ul class="eq-compat-l">' + linhas.map(function(l){
+      let det;
+      if(!l.informada) det = '<span class="eq-compat-sem">Disponibilidade ainda não informada</span>';
+      else if(!l.comum.length) det = '<span class="eq-compat-sem">Nenhum horário em comum</span>';
+      else det = '<span class="eq-compat-ok">Em comum: '+esc(dispTexto(l.livres.length ? l.livres : l.comum))+'</span>' + (l.ocupados.length ? ' <span class="eq-compat-oc">Já ocupado em: '+esc(dispTexto(l.ocupados))+'</span>' : '');
+      return '<li><div><b>'+esc(l.nome)+'</b> <small>'+l.carga+(l.carga===1?' paciente ativo':' pacientes ativos')+'</small><br>'+det+'</div>'+
+        '<button type="button" class="eq-case-open" data-compat-escolher="'+esc(l.nome)+'">Escolher</button></li>';
+    }).join('') + '</ul>';
+  }
+  (function(){
+    const box = document.getElementById('eq-np-compat');
+    if(box) box.addEventListener('click', function(e){
+      const b = e.target.closest('[data-compat-escolher]');
+      const sel = document.getElementById('eq-np-estudante');
+      if(b && sel){ sel.value = b.dataset.compatEscolher; sel.dispatchEvent(new Event('change')); }
+    });
+    const grade = document.getElementById('eq-np-disp');
+    if(grade) grade.addEventListener('change', renderCompat);
+  })();
+  /* Editor de disponibilidade na página Estudantes */
+  var stEditando = null;
+  (function(){
+    const ed = document.getElementById('eq-st-editor');
+    const grade = document.getElementById('eq-st-disp');
+    if(!ed || !grade) return;
+    const corpo = document.getElementById('eq-tec-st-body');
+    const fechar = function(){ ed.hidden = true; stEditando = null; };
+    if(corpo) corpo.addEventListener('click', function(e){
+      const b = e.target.closest('[data-editar-disp]');
+      if(!b) return;
+      stEditando = b.dataset.editarDisp;
+      document.getElementById('eq-st-editor-nome').textContent = stEditando;
+      document.getElementById('eq-st-editor-err').textContent = '';
+      setDisp('st', (window.PRONTUARIO_ESTUDANTES_DISP || {})[stEditando] || []);
+      ed.hidden = false; ed.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+    document.getElementById('eq-st-editor-cancelar').addEventListener('click', fechar);
+    document.getElementById('eq-st-editor-salvar').addEventListener('click', function(ev){
+      const btn = ev.currentTarget, nome = stEditando;
+      if(!nome) return;
+      const ra = (window.PRONTUARIO_ESTUDANTES_RA || {})[nome];
+      btn.disabled = true;
+      window.apiSalvarDispEstudante(ra, getDisp('st')).then(function(r){
+        (window.PRONTUARIO_ESTUDANTES_DISP = window.PRONTUARIO_ESTUDANTES_DISP || {})[nome] = r.disponibilidade || [];
+        fechar(); renderTecStudents(); renderCompat();
+      }).catch(function(err){
+        document.getElementById('eq-st-editor-err').textContent = (err && err.message) || 'Não foi possível salvar agora. Tente novamente.';
+      }).then(function(){ btn.disabled = false; });
+    });
+  })();
   /* DADOS CADASTRAIS DO PACIENTE — máscaras, idade e bloco do responsável */
   function soDigitos(v){ return String(v == null ? '' : v).replace(/\D/g,''); }
   function mascaraData(v){ const d = soDigitos(v).slice(0,8); return d.replace(/^(\d{2})(\d)/,'$1/$2').replace(/^(\d{2})\/(\d{2})(\d)/,'$1/$2/$3'); }
@@ -4928,9 +5051,9 @@ route();
       return d[1] + ': ' + DISP_TURNOS.filter(function(t){ return porDia[d[0]].indexOf(t[0]) !== -1; }).map(function(t){ return t[1].toLowerCase(); }).join(', ');
     }).join(' · ');
   }
-  ['eq-in-disp','eq-np-disp'].forEach(function(id){
+  ['eq-in-disp','eq-np-disp','eq-st-disp'].forEach(function(id){
     const el = document.getElementById(id);
-    if(el) el.innerHTML = dispGridHtml(id === 'eq-in-disp' ? 'in' : 'np');
+    if(el) el.innerHTML = dispGridHtml(id === 'eq-in-disp' ? 'in' : (id === 'eq-st-disp' ? 'st' : 'np'));
   });
   [['eq-in-nascimento', mascaraData], ['eq-in-cpf', mascaraCpf], ['eq-in-resp-cpf', mascaraCpf], ['eq-in-telefone', mascaraTelefone], ['eq-in-resp-telefone', mascaraTelefone], ['eq-np-telefone', mascaraTelefone]].forEach(function(par){
     const el = document.getElementById(par[0]);
@@ -6131,8 +6254,10 @@ route();
         if(sessao.role !== 'tecnico' && sessao.role !== 'supervisor') return;
         return window.apiGetEstudantes().then(function(lista){
           const mapa = {};
-          (lista || []).forEach(function(e){ if(e && e.nome) mapa[e.nome] = e.ra; });
+          const dispMapa = {};
+          (lista || []).forEach(function(e){ if(e && e.nome){ mapa[e.nome] = e.ra; dispMapa[e.nome] = e.disponibilidade || []; } });
           window.PRONTUARIO_ESTUDANTES_RA = mapa;
+          window.PRONTUARIO_ESTUDANTES_DISP = dispMapa;
         }).catch(function(err){
           console.warn('Não foi possível carregar o cadastro de estudantes:', err);
         });

@@ -341,6 +341,17 @@ def _lista_estudantes():
     return [{"nome": nome, "ra": estudantes[nome]} for nome in sorted(estudantes, key=lambda n: n.casefold())]
 
 
+def _lista_estudantes_com_disponibilidade():
+    """Cadastro de estudantes + a disponibilidade semanal que o técnico informou para cada um."""
+    lista = _lista_estudantes()
+    guardado = {d["_id"]: d for d in disp_estudantes_col.find({})}
+    for e in lista:
+        d = guardado.get(e["ra"]) or {}
+        e["disponibilidade"] = d.get("disponibilidade") or []
+        e["disponibilidade_atualizada_em"] = d.get("atualizado_em_br", "")
+    return lista
+
+
 # Sessões ativas: token -> {"email", "role", "nome", "criado_em"}. Guardadas só
 # na memória do processo (zeram se o servidor reiniciar) — suficiente para um
 # protótipo acadêmico; um sistema maior guardaria isso no próprio MongoDB.
@@ -411,6 +422,7 @@ contas_col = db["contas"]
 # Histórico das operações administrativas (criar, corrigir, desativar...). Nunca
 # guarda senha, token nem link de convite.
 historico_admin_col = db["historico_admin"]
+disp_estudantes_col = db["disponibilidade_estudantes"]
 # Trilha de auditoria (achado da auditoria de segurança — item pendente que
 # havia sido esquecido no relatório anterior): registra quem fez o quê e
 # quando, numa coleção própria, consultável depois. Antes, o servidor só
@@ -1192,7 +1204,10 @@ class Handler(BaseHTTPRequestHandler):
             if sessao is None:
                 return
             _registrar_auditoria(sessao, "listagem de estudantes")
-            self._send_json(_lista_estudantes())
+            try:
+                self._send_json(_lista_estudantes_com_disponibilidade())
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/estudantes")
             return
 
         if path.startswith("/api/admin/"):
@@ -1992,6 +2007,39 @@ class Handler(BaseHTTPRequestHandler):
     # ---------- PUT ----------
     def do_PUT(self):
         path = self.path.split("?", 1)[0]
+
+        m = re.match(r"^/api/estudantes/([^/]+)/disponibilidade$", path)
+        if m:
+            # O técnico informa os dias e turnos em que o estudante pode atender (usado só para
+            # sugerir horários compatíveis na alocação; ninguém é alocado automaticamente).
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            ra = unquote(m.group(1))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            estudante = next((e for e in _lista_estudantes() if e["ra"] == ra), None)
+            if estudante is None:
+                self._send_error_json(404, "estudante não encontrado")
+                return
+            disp, erro = _validar_disponibilidade(body.get("disponibilidade"))
+            if erro:
+                self._send_error_json(400, erro)
+                return
+            doc = {"_id": ra, "nome": estudante["nome"], "disponibilidade": disp,
+                   "atualizado_em_br": _agora_br(), "atualizado_por": sessao.get("nome", "")}
+            try:
+                if disp_estudantes_col.update_one({"_id": ra}, {"$set": {k: v for k, v in doc.items() if k != "_id"}}).matched_count == 0:
+                    disp_estudantes_col.insert_one(doc)
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/estudantes/<ra>/disponibilidade")
+                return
+            _registrar_auditoria(sessao, "disponibilidade do estudante atualizada (RA %s)" % ra)
+            self._send_json({"ok": True, "disponibilidade": disp, "disponibilidade_atualizada_em": doc["atualizado_em_br"]})
+            return
 
         m = re.match(r"^/api/casos/([^/]+)/cadastro-visto$", path)
         if m:
