@@ -698,7 +698,7 @@ def _link_convite(token):
 
 
 def _enviar_convite(email, nome, role, token):
-    funcao = FUNCOES_PROFISSIONAIS.get(role, "profissional")
+    funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else "profissional")
     assunto = "Prontuário Eletrônico — convite para criar sua senha de acesso"
     corpo = (
         "Olá, %s!\n\n"
@@ -2132,7 +2132,60 @@ class Handler(BaseHTTPRequestHandler):
         self._send_error_json(404, "rota não encontrada: " + path)
 
 
+def provisionar_admin_na_partida():
+    """Cria a conta de Administração de TI quando o servidor liga, SEM rota pública: só acontece
+    para quem controla as variáveis de ambiente do servidor (no Render).
+
+        ADMIN_EMAIL              e-mail real da administradora (obrigatório para criar)
+        ADMIN_NOME               nome completo (padrão: Milena Santana)
+        ADMIN_REENVIAR_CONVITE=1 gera e envia um novo convite enquanto a conta ainda não foi ativada
+
+    A conta nasce SEM senha; o link de ativação (uso único, 72 h) é enviado ao próprio e-mail e
+    nunca é escrito no log. Idempotente: rodar de novo não duplica nada."""
+    email = os.environ.get("ADMIN_EMAIL", "").strip().lower()
+    if not email:
+        return
+    try:
+        if not EMAIL_REGEX.match(email):
+            print("[admin] ADMIN_EMAIL inválido — nada foi criado.")
+            return
+        existente = contas_col.find_one({"role": "admin_ti"})
+        if existente:
+            if existente["_id"] != email:
+                print("[admin] já existe uma conta de administração com outro e-mail — nada foi alterado.")
+                return
+            if existente.get("status") == "convite_pendente" and os.environ.get("ADMIN_REENVIAR_CONVITE") == "1":
+                token, convite = _novo_convite()
+                contas_col.update_one({"_id": email}, {"$set": {"convite": convite}})
+                _registrar_historico_admin({"email": "provisionamento", "nome": "Provisionamento"}, "Novo convite gerado para a conta de administração", email)
+                enviado = _enviar_convite(email, existente.get("nome"), "admin_ti", token)
+                print("[admin] novo convite gerado; e-mail %s." % ("ENVIADO" if enviado else "NÃO enviado (veja a configuração de e-mail)"))
+            else:
+                print("[admin] conta de administração já existe (situação: %s) — nada foi alterado." % existente.get("status"))
+            return
+        if email in CONTAS or contas_col.find_one({"_id": email}):
+            print("[admin] este e-mail já é de outra conta — nada foi criado.")
+            return
+        nome = os.environ.get("ADMIN_NOME", "").strip() or "Milena Santana"
+        token, convite = _novo_convite()
+        contas_col.insert_one({
+            "_id": email, "nome": nome, "role": "admin_ti", "funcao": FUNCAO_ADMIN, "instituicao": INSTITUICAO,
+            "crp": "", "status": "convite_pendente", "salt": None, "senha_hash": None, "convite": convite,
+            "criado_em": time.time(), "criado_em_br": _agora_br(), "criado_por": "provisionamento",
+        })
+        _registrar_historico_admin({"email": "provisionamento", "nome": "Provisionamento"}, "Conta de administração provisionada", email)
+        enviado = _enviar_convite(email, nome, "admin_ti", token)
+        if enviado:
+            print("[admin] conta de administração criada; convite ENVIADO por e-mail.")
+        else:
+            print("[admin] conta de administração criada, mas o e-mail NÃO foi enviado (configure BREVO_API_KEY e EMAIL_FROM, "
+                  "depois defina ADMIN_REENVIAR_CONVITE=1 e faça um novo deploy).")
+    except Exception as exc:
+        print("[admin] não foi possível provisionar a conta de administração: %s" % type(exc).__name__)
+
+
 def main():
+    provisionar_admin_na_partida()
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print("=" * 60)
     print(" Servidor do Prontuário Eletrônico rodando!")
