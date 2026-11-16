@@ -60,6 +60,13 @@ ENVIO DE E-MAIL (confirmação de reagendamento e recuperação de senha):
         EMAIL_FROM  -> opcional; endereço que aparece como remetente (padrão: o
                        próprio SMTP_USER)
 
+    ALTERNATIVA PARA O PLANO GRATUITO DO RENDER (que bloqueia SMTP): envio por
+    API web, via Brevo. Configure no Render:
+        BREVO_API_KEY   -> chave de API (v3) criada no painel do Brevo
+        EMAIL_FROM      -> remetente já verificado no Brevo
+        EMAIL_FROM_NOME -> opcional; nome exibido como remetente
+    Se BREVO_API_KEY existir, ela é usada no lugar do SMTP.
+
     Assim como a MONGODB_URI, essas variáveis são configuradas no painel do
     Render (nunca escritas aqui no código).
 
@@ -164,11 +171,45 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER")
 SMTP_PASS = os.environ.get("SMTP_PASS")
 EMAIL_FROM = os.environ.get("EMAIL_FROM", SMTP_USER)
+# Envio por API web (HTTPS) — funciona no plano gratuito do Render, que bloqueia SMTP.
+# Serviço usado: Brevo (https://www.brevo.com). Precisa de BREVO_API_KEY e de EMAIL_FROM
+# (um remetente já verificado no Brevo). Tem prioridade sobre o SMTP quando configurado.
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+EMAIL_API_URL = os.environ.get("EMAIL_API_URL", "https://api.brevo.com/v3/smtp/email")
+EMAIL_FROM_NOME = os.environ.get("EMAIL_FROM_NOME", "Serviço-Escola de Psicologia FCMSCSP")
+
+
+def _enviar_por_api(destinatario, assunto, corpo):
+    """Envio via API HTTPS do Brevo. Nunca registra a chave nem o corpo do e-mail (que pode
+    conter link de convite)."""
+    import urllib.request, urllib.error
+    if not EMAIL_FROM:
+        print("[e-mail] EMAIL_FROM não configurado — e-mail NÃO enviado para %s" % destinatario)
+        return False
+    dados = json.dumps({
+        "sender": {"name": EMAIL_FROM_NOME, "email": EMAIL_FROM},
+        "to": [{"email": destinatario}],
+        "subject": assunto,
+        "textContent": corpo,
+    }).encode("utf-8")
+    req = urllib.request.Request(EMAIL_API_URL, data=dados, method="POST", headers={
+        "api-key": BREVO_API_KEY, "Content-Type": "application/json", "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return 200 <= resp.status < 300
+    except urllib.error.HTTPError as exc:
+        print("[e-mail] FALHA ao enviar para %s: a API de e-mail respondeu %s" % (destinatario, exc.code))
+        return False
+    except Exception as exc:
+        print("[e-mail] FALHA ao enviar para %s: %s" % (destinatario, type(exc).__name__))
+        return False
 
 
 def _enviar_email(destinatario, assunto, corpo):
     """Manda um e-mail de texto simples. Devolve True se enviou de verdade,
     False se não conseguiu (inclusive se o SMTP não estiver configurado)."""
+    if BREVO_API_KEY:
+        return _enviar_por_api(destinatario, assunto, corpo)
     if not (SMTP_HOST and SMTP_USER and SMTP_PASS):
         print("[e-mail] SMTP não configurado — e-mail NÃO enviado para %s (assunto: %s)" % (destinatario, assunto))
         return False
