@@ -383,6 +383,104 @@ def novo_id_de_caso():
     return candidato
 
 
+def novo_id_de_paciente():
+    """ID legível do paciente, gerado pelo servidor no cadastro (nunca pela
+    tela): PAC-<ano>-<sequência de 4 dígitos>. É o identificador que a equipe
+    usa no dia a dia; o _id interno do caso continua existindo à parte."""
+    ano = time.strftime("%Y")
+    n = casos_col.count_documents({"cadastro.id": {"$regex": "^PAC-%s-" % ano}}) + 1
+    candidato = "PAC-%s-%04d" % (ano, n)
+    while casos_col.find_one({"cadastro.id": candidato}):
+        n += 1
+        candidato = "PAC-%s-%04d" % (ano, n)
+    return candidato
+
+
+def _so_digitos(valor):
+    return re.sub(r"\D", "", str(valor or ""))
+
+
+def _cpf_valido(valor):
+    """Confere os dois dígitos verificadores do CPF. Isso só garante que o
+    número é bem formado — não que ele pertence à pessoa informada."""
+    d = _so_digitos(valor)
+    if len(d) != 11 or d == d[0] * 11:
+        return False
+    for tam in (9, 10):
+        soma = sum(int(d[i]) * (tam + 1 - i) for i in range(tam))
+        if (soma * 10) % 11 % 10 != int(d[tam]):
+            return False
+    return True
+
+
+def _formatar_cpf(valor):
+    d = _so_digitos(valor)
+    return "%s.%s.%s-%s" % (d[0:3], d[3:6], d[6:9], d[9:11])
+
+
+def _idade_em_anos(nascimento, hoje=None):
+    """Idade em anos completos a partir de 'DD/MM/AAAA'. Devolve None se a
+    data for inválida ou estiver no futuro."""
+    m = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", str(nascimento or "").strip())
+    if not m:
+        return None
+    dia, mes, ano = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    try:
+        import datetime
+        nasc = datetime.date(ano, mes, dia)
+    except ValueError:
+        return None
+    hoje = hoje or datetime.date.today()
+    if nasc > hoje or ano < 1900:
+        return None
+    return hoje.year - nasc.year - ((hoje.month, hoje.day) < (nasc.month, nasc.day))
+
+
+def _validar_cadastro_paciente(body):
+    """Valida os dados cadastrais mandados em POST /api/casos. Devolve
+    (cadastro, None) com os dados já normalizados, ou (None, mensagem de erro).
+    O ID do paciente não entra aqui: é gerado depois, pelo servidor."""
+    nascimento = str(body.get("nascimento", "")).strip()
+    idade = _idade_em_anos(nascimento)
+    if idade is None:
+        return None, "informe a data de nascimento do paciente no formato DD/MM/AAAA"
+    if not _cpf_valido(body.get("cpf")):
+        return None, "o CPF do paciente é inválido"
+    email = str(body.get("email", "")).strip().lower()
+    if not EMAIL_REGEX.match(email):
+        return None, "informe um e-mail válido para o paciente"
+    cadastro = {
+        "nascimento": nascimento,
+        "cpf": _formatar_cpf(body.get("cpf")),
+        "email": email,
+        "responsavel": None,
+    }
+    if idade < 18:
+        resp = body.get("responsavel")
+        if not isinstance(resp, dict):
+            return None, "paciente menor de idade: os dados do responsável são obrigatórios"
+        nome = str(resp.get("nome", "")).strip()
+        parentesco = str(resp.get("parentesco", "")).strip()
+        telefone = _so_digitos(resp.get("telefone"))
+        if not nome:
+            return None, "informe o nome completo do responsável"
+        if not parentesco:
+            return None, "informe o vínculo do responsável com o paciente"
+        if not _cpf_valido(resp.get("cpf")):
+            return None, "o CPF do responsável é inválido"
+        if _so_digitos(resp.get("cpf")) == _so_digitos(body.get("cpf")):
+            return None, "o CPF do responsável não pode ser o mesmo do paciente"
+        if len(telefone) not in (10, 11):
+            return None, "informe o telefone do responsável com DDD"
+        cadastro["responsavel"] = {
+            "nome": nome[:120],
+            "parentesco": parentesco[:40],
+            "cpf": _formatar_cpf(resp.get("cpf")),
+            "telefone": str(resp.get("telefone", "")).strip()[:20],
+        }
+    return cadastro, None
+
+
 def caso_doc_to_json(doc):
     """Remove o campo interno _id do corpo do caso (o id já é a chave no dicionário
     devolvido por /api/casos, não precisa aparecer duplicado dentro do objeto)."""
@@ -977,8 +1075,22 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 return
 
+            cadastro, erro_cadastro = _validar_cadastro_paciente(body)
+            if erro_cadastro:
+                self._send_error_json(400, erro_cadastro)
+                return
+            try:
+                if casos_col.find_one({"cadastro.cpf": cadastro["cpf"], "status": "Ativo"}):
+                    self._send_error_json(409, "já existe um caso ativo cadastrado com este CPF")
+                    return
+                cadastro = {"id": novo_id_de_paciente(), **cadastro}
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/casos (cadastro)")
+                return
+
             caso = {
                 "_id": novo_id_de_caso(),
+                "cadastro": cadastro,
                 "paciente": nome_paciente,
                 "estudante": body.get("estudante", ""),
                 "supervisor": body.get("supervisor", ""),
@@ -1149,6 +1261,13 @@ class Handler(BaseHTTPRequestHandler):
             # API). Preservamos sempre o valor que já estava gravado.
             body["estudante"] = caso_atual.get("estudante", "")
             body["supervisor"] = caso_atual.get("supervisor", "")
+            # Os dados cadastrais (ID do paciente, nascimento, CPF, e-mail,
+            # responsável) são gravados só no cadastro: esta rota nunca os
+            # altera, mande a tela o que mandar.
+            if "cadastro" in caso_atual:
+                body["cadastro"] = caso_atual["cadastro"]
+            else:
+                body.pop("cadastro", None)
 
             # Só técnico e supervisor podem encerrar/reabrir um caso — a
             # própria tela já impede isso para o estudante (canCloseCase()),

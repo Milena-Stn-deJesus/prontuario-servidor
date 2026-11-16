@@ -394,6 +394,15 @@ footer{margin-top:120px}
 .eq-textarea{resize:vertical;min-height:90px;line-height:1.6}
 .eq-textarea:focus,.eq-select:focus,.eq-input:focus{outline:0;border-color:var(--blue)}
 .eq-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.eq-field-hint{margin:7px 2px 0;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.eq-field-hint.is-minor{color:#8a5a00;font-weight:600}
+.eq-field-hint.is-erro{color:#a33a2c;font-weight:600}
+.eq-np-resp{border:1px solid #ead9ae;background:#fdf8ea;border-radius:16px;padding:6px 18px 4px;margin:2px 0 18px;min-width:0}
+.eq-np-resp[hidden]{display:none}
+.eq-np-resp legend{padding:0 8px;font-size:13.5px;font-weight:700;color:var(--navy)}
+.eq-np-resp legend span{margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00}
+.eq-np-idnote{margin:0;padding:13px 16px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}
+.eq-resumo-sec{margin:22px 0 12px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 @media (max-width:600px){.eq-field-row{grid-template-columns:1fr}}
 .eq-form-actions{margin-top:22px}
 .eq-note{display:flex;gap:12px;align-items:flex-start;background:var(--sky);border-radius:14px;padding:16px 18px;font-size:13px;line-height:1.6;color:var(--navy);margin-bottom:24px}
@@ -670,10 +679,10 @@ footer{margin-top:120px}
 .eq-tec .eq-side::after{content:"";position:absolute;left:0;right:0;bottom:64px;height:210px;background:#dff0e7;-webkit-mask:var(--eq-art) center 62%/260% auto no-repeat,linear-gradient(to top,#000 45%,transparent 100%);-webkit-mask-composite:source-in;mask:var(--eq-art) center 62%/260% auto no-repeat,linear-gradient(to top,#000 45%,transparent 100%);mask-composite:intersect;opacity:.2;pointer-events:none}
 .eq-tec .eq-side>*{position:relative;z-index:1}
 .eq-tec .eq-side-brand{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 6px}
-.eq-side-logo{width:84px;height:auto;color:#eef5f0;margin-bottom:12px}
-.eq-tec .eq-side-brand{padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.2)}
-.eq-tec .eq-side-brand b{font-family:var(--serif);font-weight:400;font-size:23px;letter-spacing:.03em;line-height:1.1}
-.eq-tec .eq-side-brand small{margin-top:8px;font-size:12.5px;line-height:1.4;color:#d5e6dd}
+.eq-side-logo{width:46px;height:46px;object-fit:contain;filter:brightness(0) invert(1);opacity:.92;margin-bottom:10px}
+.eq-side-logo:not([src]){display:none}
+.eq-tec .eq-side-brand b{font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:.06em}
+.eq-tec .eq-side-brand small{margin-top:4px;font-size:11px;color:#b9d2c6}
 .eq-tec .eq-side-link{border-radius:10px;font-size:13.5px}
 .eq-tec .eq-side-link.is-active{background:#e3ecdf;color:var(--navy);font-weight:600}
 .eq-tec .eq-side-link.is-active .eq-side-count{background:var(--navy);color:#fff}
@@ -721,7 +730,7 @@ footer{margin-top:120px}
 .eq-tec .dash-table th{border-bottom-color:var(--tc-line)}
 .eq-tec .dash-table td{border-bottom-color:var(--tc-line)}
 .eq-tec .eq-tec-title,.eq-tec .dash-hist-head h3,.eq-tec .eq-pt-head-title h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--navy)}
-@media(max-width:900px){.eq-tec .eq-side::after{display:none}.eq-tec .eq-side-brand{flex-direction:row;align-items:center;gap:10px;text-align:left}.eq-side-logo{width:44px;margin:0}.eq-tec .eq-side-brand{padding-bottom:0;border-bottom:0}.eq-tec .eq-side-brand b{font-size:18px}.eq-tec .eq-main{padding:24px 18px 30px}}
+@media(max-width:900px){.eq-tec .eq-side::after{display:none}.eq-tec .eq-side-brand{flex-direction:row;align-items:center;gap:10px;text-align:left}.eq-side-logo{width:32px;height:32px;margin:0}.eq-tec .eq-main{padding:24px 18px 30px}}
 .eq-head-actions{display:flex;align-items:center;gap:18px;flex:none}
 .eq-notif{position:relative}
 .eq-notif-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--navy);display:grid;place-items:center;cursor:pointer;transition:border-color .2s,background .2s}
@@ -2076,7 +2085,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <div class="auth-card auth-dash" id="eq-dash-card">
         <aside class="eq-side eq-tec-only" id="eq-side" aria-label="Navegação do painel técnico">
           <div class="eq-side-top">
-            <div class="eq-side-brand"><svg class="eq-side-logo" viewBox="0 0 96 70" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 66h88M8 62h80M12 62V30h72v32"/><path d="M10 30h76M12 26h72"/><path d="M32 62V26M64 62V26"/><path d="M30 26L48 12l18 14"/><path d="M48 12V6M46 6h4"/><circle cx="48" cy="20.5" r="2.4"/><path d="M38 62V36M44 62V36M52 62V36M58 62V36M36 36h24"/><path d="M45 62V50a3 3 0 0 1 6 0v12"/><path d="M16 36h4v8h-4zM24 36h4v8h-4zM16 49h4v8h-4zM24 49h4v8h-4zM68 36h4v8h-4zM76 36h4v8h-4zM68 49h4v8h-4zM76 49h4v8h-4z"/></svg><b>FCMSCSP</b><small>Prontuário Eletrônico<br>de Psicologia</small></div>
+            <div class="eq-side-brand"><img class="eq-side-logo" id="eq-side-logo" alt="" aria-hidden="true"><b>FCMSCSP</b><small>Prontuário Eletrônico de Psicologia</small></div>
             <button type="button" class="eq-side-toggle" id="eq-side-toggle" aria-expanded="false" aria-controls="eq-side-nav">Menu</button>
           </div>
           <nav class="eq-side-nav" id="eq-side-nav">
@@ -2317,9 +2326,29 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </div>
           <form id="eq-newpatient-form" novalidate>
             <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-np-nome">Nome completo do paciente</label><input type="text" class="eq-input" id="eq-np-nome" required placeholder="Nome do paciente"></div>
-              <div class="eq-field"><label for="eq-np-abertura">Data de abertura</label><input type="text" class="eq-input" id="eq-np-abertura" placeholder="dd/mm/aaaa"></div>
+              <div class="eq-field"><label for="eq-np-nome">Nome completo do paciente</label><input type="text" class="eq-input" id="eq-np-nome" required placeholder="Nome do paciente" autocomplete="off"></div>
+              <div class="eq-field"><label for="eq-np-nascimento">Data de nascimento</label><input type="text" class="eq-input" id="eq-np-nascimento" required placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off" aria-describedby="eq-np-idade"><p class="eq-field-hint" id="eq-np-idade" aria-live="polite" hidden></p></div>
             </div>
+            <div class="eq-field-row">
+              <div class="eq-field"><label for="eq-np-cpf">CPF do paciente</label><input type="text" class="eq-input" id="eq-np-cpf" required placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="off"></div>
+              <div class="eq-field"><label for="eq-np-email">E-mail</label><input type="email" class="eq-input" id="eq-np-email" required placeholder="nome@exemplo.com" autocomplete="off"></div>
+            </div>
+            <fieldset class="eq-np-resp" id="eq-np-resp" hidden>
+              <legend>Dados do responsável <span>paciente menor de idade</span></legend>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-np-resp-nome">Nome completo do responsável</label><input type="text" class="eq-input" id="eq-np-resp-nome" placeholder="Nome do responsável" autocomplete="off"></div>
+                <div class="eq-field"><label for="eq-np-resp-parentesco">Vínculo com o paciente</label>
+                  <select class="eq-select" id="eq-np-resp-parentesco">
+                    <option value="">Selecione…</option>
+                    <option>Mãe</option><option>Pai</option><option>Avó ou avô</option><option>Tutor(a) ou guardião legal</option><option>Outro responsável legal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="eq-field-row">
+                <div class="eq-field"><label for="eq-np-resp-cpf">CPF do responsável</label><input type="text" class="eq-input" id="eq-np-resp-cpf" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="off"></div>
+                <div class="eq-field"><label for="eq-np-resp-telefone">Telefone do responsável</label><input type="tel" class="eq-input" id="eq-np-resp-telefone" placeholder="(11) 90000-0000" inputmode="numeric" maxlength="15" autocomplete="off"></div>
+              </div>
+            </fieldset>
             <div class="eq-field-row">
               <div class="eq-field"><label for="eq-np-estudante">Alocar para o estudante</label>
                 <select class="eq-select" id="eq-np-estudante">
@@ -2333,6 +2362,10 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
                   <option value="Dr. Henrique Lacerda">Dr. Henrique Lacerda</option>
                 </select>
               </div>
+            </div>
+            <div class="eq-field-row">
+              <div class="eq-field"><label for="eq-np-abertura">Data de abertura</label><input type="text" class="eq-input" id="eq-np-abertura" placeholder="dd/mm/aaaa (em branco = hoje)" inputmode="numeric" maxlength="10" autocomplete="off"></div>
+              <div class="eq-field"><label>ID do paciente</label><p class="eq-np-idnote">Gerado automaticamente pelo sistema ao cadastrar.</p></div>
             </div>
             <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5">
               <input type="checkbox" id="eq-np-lgpd-consent" style="margin-top:3px" required>
@@ -3697,6 +3730,9 @@ route();
     const avatar = document.getElementById('eq-avatar');
     if(avatar) avatar.textContent = initials(String(currentName || '').replace(/^(Dra?\.|Prof\.?a?)\s+/i, ''));
     /* Emblema e desenho do prédio: reaproveitam imagens que o site já tem. */
+    const logo = document.getElementById('eq-side-logo');
+    const emblema = document.querySelector('img[alt="FCMSCSP"]');
+    if(logo && emblema && !logo.getAttribute('src')) logo.src = emblema.src;
     /* O desenho vira uma máscara (traço opaco, fundo transparente) feita uma única vez em canvas,
        para poder ser pintado claro na barra lateral e escuro no fundo do painel. */
     const arte = document.querySelector('img.faq-bg-art');
@@ -4129,6 +4165,65 @@ route();
     }).join('');
     sel.value = nomes.indexOf(atual) !== -1 ? atual : '';
   }
+  /* DADOS CADASTRAIS DO PACIENTE — máscaras, idade e bloco do responsável */
+  function soDigitos(v){ return String(v == null ? '' : v).replace(/\D/g,''); }
+  function mascaraData(v){ const d = soDigitos(v).slice(0,8); return d.replace(/^(\d{2})(\d)/,'$1/$2').replace(/^(\d{2})\/(\d{2})(\d)/,'$1/$2/$3'); }
+  function mascaraCpf(v){ const d = soDigitos(v).slice(0,11); return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/,'$1.$2.$3-$4'); }
+  function mascaraTelefone(v){
+    const d = soDigitos(v).slice(0,11);
+    if(d.length <= 2) return d ? '(' + d : '';
+    if(d.length <= 6) return '(' + d.slice(0,2) + ') ' + d.slice(2);
+    if(d.length <= 10) return '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+    return '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+  }
+  function cpfValido(v){
+    const d = soDigitos(v);
+    if(d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+    for(let tam = 9; tam <= 10; tam++){
+      let soma = 0;
+      for(let i = 0; i < tam; i++) soma += Number(d[i]) * (tam + 1 - i);
+      if((soma * 10) % 11 % 10 !== Number(d[tam])) return false;
+    }
+    return true;
+  }
+  /* Idade em anos completos a partir de dd/mm/aaaa; null se a data for inválida ou futura. */
+  function idadeDe(nascimento){
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(nascimento || '').trim());
+    if(!m) return null;
+    const dia = Number(m[1]), mes = Number(m[2]), ano = Number(m[3]);
+    const nasc = new Date(ano, mes - 1, dia);
+    if(nasc.getFullYear() !== ano || nasc.getMonth() !== mes - 1 || nasc.getDate() !== dia) return null;
+    const hoje = new Date();
+    if(nasc > hoje || ano < 1900) return null;
+    let idade = hoje.getFullYear() - ano;
+    if(hoje.getMonth() < mes - 1 || (hoje.getMonth() === mes - 1 && hoje.getDate() < dia)) idade--;
+    return idade;
+  }
+  function textoIdade(idade){ return idade + (idade === 1 ? ' ano' : ' anos'); }
+  function atualizaIdadeCadastro(){
+    const campo = document.getElementById('eq-np-nascimento');
+    const dica = document.getElementById('eq-np-idade');
+    const resp = document.getElementById('eq-np-resp');
+    if(!campo || !dica || !resp) return null;
+    const valor = campo.value.trim();
+    const idade = valor.length === 10 ? idadeDe(valor) : null;
+    dica.className = 'eq-field-hint';
+    if(valor.length < 10){ dica.hidden = true; dica.textContent = ''; }
+    else if(idade === null){ dica.hidden = false; dica.classList.add('is-erro'); dica.textContent = 'Data de nascimento inválida.'; }
+    else if(idade < 18){ dica.hidden = false; dica.classList.add('is-minor'); dica.textContent = 'Idade: ' + textoIdade(idade) + ' · menor de idade — preencha os dados do responsável.'; }
+    else { dica.hidden = false; dica.textContent = 'Idade: ' + textoIdade(idade); }
+    resp.hidden = !(idade !== null && idade < 18);
+    return idade;
+  }
+  [['eq-np-nascimento', mascaraData], ['eq-np-abertura', mascaraData], ['eq-np-cpf', mascaraCpf], ['eq-np-resp-cpf', mascaraCpf], ['eq-np-resp-telefone', mascaraTelefone]].forEach(function(par){
+    const el = document.getElementById(par[0]);
+    if(!el) return;
+    el.addEventListener('input', function(){
+      el.value = par[1](el.value);
+      if(par[0] === 'eq-np-nascimento') atualizaIdadeCadastro();
+    });
+  });
+
   const newPatientForm = document.getElementById('eq-newpatient-form');
   if(newPatientForm){
     newPatientForm.addEventListener('submit', function(e){
@@ -4142,6 +4237,34 @@ route();
       const estudante = estudanteEl.value;
       const supervisor = document.getElementById('eq-np-supervisor').value;
       const msg = document.getElementById('eq-newpatient-msg');
+      function recusa(texto, campo){
+        if(msg){ msg.textContent = texto; msg.hidden = false; }
+        if(campo) campo.focus();
+      }
+      const nascEl = document.getElementById('eq-np-nascimento');
+      const cpfEl = document.getElementById('eq-np-cpf');
+      const emailEl = document.getElementById('eq-np-email');
+      const idade = idadeDe(nascEl.value);
+      atualizaIdadeCadastro();
+      if(idade === null){ recusa('Informe a data de nascimento do paciente (dd/mm/aaaa).', nascEl); return; }
+      if(!cpfValido(cpfEl.value)){ recusa('O CPF do paciente não é válido. Confira os números.', cpfEl); return; }
+      const email = emailEl.value.trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ recusa('Informe um e-mail válido.', emailEl); return; }
+      if(aberturaEl.value.trim() && idadeDe(aberturaEl.value) === null){ recusa('A data de abertura não é válida (dd/mm/aaaa).', aberturaEl); return; }
+      let responsavel = null;
+      if(idade < 18){
+        const rNome = document.getElementById('eq-np-resp-nome');
+        const rPar = document.getElementById('eq-np-resp-parentesco');
+        const rCpf = document.getElementById('eq-np-resp-cpf');
+        const rTel = document.getElementById('eq-np-resp-telefone');
+        if(!rNome.value.trim()){ recusa('Paciente menor de idade: informe o nome completo do responsável.', rNome); return; }
+        if(!rPar.value){ recusa('Informe o vínculo do responsável com o paciente.', rPar); return; }
+        if(!cpfValido(rCpf.value)){ recusa('O CPF do responsável não é válido. Confira os números.', rCpf); return; }
+        if(soDigitos(rCpf.value) === soDigitos(cpfEl.value)){ recusa('O CPF do responsável não pode ser o mesmo do paciente.', rCpf); return; }
+        const tel = soDigitos(rTel.value);
+        if(tel.length !== 10 && tel.length !== 11){ recusa('Informe o telefone do responsável com DDD.', rTel); return; }
+        responsavel = { nome: rNome.value.trim(), parentesco: rPar.value, cpf: rCpf.value, telefone: rTel.value };
+      }
       if(!estudante){
         if(msg){ msg.textContent = 'Escolha o estudante que vai acompanhar o paciente.'; msg.hidden = false; }
         estudanteEl.focus();
@@ -4154,17 +4277,25 @@ route();
         return;
       }
       window.apiCreateCaso({
-        paciente: nome, estudante: estudante, supervisor: supervisor, status: 'Ativo', abertura: abertura
+        paciente: nome, estudante: estudante, supervisor: supervisor, status: 'Ativo', abertura: abertura,
+        nascimento: nascEl.value.trim(), cpf: cpfEl.value, email: email, responsavel: responsavel
       }).then(function(resp){
         CASOS[resp.id] = resp.caso;
         syncCasesTable();
         renderStats();
-        if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a) e alocado(a) para '+estudante+'. O caso já aparece na lista de pacientes.'; msg.hidden = false; }
+        const idGerado = resp.caso && resp.caso.cadastro && resp.caso.cadastro.id;
+        if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a)'+(idGerado ? ' com o ID '+idGerado : '')+' e alocado(a) para '+estudante+'. O caso já aparece na lista de pacientes.'; msg.hidden = false; }
         newPatientForm.reset();
+        atualizaIdadeCadastro();
         document.getElementById('eq-np-estudante').value = '';
         fillNpEstudantes();
       }).catch(function(err){
         console.warn('Não foi possível cadastrar o paciente no servidor:', err);
+        /* 400/409: o servidor recusou os dados (CPF inválido, CPF já com caso ativo…) — mostra o motivo. */
+        if(err && (err.status === 400 || err.status === 409)){
+          if(msg){ msg.textContent = 'Cadastro não realizado: ' + err.message + '.'; msg.hidden = false; }
+          return;
+        }
         window.showServerOfflineBanner();
         if(msg){ msg.textContent = 'Não foi possível salvar no servidor — verifique se "python3 server.py" está rodando.'; msg.hidden = false; }
       });
@@ -4407,6 +4538,23 @@ route();
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Caso aberto em</span><span class="eq-resumo-card-value">'+esc(caso.abertura)+'</span></div>'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Anamnese</span><span class="eq-resumo-card-value">'+(caso.anamnese? ('Registrada em '+esc(caso.anamnese.data)) : 'Ainda não registrada')+'</span></div>'+
       '</div>'+
+      (function(){
+        const cad = caso.cadastro;
+        const card = function(rotulo, valor){ return '<div class="eq-resumo-card"><span class="eq-resumo-card-label">'+rotulo+'</span><span class="eq-resumo-card-value">'+esc(valor)+'</span></div>'; };
+        if(!cad) return '<h4 class="eq-resumo-sec">Dados cadastrais</h4><p class="eq-empty" style="padding-top:0">Este caso foi aberto antes de o cadastro pedir data de nascimento, CPF e e-mail — esses dados não foram informados.</p>';
+        const idade = idadeDe(cad.nascimento);
+        let h = '<h4 class="eq-resumo-sec">Dados cadastrais</h4><div class="eq-resumo-grid">'+
+          card('ID do paciente', cad.id || '—')+
+          card('Data de nascimento', (cad.nascimento || '—') + (idade !== null ? ' · ' + textoIdade(idade) : ''))+
+          card('CPF', cad.cpf || '—')+
+          card('E-mail', cad.email || '—')+'</div>';
+        if(cad.responsavel){
+          const r = cad.responsavel;
+          h += '<h4 class="eq-resumo-sec">Responsável pelo paciente</h4><div class="eq-resumo-grid">'+
+            card('Nome', r.nome || '—')+card('Vínculo', r.parentesco || '—')+card('CPF', r.cpf || '—')+card('Telefone', r.telefone || '—')+'</div>';
+        }
+        return h;
+      })()+
       '<div class="eq-resumo-stats">'+
         '<div class="eq-resumo-stat"><b>'+caso.evolucoes.length+'</b><span>Evoluções registradas</span></div>'+
         '<div class="eq-resumo-stat"><b>'+caso.documentos.length+'</b><span>Documentos anexados</span></div>'+
@@ -4640,7 +4788,11 @@ route();
     if(exportMsg){ exportMsg.hidden = true; exportMsg.textContent = ''; }
     if(caseEyebrow) caseEyebrow.textContent = 'Caso vinculado a ' + caso.estudante;
     if(caseTitle) caseTitle.textContent = caso.paciente;
-    if(caseSub) caseSub.textContent = 'Estudante: ' + caso.estudante + ' · Supervisão: ' + caso.supervisor;
+    if(caseSub){
+      const cadSub = caso.cadastro || {};
+      const idadeSub = idadeDe(cadSub.nascimento);
+      caseSub.textContent = (cadSub.id ? cadSub.id + ' · ' : '') + (idadeSub !== null ? textoIdade(idadeSub) + ' · ' : '') + 'Estudante: ' + caso.estudante + ' · Supervisão: ' + caso.supervisor;
+    }
     if(caseBadge){
       caseBadge.textContent = caso.status;
       caseBadge.className = 'dash-badge ' + (caso.status==='Ativo' ? 'dash-badge-ok' : 'dash-badge-muted');
