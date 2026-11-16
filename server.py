@@ -771,6 +771,77 @@ def _resposta_convite(email_enviado, token, role=None):
             "validade_horas": CONVITE_VALIDADE_SEGUNDOS // 3600}
 
 
+MOTIVOS_CORRECAO = ("Informação incorreta", "Atualização de dados")
+CAMPOS_CORRIGIVEIS = ("nome", "nascimento", "telefone", "responsavel_nome", "responsavel_parentesco", "responsavel_telefone")
+ROTULOS_CAMPOS = {"nome": "Nome", "nascimento": "Data de nascimento", "telefone": "Telefone",
+                  "responsavel_nome": "Nome do responsável", "responsavel_parentesco": "Vínculo do responsável",
+                  "responsavel_telefone": "Telefone do responsável"}
+
+
+def _dados_para_conferencia(caso):
+    """O que a paciente vê para conferir: só os PRÓPRIOS dados cadastrais."""
+    cad = caso.get("cadastro") or {}
+    resp = cad.get("responsavel") or None
+    idade = _idade_em_anos(cad.get("nascimento", ""))
+    return {
+        "status": (caso.get("confirmacao") or {}).get("status", "nao_aplicavel"),
+        "dados": {
+            "nome": caso.get("paciente", ""), "nascimento": cad.get("nascimento", ""), "cpf": cad.get("cpf", ""),
+            "email": cad.get("email", ""), "telefone": cad.get("telefone", ""),
+            "menor": bool(idade is not None and idade < 18),
+            "responsavel": {"nome": resp.get("nome", ""), "parentesco": resp.get("parentesco", ""),
+                            "telefone": resp.get("telefone", "")} if resp else None,
+        },
+    }
+
+
+def _aplicar_correcoes(caso, alteracoes):
+    """Valida as correções pedidas pela paciente. Devolve (novo_nome, novo_cadastro, lista_de_mudancas, None)
+    ou (None, None, None, mensagem de erro). CPF e e-mail não são corrigíveis por aqui."""
+    if not isinstance(alteracoes, list) or not alteracoes:
+        return None, None, None, "informe o que precisa ser corrigido"
+    cad = caso.get("cadastro") or {}
+    nome = caso.get("paciente", "")
+    corpo = {"nascimento": cad.get("nascimento", ""), "cpf": cad.get("cpf", ""), "email": cad.get("email", ""),
+             "disponibilidade": cad.get("disponibilidade") or [], "telefone": cad.get("telefone", ""),
+             "motivo": cad.get("motivo", ""), "responsavel": dict(cad["responsavel"]) if cad.get("responsavel") else None}
+    pedidos = {}
+    for a in alteracoes:
+        if not isinstance(a, dict) or a.get("campo") not in CAMPOS_CORRIGIVEIS:
+            return None, None, None, "campo não pode ser corrigido por aqui (CPF e e-mail só pela equipe)"
+        if a.get("motivo") not in MOTIVOS_CORRECAO:
+            return None, None, None, "informe o motivo de cada correção (Informação incorreta ou Atualização de dados)"
+        pedidos[a["campo"]] = (str(a.get("valor", "")).strip(), a["motivo"])
+    antes = {"nome": nome, "nascimento": cad.get("nascimento", ""), "telefone": cad.get("telefone", ""),
+             "responsavel_nome": (cad.get("responsavel") or {}).get("nome", ""),
+             "responsavel_parentesco": (cad.get("responsavel") or {}).get("parentesco", ""),
+             "responsavel_telefone": (cad.get("responsavel") or {}).get("telefone", "")}
+    for campo, (valor, _m) in pedidos.items():
+        if campo == "nome":
+            if len(valor) < 3 or len(valor) > 120:
+                return None, None, None, "informe o nome completo (de 3 a 120 caracteres)"
+            nome = valor
+        elif campo in ("nascimento", "telefone"):
+            corpo[campo] = valor
+        else:
+            if corpo["responsavel"] is None:
+                return None, None, None, "este cadastro não tem responsável"
+            corpo["responsavel"][campo.split("_", 1)[1]] = valor
+    novo_cad, erro = _validar_cadastro_paciente(corpo)
+    if erro:
+        return None, None, None, erro
+    depois = {"nome": nome, "nascimento": novo_cad["nascimento"], "telefone": novo_cad["telefone"],
+              "responsavel_nome": (novo_cad["responsavel"] or {}).get("nome", ""),
+              "responsavel_parentesco": (novo_cad["responsavel"] or {}).get("parentesco", ""),
+              "responsavel_telefone": (novo_cad["responsavel"] or {}).get("telefone", "")}
+    mudancas = [{"campo": ROTULOS_CAMPOS[c], "de": antes[c], "para": depois[c], "motivo": pedidos[c][1]}
+                for c in pedidos if antes[c] != depois[c]]
+    if not mudancas:
+        return None, None, None, "nenhuma alteração em relação ao cadastro atual"
+    cadastro_final = {**cad, "nascimento": novo_cad["nascimento"], "telefone": novo_cad["telefone"], "responsavel": novo_cad["responsavel"]}
+    return nome, cadastro_final, mudancas, None
+
+
 def _criar_acesso_da_paciente(email, nome, caso_id, paciente_id, sessao):
     """Cria (ou religa) a conta de acesso da paciente. A conta nasce sem senha; o link de uso
     único é enviado ao e-mail dela. Se o e-mail não puder ser enviado, o link volta uma única
@@ -1187,6 +1258,21 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(fila)
             return
 
+        if path == "/api/meu-cadastro":
+            sessao = self._exigir_papel({"paciente"})
+            if sessao is None:
+                return
+            try:
+                caso = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id"))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/meu-cadastro")
+                return
+            if caso is None or not caso.get("cadastro"):
+                self._send_json({"status": "nao_aplicavel"})
+                return
+            self._send_json(_dados_para_conferencia(caso))
+            return
+
         if path == "/api/pacientes-acesso":
             # Só o técnico: situação do acesso de cada paciente (sem e-mail, sem hash, sem token).
             if self._exigir_papel({"tecnico"}) is None:
@@ -1498,6 +1584,64 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "email_enviado": email_enviado})
             return
 
+        if path == "/api/meu-cadastro":
+            sessao = self._exigir_papel({"paciente"})
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            try:
+                caso = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id"))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/meu-cadastro")
+                return
+            if caso is None or (caso.get("confirmacao") or {}).get("status") != "pendente":
+                self._send_error_json(409, "não há conferência de dados pendente para esta conta")
+                return
+            acao = body.get("acao")
+            agora = _agora_br()
+            conf = {"status": "confirmado", "confirmado_em_br": agora, "houve_correcao": False,
+                    "atualizacao_nao_vista": False, "correcoes": []}
+            set_campos = {"confirmacao": conf}
+            nome_antigo = caso.get("paciente", "")
+            nome_novo = nome_antigo
+            if acao == "corrigir":
+                nome_novo, cadastro_novo, mudancas, erro = _aplicar_correcoes(caso, body.get("alteracoes"))
+                if erro:
+                    self._send_error_json(400, erro)
+                    return
+                conf["houve_correcao"] = True
+                conf["atualizacao_nao_vista"] = True
+                conf["correcoes"] = [{"em_br": agora, "alteracoes": mudancas}]
+                set_campos["cadastro"] = cadastro_novo
+                set_campos["paciente"] = nome_novo
+            elif acao != "confirmar":
+                self._send_error_json(400, "ação inválida")
+                return
+            try:
+                # Só grava se ainda estiver pendente (duplo clique não confirma duas vezes).
+                r = casos_col.update_one({"_id": caso["_id"], "confirmacao.status": "pendente"}, {"$set": set_campos})
+                if r.matched_count == 0:
+                    self._send_error_json(409, "estes dados já foram conferidos")
+                    return
+                if nome_novo != nome_antigo:
+                    # O nome é a chave que liga as solicitações e reagendamentos desta paciente.
+                    solicitacoes_col.update_many({"paciente": nome_antigo}, {"$set": {"paciente": nome_novo}})
+                    reagendamentos_col.update_many({"paciente": nome_antigo}, {"$set": {"paciente": nome_novo}})
+                    contas_col.update_one({"_id": sessao["email"]}, {"$set": {"nome": nome_novo}})
+                    for s_ in SESSOES.values():
+                        if s_.get("email") == sessao["email"]:
+                            s_["nome"] = nome_novo
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/meu-cadastro")
+                return
+            _registrar_auditoria(sessao, "conferência dos dados cadastrais (%s)" % ("com correção" if conf["houve_correcao"] else "confirmados"), caso_id=caso["_id"])
+            self._send_json({"ok": True, "status": "confirmado", "houve_correcao": conf["houve_correcao"]})
+            return
+
         if path == "/api/ativar-conta":
             # Primeiro acesso por convite: a pessoa abre o link, escolhe a senha
             # e a conta passa a "ativa". Rota pública de propósito (quem ainda
@@ -1712,6 +1856,9 @@ class Handler(BaseHTTPRequestHandler):
                 "documentos": [],
                 "agendamentos": [],
             }
+            if email_acesso:
+                # A paciente confere os próprios dados no primeiro acesso.
+                caso["confirmacao"] = {"status": "pendente"}
             try:
                 casos_col.insert_one(dict(caso))
             except PyMongoError as exc:
@@ -1846,6 +1993,26 @@ class Handler(BaseHTTPRequestHandler):
     def do_PUT(self):
         path = self.path.split("?", 1)[0]
 
+        m = re.match(r"^/api/casos/([^/]+)/cadastro-visto$", path)
+        if m:
+            # O técnico viu a atualização cadastral feita pela paciente: o aviso some.
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if not caso or not (caso.get("confirmacao") or {}).get("atualizacao_nao_vista"):
+                    self._send_json({"ok": True})
+                    return
+                conf = dict(caso["confirmacao"]); conf["atualizacao_nao_vista"] = False
+                casos_col.update_one({"_id": case_id}, {"$set": {"confirmacao": conf}})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/casos/<id>/cadastro-visto")
+                return
+            self._send_json({"ok": True})
+            return
+
         m = re.match(r"^/api/casos/([^/]+)/convite$", path)
         if m:
             # Reenvio do convite de primeiro acesso da paciente (só técnico). O convite anterior
@@ -1927,6 +2094,13 @@ class Handler(BaseHTTPRequestHandler):
                 body["cadastro"] = caso_atual["cadastro"]
             else:
                 body.pop("cadastro", None)
+            # A conferência cadastral e o nome do paciente só mudam pela própria paciente
+            # (/api/meu-cadastro): uma tela desatualizada não pode desfazer uma correção.
+            if "confirmacao" in caso_atual:
+                body["confirmacao"] = caso_atual["confirmacao"]
+            else:
+                body.pop("confirmacao", None)
+            body["paciente"] = caso_atual.get("paciente", body.get("paciente", ""))
 
             # Só técnico e supervisor podem encerrar/reabrir um caso — a
             # própria tela já impede isso para o estudante (canCloseCase()),

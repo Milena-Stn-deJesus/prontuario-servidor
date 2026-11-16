@@ -1280,6 +1280,19 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 .eq-adm-dl dd{margin:0;word-break:break-word}
 @media(max-width:1000px){.eq-admin .eq-stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.eq-adm-dl{grid-template-columns:1fr}}
+#pac-conferir[hidden]{display:none!important}
+#pac-conf-form[hidden],#pac-conf-acoes[hidden]{display:none!important}
+.cf-list{margin:0 0 16px;display:grid;gap:8px}
+.cf-list div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.cf-list dt{font-size:.85rem;opacity:.7;margin:0}
+.cf-list dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.cf-actions{display:grid;gap:10px;margin-top:8px}
+.cf-sec{background:transparent;border:1px solid currentColor;color:inherit;margin-top:8px}
+.cf-nota{font-size:.88rem;opacity:.8;margin:0 0 12px}
+.cf-fld{margin-bottom:14px}
+.cf-fld select{width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,.25);font:inherit;background:#fff;color:#222}
+.eq-conf-aviso{background:#fff4d6;color:#5a4100;border:1px solid #e6c14d;border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:.92rem}
+.eq-conf-hist{margin:0 0 12px;padding-left:18px;font-size:.9rem}
 </style>
 </head>
 <body>
@@ -1984,6 +1997,25 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </div>
           <span class="fld-err auth-form-err" id="pac-ativar-err" role="alert"></span>
           <button type="submit" class="btn btn-primary auth-submit" id="pac-ativar-btn">Ativar conta<svg><use href="#i-arrow"/></svg></button>
+        </form>
+      </div>
+
+      <div class="auth-card" id="pac-conferir" hidden>
+        <span class="eyebrow">Primeiro acesso</span>
+        <h2>Confirme seus dados cadastrais</h2>
+        <p class="lead" id="pac-conf-lead">Confira se as informações abaixo estão corretas antes de continuar.</p>
+        <dl class="cf-list" id="pac-conf-lista"></dl>
+        <span class="fld-err auth-form-err" id="pac-conf-err" role="alert"></span>
+        <div class="cf-actions" id="pac-conf-acoes">
+          <button type="button" class="btn btn-primary auth-submit" id="pac-conf-ok">Meus dados estão corretos<svg><use href="#i-arrow"/></svg></button>
+          <button type="button" class="btn auth-submit cf-sec" id="pac-conf-corrigir">Preciso corrigir meus dados</button>
+        </div>
+        <form id="pac-conf-form" hidden novalidate>
+          <p class="cf-nota">Altere só o que estiver errado e escolha o motivo de cada alteração. CPF e e-mail não podem ser alterados por aqui — se estiverem errados, fale com a equipe da Clínica-Escola.</p>
+          <div id="pac-conf-campos"></div>
+          <span class="fld-err auth-form-err" id="pac-conf-ferr" role="alert"></span>
+          <button type="submit" class="btn btn-primary auth-submit" id="pac-conf-enviar">Salvar correções e continuar<svg><use href="#i-arrow"/></svg></button>
+          <button type="button" class="btn auth-submit cf-sec" id="pac-conf-voltar">Voltar</button>
         </form>
       </div>
 
@@ -2880,6 +2912,13 @@ window.apiAtivarConta = function(token, senha){
   return _apiFetch('/api/ativar-conta', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: token, senha: senha})});
 };
 window.apiGetPacientesAcesso = function(){ return _apiFetch('/api/pacientes-acesso'); };
+window.apiGetMeuCadastro = function(){ return _apiFetch('/api/meu-cadastro'); };
+window.apiPostMeuCadastro = function(p){
+  return _apiFetch('/api/meu-cadastro', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiCadastroVisto = function(casoId){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/cadastro-visto', {method:'PUT', headers:{'Content-Type':'application/json'}, body:'{}'});
+};
 window.apiReenviarConvitePaciente = function(casoId){
   return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/convite', {method:'PUT', headers:{'Content-Type':'application/json'}, body:'{}'});
 };
@@ -3175,6 +3214,7 @@ route();
     forgotSent: document.getElementById('pac-forgot-sent'),
     firstAccess: document.getElementById('pac-firstaccess'),
     ativar: document.getElementById('pac-ativar'),
+    conferir: document.getElementById('pac-conferir'),
     profilePage: document.getElementById('pac-profile-page')
   };
   const authWrapEl = document.querySelector('.auth-wrap');
@@ -3198,6 +3238,89 @@ route();
     if(authWrapEl) authWrapEl.classList.toggle('wide', name==='success');
     if(name==='success') startInactivityTimer(); else clearInactivityTimer();
   }
+
+  function entrarNoPainelGenerico(){
+    baseFirstName = currentPatientFullName ? currentPatientFullName.split(' ')[0] : '';
+    baseGreeting = baseFirstName ? ('Bem-vindo(a) de volta, ' + baseFirstName + '!') : 'Bem-vindo(a) de volta!';
+    setGreeting(baseGreeting);
+    refreshMeuCaso();
+    refreshMinhasSolicitacoes();
+  }
+
+  /* CONFERÊNCIA CADASTRAL — primeiro acesso da paciente */
+  const cfLista = document.getElementById('pac-conf-lista');
+  const cfErr = document.getElementById('pac-conf-err');
+  const cfAcoes = document.getElementById('pac-conf-acoes');
+  const cfForm = document.getElementById('pac-conf-form');
+  const cfCampos = document.getElementById('pac-conf-campos');
+  const cfFerr = document.getElementById('pac-conf-ferr');
+  let cfDados = null;
+  const CF_MOTIVOS = ['Informação incorreta','Atualização de dados'];
+  function cfEsc(t){ return String(t==null?'':t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function cfLinhas(d){
+    const l = [['Nome completo', d.nome],['Data de nascimento', d.nascimento],['CPF', d.cpf],['E-mail', d.email],['Telefone', d.telefone]];
+    if(d.responsavel){ l.push(['Responsável', d.responsavel.nome],['Vínculo', d.responsavel.parentesco],['Telefone do responsável', d.responsavel.telefone]); }
+    return l;
+  }
+  function abrirConferencia(d){
+    cfDados = d;
+    cfLista.innerHTML = cfLinhas(d).map(function(p){ return '<div><dt>'+cfEsc(p[0])+'</dt><dd>'+cfEsc(p[1]||'—')+'</dd></div>'; }).join('');
+    cfErr.textContent = ''; cfFerr.textContent = '';
+    cfAcoes.hidden = false; cfForm.hidden = true;
+    showCard('conferir');
+  }
+  function cfCamposEditaveis(d){
+    const l = [['nome','Nome completo',d.nome],['nascimento','Data de nascimento (dd/mm/aaaa)',d.nascimento],['telefone','Telefone',d.telefone]];
+    if(d.responsavel){ l.push(['responsavel_nome','Nome do responsável',d.responsavel.nome],['responsavel_parentesco','Vínculo com o paciente',d.responsavel.parentesco],['responsavel_telefone','Telefone do responsável',d.responsavel.telefone]); }
+    return l;
+  }
+  function concluirConferencia(novoNome){
+    if(novoNome){ currentPatientFullName = novoNome; }
+    entrarNoPainelGenerico();
+    showCard('success');
+  }
+  document.getElementById('pac-conf-ok').addEventListener('click', function(ev){
+    const b = ev.currentTarget; b.disabled = true; cfErr.textContent = '';
+    window.apiPostMeuCadastro({acao:'confirmar'}).then(function(){ concluirConferencia(); })
+      .catch(function(e){ cfErr.textContent = (e && e.message) || 'Não foi possível confirmar agora. Tente novamente.'; })
+      .then(function(){ b.disabled = false; });
+  });
+  document.getElementById('pac-conf-corrigir').addEventListener('click', function(){
+    cfCampos.innerHTML = cfCamposEditaveis(cfDados).map(function(c){
+      return '<div class="cf-fld"><div class="fld"><label for="cf-'+c[0]+'">'+cfEsc(c[1])+'</label><div class="fld-box"><input type="text" id="cf-'+c[0]+'" data-campo="'+c[0]+'" value="'+cfEsc(c[2])+'" autocomplete="off"></div></div>'+
+        '<select id="cf-m-'+c[0]+'" data-motivo="'+c[0]+'" aria-label="Motivo da alteração de '+cfEsc(c[1])+'" hidden><option value="">Motivo da alteração…</option>'+
+        CF_MOTIVOS.map(function(m){ return '<option>'+m+'</option>'; }).join('')+'</select></div>';
+    }).join('');
+    cfCampos.querySelectorAll('input[data-campo]').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        const sel = document.getElementById('cf-m-'+inp.dataset.campo);
+        const original = (cfCamposEditaveis(cfDados).filter(function(c){ return c[0]===inp.dataset.campo; })[0]||[])[2] || '';
+        sel.hidden = (inp.value.trim() === String(original).trim());
+      });
+    });
+    cfAcoes.hidden = true; cfForm.hidden = false; cfFerr.textContent = '';
+  });
+  document.getElementById('pac-conf-voltar').addEventListener('click', function(){ cfForm.hidden = true; cfAcoes.hidden = false; cfFerr.textContent = ''; });
+  cfForm.addEventListener('submit', function(ev){
+    ev.preventDefault(); cfFerr.textContent = '';
+    const alt = []; let novoNome = '';
+    const orig = {}; cfCamposEditaveis(cfDados).forEach(function(c){ orig[c[0]] = String(c[2]||'').trim(); });
+    let falta = false;
+    cfCampos.querySelectorAll('input[data-campo]').forEach(function(inp){
+      const k = inp.dataset.campo, v = inp.value.trim();
+      if(v === orig[k]) return;
+      const mot = document.getElementById('cf-m-'+k).value;
+      if(!mot){ falta = true; return; }
+      alt.push({campo:k, valor:v, motivo:mot});
+      if(k==='nome') novoNome = v;
+    });
+    if(falta){ cfFerr.textContent = 'Escolha o motivo de cada campo que você alterou.'; return; }
+    if(!alt.length){ cfFerr.textContent = 'Você não alterou nenhum campo. Se estiver tudo certo, volte e escolha "Meus dados estão corretos".'; return; }
+    const b = document.getElementById('pac-conf-enviar'); b.disabled = true;
+    window.apiPostMeuCadastro({acao:'corrigir', alteracoes:alt}).then(function(){ concluirConferencia(novoNome); })
+      .catch(function(e){ cfFerr.textContent = (e && e.message) || 'Não foi possível salvar agora. Tente novamente.'; })
+      .then(function(){ b.disabled = false; });
+  });
   const greetingEl = document.getElementById('pac-dash-greeting');
   function setGreeting(text){
     if(greetingEl) greetingEl.textContent = text;
@@ -3269,12 +3392,16 @@ route();
       } else {
         /* Conta de paciente válida no servidor mas sem tela de demonstração específica. */
         currentPatientFullName = sessao.nome || '';
-        baseFirstName = sessao.nome ? sessao.nome.split(' ')[0] : '';
-        baseGreeting = baseFirstName ? ('Bem-vindo(a) de volta, ' + baseFirstName + '!') : 'Bem-vindo(a) de volta!';
-        setGreeting(baseGreeting);
-        showCard('success');
-        refreshMeuCaso();
-        refreshMinhasSolicitacoes();
+        entrarNoPainelGenerico();
+        if(typeof window.apiGetMeuCadastro === 'function'){
+          /* Conferência cadastral: no primeiro acesso, a paciente confere os próprios dados
+             antes de ver o painel. O painel só aparece depois da confirmação. */
+          showCard('nenhum'); /* esconde tudo até a conferência terminar */
+          window.apiGetMeuCadastro().then(function(r){
+            if(r && r.status === 'pendente'){ abrirConferencia(r.dados); }
+            else { showCard('success'); }
+          }).catch(function(){ showCard('success'); });
+        }
       }
     }).catch(function(err){
       if(err && err.status === 429){
@@ -4100,9 +4227,16 @@ route();
     (window.PRONTUARIO_REAGENDAMENTOS || []).forEach(function(r){
       if(r.status !== 'confirmado') itens.push({alvo:'eq-reagendamentos-card', titulo:'Pedido de reagendamento — '+(r.paciente||'paciente'), detalhe:'Pedido em '+(r.solicitado_em||'—')});
     });
+    Object.keys(CASOS).forEach(function(id){
+      const c = CASOS[id], cf = c && c.confirmacao;
+      if(cf && cf.atualizacao_nao_vista){
+        const ult = (cf.correcoes && cf.correcoes.length) ? cf.correcoes[cf.correcoes.length-1] : null;
+        itens.push({caso:id, titulo:'Dados cadastrais atualizados — '+(c.paciente||'paciente'), detalhe:'Corrigidos pela paciente em '+((ult && ult.em_br) || cf.confirmado_em_br || '—')+' · Visualizar cadastro'});
+      }
+    });
     notifBox.hidden = false;
     notifList.innerHTML = itens.map(function(it){
-      return '<li><button type="button" class="eq-notif-item" data-notif-alvo="'+esc(it.alvo)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(it.titulo)+'</b><small>'+esc(it.detalhe)+'</small></span></button></li>';
+      return '<li><button type="button" class="eq-notif-item" '+(it.caso ? 'data-notif-caso="'+esc(it.caso)+'"' : 'data-notif-alvo="'+esc(it.alvo)+'"')+'><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(it.titulo)+'</b><small>'+esc(it.detalhe)+'</small></span></button></li>';
     }).join('');
     if(notifEmpty) notifEmpty.hidden = itens.length > 0;
     if(notifCount){ notifCount.hidden = itens.length === 0; notifCount.textContent = itens.length > 99 ? '99+' : String(itens.length); }
@@ -4118,6 +4252,8 @@ route();
     });
     notifPanel.addEventListener('click', function(e){
       e.stopPropagation();
+      const itemCaso = e.target.closest('[data-notif-caso]');
+      if(itemCaso){ fecharNotifs(); openCase(itemCaso.dataset.notifCaso); return; }
       const item = e.target.closest('[data-notif-alvo]');
       if(!item) return;
       const alvo = document.getElementById(item.dataset.notifAlvo);
@@ -5333,10 +5469,30 @@ route();
   }
 
   /* RENDERIZAÇÃO DO DETALHE DO CASO */
+  var ROTULOS_CORRECAO = {nome:'Nome', nascimento:'Data de nascimento', telefone:'Telefone', responsavel_nome:'Nome do responsável', responsavel_parentesco:'Vínculo do responsável', responsavel_telefone:'Telefone do responsável'};
+  function avisoConferencia(caso){
+    const cf = caso.confirmacao;
+    if(currentRole === 'estudante' && cf && cf.status === 'pendente'){
+      return '<div class="eq-conf-aviso" role="status"><b>Dados cadastrais ainda não conferidos.</b> A paciente ainda não fez o primeiro acesso para confirmar os próprios dados. Até lá, confirme nome, telefone e demais dados com ela antes de usá-los em documentos.</div>';
+    }
+    return '';
+  }
+  function historicoConferencia(caso){
+    const cf = caso.confirmacao;
+    if(!cf) return '';
+    if(cf.status === 'pendente') return '<h4 class="eq-resumo-sec">Conferência dos dados</h4><p class="eq-empty" style="padding-top:0">Aguardando o primeiro acesso da paciente para confirmar os dados cadastrais.</p>';
+    let h = '<h4 class="eq-resumo-sec">Conferência dos dados</h4><p class="eq-empty" style="padding-top:0">Dados confirmados pela paciente em '+esc(cf.confirmado_em_br||'—')+(cf.houve_correcao?' (com correções).':' sem correções.')+'</p>';
+    (cf.correcoes||[]).forEach(function(c){
+      h += '<ul class="eq-conf-hist">'+(c.alteracoes||[]).map(function(a){
+        return '<li><b>'+esc(ROTULOS_CORRECAO[a.campo]||a.campo)+'</b>: de “'+esc(a.de||'—')+'” para “'+esc(a.para||'—')+'” · '+esc(a.motivo||'')+' · '+esc(c.em_br||'')+'</li>';
+      }).join('')+'</ul>';
+    });
+    return h;
+  }
   function renderResumo(caso){
     const panel = document.getElementById('eq-panel-resumo');
     if(!panel) return;
-    panel.innerHTML =
+    panel.innerHTML = avisoConferencia(caso)+
       '<div class="eq-resumo-grid">'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Paciente</span><span class="eq-resumo-card-value">'+esc(caso.paciente)+'</span></div>'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Status do caso</span><span class="eq-resumo-card-value">'+esc(caso.status)+'</span></div>'+
@@ -5362,6 +5518,7 @@ route();
         }
         return h;
       })()+
+      historicoConferencia(caso)+
       '<div class="eq-resumo-stats">'+
         '<div class="eq-resumo-stat"><b>'+caso.evolucoes.length+'</b><span>Evoluções registradas</span></div>'+
         '<div class="eq-resumo-stat"><b>'+caso.documentos.length+'</b><span>Documentos anexados</span></div>'+
@@ -5612,6 +5769,13 @@ route();
     renderAgenda(caso, currentRole==='tecnico');
     setActiveTab('resumo');
     showCard('caseDetail');
+    if(currentRole === 'tecnico' && caso.confirmacao && caso.confirmacao.atualizacao_nao_vista && typeof window.apiCadastroVisto === 'function'){
+      window.apiCadastroVisto(caseId).then(function(){
+        caso.confirmacao.atualizacao_nao_vista = false;
+        renderNotifs();
+        if(typeof syncCasesTable === 'function') syncCasesTable();
+      }).catch(function(){ /* continua marcado como não visto; tenta de novo na próxima abertura */ });
+    }
   }
 
   const toggleStatusBtn = document.getElementById('eq-case-toggle-status');
