@@ -3021,8 +3021,17 @@ route();
 (function(){
   const btn=document.getElementById('readaloud-btn');
   if(!btn) return;
-  if(!('speechSynthesis' in window)){ btn.hidden=true; return; }
-  const synth=window.speechSynthesis;
+  /* Narração gravada (Eleven Labs) na Home e em Inscreva-se; nas outras páginas, a leitura do navegador. */
+  const AUDIO_POR_PAGINA={'page-home':'/audio/ouvir-home.mp3','page-inscricao':'/audio/ouvir-inscricao.mp3'};
+  let audioEl=null;
+  const temVozDoNavegador=('speechSynthesis' in window);
+  const synth=temVozDoNavegador?window.speechSynthesis:{speaking:false,paused:false,pause(){},resume(){},cancel(){},speak(){},getVoices(){return[];}};
+  function audioDaPagina(){
+    const page=document.querySelector('.page:not([hidden])');
+    return page && AUDIO_POR_PAGINA[page.id] ? ((window.API_BASE||'')+AUDIO_POR_PAGINA[page.id]) : null;
+  }
+  function pararAudio(){ if(audioEl){ audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl=null; } }
+  function atualizarVisibilidade(){ btn.hidden = !temVozDoNavegador && !audioDaPagina(); }
   const labelEl=btn.querySelector('.a11y-btn-label');
   const icUse=btn.querySelector('.a11y-btn-ic use');
 
@@ -3062,7 +3071,32 @@ route();
     return voices.find(v=>v.lang && v.lang.toLowerCase().startsWith('pt')) || null;
   }
 
+  function tocarTextoDoNavegador(){
+    if(!temVozDoNavegador) return;
+    const text=getPageText();
+    if(!text) return;
+    const utter=new SpeechSynthesisUtterance(text);
+    utter.lang='pt-BR';
+    const v=pickVoice();
+    if(v) utter.voice=v;
+    utter.onend=setIdle;
+    utter.onerror=setIdle;
+    synth.cancel();
+    synth.speak(utter);
+    setPlaying();
+  }
   btn.addEventListener('click', ()=>{
+    const url=audioDaPagina();
+    if(url){
+      if(audioEl && !audioEl.paused){ audioEl.pause(); labelEl.textContent='Continuar leitura'; return; }
+      if(audioEl && audioEl.paused){ audioEl.play().then(setPlaying).catch(setIdle); return; }
+      audioEl=new Audio(url);
+      audioEl.preload='auto';
+      audioEl.addEventListener('ended', ()=>{ audioEl=null; setIdle(); });
+      audioEl.addEventListener('error', ()=>{ pararAudio(); setIdle(); tocarTextoDoNavegador(); });  /* se o áudio falhar, usa a voz do navegador */
+      audioEl.play().then(setPlaying).catch(()=>{ pararAudio(); setIdle(); tocarTextoDoNavegador(); });
+      return;
+    }
     if(synth.speaking && !synth.paused){
       synth.pause();
       labelEl.textContent='Continuar leitura';
@@ -3086,7 +3120,8 @@ route();
     setPlaying();
   });
 
-  addEventListener('hashchange', ()=>{ synth.cancel(); setIdle(); });
+  addEventListener('hashchange', ()=>{ synth.cancel(); pararAudio(); setIdle(); atualizarVisibilidade(); });
+  atualizarVisibilidade();
 })();
 
 /* LOGIN DO PACIENTE */

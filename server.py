@@ -134,6 +134,11 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parent
 HTML_FILE = BASE_DIR / "psicare-site-v2.html"
+# Narrações em áudio (Eleven Labs) das páginas Home e Inscrição. Só estes caminhos são servidos.
+AUDIOS = {
+    "/audio/ouvir-home.mp3": BASE_DIR / "audio" / "ouvir-home.mp3",
+    "/audio/ouvir-inscricao.mp3": BASE_DIR / "audio" / "ouvir-inscricao.mp3",
+}
 
 PORT = int(os.environ.get("PORT", 5000))
 MONGODB_URI = os.environ.get("MONGODB_URI")
@@ -1052,6 +1057,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?", 1)[0]
 
+        if path in AUDIOS:
+            self._serve_audio(AUDIOS[path])
+            return
+
         if path in ("/", "/index.html"):
             self._serve_html()
             return
@@ -1247,6 +1256,47 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         self._send_error_json(404, "rota não encontrada: " + path)
+
+    def _serve_audio(self, arquivo):
+        """Entrega um MP3 com suporte a 'Range' (necessário para tocar e pular no Safari/iPhone)."""
+        if not arquivo.exists():
+            self._send_error_json(404, "áudio não encontrado")
+            return
+        dados = arquivo.read_bytes()
+        total = len(dados)
+        inicio, fim, status = 0, total - 1, 200
+        faixa = self.headers.get("Range", "")
+        m = re.match(r"^bytes=(\d*)-(\d*)$", faixa.strip())
+        if m and (m.group(1) or m.group(2)):
+            if m.group(1):
+                inicio = int(m.group(1))
+                fim = int(m.group(2)) if m.group(2) else total - 1
+            else:  # últimos N bytes
+                inicio = max(0, total - int(m.group(2)))
+            fim = min(fim, total - 1)
+            if inicio > fim or inicio >= total:
+                self.send_response(416)
+                self.send_header("Content-Range", "bytes */%d" % total)
+                self.send_header("Content-Length", "0")
+                self._security_headers()
+                self.end_headers()
+                return
+            status = 206
+        corpo = dados[inicio:fim + 1]
+        self.send_response(status)
+        self.send_header("Content-Type", "audio/mpeg")
+        self.send_header("Accept-Ranges", "bytes")
+        if status == 206:
+            self.send_header("Content-Range", "bytes %d-%d/%d" % (inicio, fim, total))
+        self.send_header("Content-Length", str(len(corpo)))
+        self.send_header("Cache-Control", "public, max-age=86400")
+        self._cors_headers()
+        self._security_headers()
+        self.end_headers()
+        try:
+            self.wfile.write(corpo)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # o navegador cancelou (ex.: trocou de página)
 
     def _serve_html(self):
         if not HTML_FILE.exists():
