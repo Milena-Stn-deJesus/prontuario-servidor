@@ -696,14 +696,15 @@ def _novo_convite():
     }
 
 
-def _link_convite(token):
+def _link_convite(token, role=None):
     # O token vai no fragmento (#...), que o navegador nunca envia ao servidor:
-    # assim ele não aparece em log de acesso nenhum.
-    return "%s/#ativar:%s" % (SITE_URL, token)
+    # assim ele não aparece em log de acesso nenhum. O link da paciente abre a
+    # área da paciente; o dos demais perfis, a área da equipe.
+    return "%s/#%s:%s" % (SITE_URL, "ativar-paciente" if role == "paciente" else "ativar", token)
 
 
 def _enviar_convite(email, nome, role, token):
-    funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else "profissional")
+    funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else ("paciente" if role == "paciente" else "profissional"))
     assunto = "Prontuário Eletrônico — convite para criar sua senha de acesso"
     corpo = (
         "Olá, %s!\n\n"
@@ -713,7 +714,7 @@ def _enviar_convite(email, nome, role, token):
         "%s\n\n"
         "Se você não esperava este convite, ignore este e-mail.\n\n"
         "Este é um e-mail automático — não é necessário responder."
-    ) % (nome or "profissional", funcao, _link_convite(token))
+    ) % (nome or ("paciente" if role == "paciente" else "profissional"), funcao, _link_convite(token, role))
     return _enviar_email(email, assunto, corpo)
 
 
@@ -762,12 +763,31 @@ def _validar_dados_profissional(body):
     return {"nome": nome, "crp": crp}, None
 
 
-def _resposta_convite(email_enviado, token):
+def _resposta_convite(email_enviado, token, role=None):
     """O link só é devolvido ao painel quando o e-mail NÃO saiu (SMTP não
     configurado ou falhou): é a única forma de a pessoa receber o convite, e
     ele é mostrado uma única vez, na tela da administração — nunca no log."""
-    return {"email_enviado": bool(email_enviado), "link": None if email_enviado else _link_convite(token),
+    return {"email_enviado": bool(email_enviado), "link": None if email_enviado else _link_convite(token, role),
             "validade_horas": CONVITE_VALIDADE_SEGUNDOS // 3600}
+
+
+def _criar_acesso_da_paciente(email, nome, caso_id, paciente_id, sessao):
+    """Cria (ou religa) a conta de acesso da paciente. A conta nasce sem senha; o link de uso
+    único é enviado ao e-mail dela. Se o e-mail não puder ser enviado, o link volta uma única
+    vez na resposta ao técnico, para ele repassar. Nunca vai para o log."""
+    existente = contas_col.find_one({"_id": email})
+    if existente:  # paciente que volta ao serviço: a mesma conta passa a apontar para o caso novo
+        contas_col.update_one({"_id": email}, {"$set": {"caso_id": caso_id, "paciente_id": paciente_id}})
+        return {"status": existente.get("status", ""), "reaproveitada": True, "convite": None}
+    token, convite = _novo_convite()
+    contas_col.insert_one({
+        "_id": email, "nome": nome, "role": "paciente", "caso_id": caso_id, "paciente_id": paciente_id,
+        "status": "convite_pendente", "salt": None, "senha_hash": None, "convite": convite,
+        "criado_em": time.time(), "criado_em_br": _agora_br(), "criado_por": (sessao or {}).get("email", ""),
+    })
+    enviado = _enviar_convite(email, nome, "paciente", token)
+    _registrar_auditoria(sessao, "criação de acesso da paciente", caso_id=caso_id)
+    return {"status": "convite_pendente", "reaproveitada": False, "convite": _resposta_convite(enviado, token, "paciente")}
 
 
 def caso_doc_to_json(doc):
@@ -919,11 +939,16 @@ def _proxima_consulta(caso):
     }
 
 
-def _encontrar_caso_do_paciente(nome_paciente):
+def _encontrar_caso_do_paciente(nome_paciente, caso_id=None):
     """Acha o caso deste paciente (pelo nome da própria sessão, nunca por um
     id que o navegador possa mandar). Se houver mais de um, prioriza um caso
     'Ativo'; não deveria haver mais de um caso ativo por paciente no
     serviço-escola, mas se houver, pega o primeiro encontrado."""
+    if caso_id:
+        # Conta criada pelo cadastro: o vínculo é pelo id do caso, não pelo nome.
+        caso = casos_col.find_one({"_id": caso_id})
+        if caso:
+            return caso
     candidatos = list(casos_col.find({"paciente": nome_paciente}))
     if not candidatos:
         return None
@@ -1162,6 +1187,20 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(fila)
             return
 
+        if path == "/api/pacientes-acesso":
+            # Só o técnico: situação do acesso de cada paciente (sem e-mail, sem hash, sem token).
+            if self._exigir_papel({"tecnico"}) is None:
+                return
+            try:
+                docs = list(contas_col.find({"role": "paciente"}))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/pacientes-acesso")
+                return
+            self._send_json({d["caso_id"]: {"status": d.get("status", ""),
+                                            "convite_expirado": bool(d.get("status") == "convite_pendente" and (d.get("convite") or {}).get("expira_em", 0) < time.time())}
+                             for d in docs if d.get("caso_id")})
+            return
+
         if path == "/api/meu-caso":
             # Correção de bug: a tela do paciente decidia "Ativo"/"Encerrado"
             # fixo pelo e-mail de login (resquício de dado de exemplo), em
@@ -1173,7 +1212,7 @@ class Handler(BaseHTTPRequestHandler):
             if sessao is None:
                 return
             try:
-                caso = _encontrar_caso_do_paciente(sessao["nome"])
+                caso = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id"))
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/meu-caso")
                 return
@@ -1237,7 +1276,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_error_json(403, "seu prontuário ainda não foi liberado pela equipe")
                 return
             try:
-                caso = _encontrar_caso_do_paciente(sessao["nome"])
+                caso = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id"))
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/meu-prontuario (caso)")
                 return
@@ -1353,7 +1392,7 @@ class Handler(BaseHTTPRequestHandler):
                 if doc_conta and doc_conta.get("status") == "ativa" and doc_conta.get("senha_hash") and doc_conta.get("salt"):
                     senha_ok = hmac.compare_digest(doc_conta["senha_hash"], _hash_senha_salt(senha, doc_conta["salt"]))
                     if senha_ok:
-                        conta = {"role": doc_conta["role"], "nome": doc_conta["nome"]}
+                        conta = {"role": doc_conta["role"], "nome": doc_conta["nome"], "caso_id": doc_conta.get("caso_id")}
                 else:
                     _hash_senha_salt(senha, "00" * 16)  # custo parecido, para não revelar se o e-mail existe
                 if not senha_ok:
@@ -1377,6 +1416,7 @@ class Handler(BaseHTTPRequestHandler):
                 "email": email,
                 "role": conta["role"],
                 "nome": conta["nome"],
+                "caso_id": conta.get("caso_id"),
                 "criado_em": agora,
             }
             _registrar_auditoria(SESSOES[token], "login", resultado="sucesso")
@@ -1496,9 +1536,11 @@ class Handler(BaseHTTPRequestHandler):
             except PyMongoError as exc:
                 self._erro_servidor(exc, "POST /api/ativar-conta")
                 return
-            _registrar_historico_admin({"email": doc["_id"], "nome": doc.get("nome", "")}, "Primeiro acesso concluído (senha criada)", doc["_id"])
+            if doc.get("role") != "paciente":
+                # O histórico administrativo não recebe nada de pacientes.
+                _registrar_historico_admin({"email": doc["_id"], "nome": doc.get("nome", "")}, "Primeiro acesso concluído (senha criada)", doc["_id"])
             _registrar_auditoria({"email": doc["_id"], "nome": doc.get("nome", ""), "role": doc.get("role")}, "ativação de conta por convite")
-            self._send_json({"ok": True, "email": doc["_id"], "nome": doc.get("nome", "")})
+            self._send_json({"ok": True, "email": doc["_id"], "nome": doc.get("nome", ""), "role": doc.get("role", "")})
             return
 
         if path == "/api/admin/profissionais":
@@ -1619,9 +1661,17 @@ class Handler(BaseHTTPRequestHandler):
             if erro_cadastro:
                 self._send_error_json(400, erro_cadastro)
                 return
+            email_acesso = str(cadastro.get("email", "")).strip().lower()
             try:
                 if casos_col.find_one({"cadastro.cpf": cadastro["cpf"], "status": "Ativo"}):
                     self._send_error_json(409, "já existe um caso ativo cadastrado com este CPF")
+                    return
+                # O e-mail do cadastro vira o login da paciente: não pode já ser de uma conta
+                # de outro tipo (equipe, administração, demonstração). Se já é de uma paciente,
+                # a conta existente passa a apontar para o caso novo (retorno ao serviço).
+                conta_existente = contas_col.find_one({"_id": email_acesso}) if email_acesso else None
+                if email_acesso and (email_acesso in CONTAS or (conta_existente and conta_existente.get("role") != "paciente")):
+                    self._send_error_json(409, "este e-mail já pertence a outra conta de acesso — informe outro e-mail para a paciente")
                     return
                 cadastro = {"id": novo_id_de_paciente(), **cadastro}
             except PyMongoError as exc:
@@ -1683,7 +1733,15 @@ class Handler(BaseHTTPRequestHandler):
                     print("ERRO: não foi possível vincular a inscrição %s ao caso: %s" % (inscricao_id, exc))
             sessao_login = self._sessao_atual()
             _registrar_auditoria(sessao_login, "criação de caso", caso_id=caso["_id"])
-            self._send_json({"id": caso["_id"], "caso": caso_doc_to_json(caso)}, 201)
+            resposta = {"id": caso["_id"], "caso": caso_doc_to_json(caso)}
+            if email_acesso:
+                try:
+                    resposta["acesso"] = _criar_acesso_da_paciente(email_acesso, nome_paciente, caso["_id"], cadastro["id"], sessao_login)
+                except Exception as exc:
+                    # O caso já foi criado; sem a conta, o técnico pode gerar o convite depois.
+                    print("[acesso] não foi possível criar o acesso da paciente: %s" % type(exc).__name__)
+                    resposta["acesso"] = {"status": "erro"}
+            self._send_json(resposta, 201)
             return
 
         if path == "/api/solicitacoes":
@@ -1787,6 +1845,32 @@ class Handler(BaseHTTPRequestHandler):
     # ---------- PUT ----------
     def do_PUT(self):
         path = self.path.split("?", 1)[0]
+
+        m = re.match(r"^/api/casos/([^/]+)/convite$", path)
+        if m:
+            # Reenvio do convite de primeiro acesso da paciente (só técnico). O convite anterior
+            # deixa de valer; só é possível enquanto a paciente ainda não criou a senha.
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                doc = contas_col.find_one({"role": "paciente", "caso_id": case_id})
+                if not doc:
+                    self._send_error_json(404, "esta paciente não tem acesso cadastrado")
+                    return
+                if doc.get("status") != "convite_pendente":
+                    self._send_error_json(409, "a paciente já criou a senha; não há convite pendente")
+                    return
+                token, convite = _novo_convite()
+                contas_col.update_one({"_id": doc["_id"]}, {"$set": {"convite": convite}})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/casos/<id>/convite")
+                return
+            enviado = _enviar_convite(doc["_id"], doc.get("nome"), "paciente", token)
+            _registrar_auditoria(sessao, "reenvio de convite da paciente", caso_id=case_id)
+            self._send_json({"convite": _resposta_convite(enviado, token, "paciente")})
+            return
 
         m = re.match(r"^/api/casos/(.+)$", path)
         if m:

@@ -1267,6 +1267,8 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 .eq-adm-acts{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:flex-end}
 .eq-adm-msg{margin:0 0 16px;padding:11px 14px;border-radius:12px;background:#e3ecdf;color:#1f4d3a;font-size:14px}
 .eq-adm-msg.err{background:#f6dcd7;color:#7a2a1f}
+.eq-ac-line{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px}
+.eq-ac-resend{background:none;border:0;padding:0;font:inherit;font-size:12.5px;font-weight:600;color:var(--blue);text-decoration:underline;cursor:pointer}
 .eq-adm-note,.eq-adm-empty{font-size:14px;color:var(--muted);margin:0 0 14px}
 .eq-adm-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
 .eq-adm-edit{margin-top:18px;padding-top:16px;border-top:1px solid var(--tc-line)}
@@ -1967,6 +1969,24 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         <a href="javascript:void(0)" class="btn btn-primary auth-submit" id="pac-forgot-sent-back">Voltar para o login</a>
       </div>
 
+      <div class="auth-card" id="pac-ativar" hidden>
+        <span class="eyebrow">Convite de primeiro acesso</span>
+        <h2>Ative sua conta</h2>
+        <p class="lead">Crie uma senha pessoal para ativar o seu acesso. Use pelo menos 6 caracteres, com letra maiúscula, número e caractere especial.</p>
+        <form id="pac-ativar-form" novalidate>
+          <div class="fld">
+            <label for="pac-ativar-senha">Nova senha</label>
+            <div class="fld-box"><svg><use href="#i-lock"/></svg><input type="password" id="pac-ativar-senha" autocomplete="new-password" placeholder="Crie uma senha"></div>
+          </div>
+          <div class="fld">
+            <label for="pac-ativar-senha2">Confirmar nova senha</label>
+            <div class="fld-box"><svg><use href="#i-lock"/></svg><input type="password" id="pac-ativar-senha2" autocomplete="new-password" placeholder="Repita a senha"></div>
+          </div>
+          <span class="fld-err auth-form-err" id="pac-ativar-err" role="alert"></span>
+          <button type="submit" class="btn btn-primary auth-submit" id="pac-ativar-btn">Ativar conta<svg><use href="#i-arrow"/></svg></button>
+        </form>
+      </div>
+
       <div class="auth-card" id="pac-firstaccess" hidden>
         <span class="eyebrow">Primeiro acesso</span>
         <h2>Crie sua nova senha</h2>
@@ -2470,6 +2490,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <ul class="eq-students" id="eq-cases-students" hidden></ul>
           <p class="eq-pt-empty" id="eq-cases-search-empty" hidden>Nenhum estudante encontrado com esse nome ou RA.</p>
           <p class="eq-pt-empty" id="eq-cases-hint" hidden>Escolha um estudante para acompanhar os casos dele, ou veja todos os pacientes ativos.</p>
+          <div class="eq-adm-convite" id="eq-cases-convite" hidden></div>
           <table class="dash-table">
             <caption class="sr-only">Lista de casos acessíveis ao perfil logado, com paciente, estudante, supervisor e status</caption>
             <thead>
@@ -2502,6 +2523,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
               </select>
             </div>
           </div>
+          <div class="eq-adm-convite" id="eq-pt-convite" hidden></div>
           <div class="eq-pt-list" id="eq-pt-list"></div>
           <p class="eq-pt-empty" id="eq-pt-empty" hidden>Nenhum paciente encontrado com esses critérios.</p>
         </div>
@@ -2662,6 +2684,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             </label>
             <div class="eq-form-actions"><button type="submit" class="btn btn-primary"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button></div>
             <p class="eq-case-export-msg" id="eq-newpatient-msg" hidden></p>
+            <div class="eq-adm-convite" id="eq-np-acesso" hidden></div>
           </form>
         </div>
         </div>
@@ -2856,6 +2879,10 @@ window.apiAdminAtualizar = function(email, p){
 window.apiAtivarConta = function(token, senha){
   return _apiFetch('/api/ativar-conta', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: token, senha: senha})});
 };
+window.apiGetPacientesAcesso = function(){ return _apiFetch('/api/pacientes-acesso'); };
+window.apiReenviarConvitePaciente = function(casoId){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/convite', {method:'PUT', headers:{'Content-Type':'application/json'}, body:'{}'});
+};
 window.apiGetInscricoes = function(){
   return _apiFetch('/api/inscricoes');
 };
@@ -2977,10 +3004,15 @@ function faqSetTab(n){
 function capturarAtivacao(){
   /* O convite chega como #ativar:<token>. O token fica só na memória da página e sai da barra de
      endereço na hora; por ser fragmento (#), ele nunca é enviado ao servidor nem aparece em logs. */
-  if(location.hash.indexOf('#ativar:')===0){
-    window.__ativarToken = location.hash.slice('#ativar:'.length);
-    try{ history.replaceState(null,'',location.pathname+location.search+'#equipe'); }catch(e){ location.hash = '#equipe'; }
-  }
+  const prefixos = {'#ativar:':['equipe','equipe'], '#ativar-paciente:':['paciente','paciente']};
+  Object.keys(prefixos).forEach(function(pre){
+    if(location.hash.indexOf(pre)===0){
+      window.__ativarToken = location.hash.slice(pre.length);
+      window.__ativarTipo = prefixos[pre][0];
+      const destino = '#' + prefixos[pre][1];
+      try{ history.replaceState(null,'',location.pathname+location.search+destino); }catch(e){ location.hash = destino; }
+    }
+  });
 }
 function route(){
   capturarAtivacao();
@@ -3142,6 +3174,7 @@ route();
     forgot: document.getElementById('pac-forgot'),
     forgotSent: document.getElementById('pac-forgot-sent'),
     firstAccess: document.getElementById('pac-firstaccess'),
+    ativar: document.getElementById('pac-ativar'),
     profilePage: document.getElementById('pac-profile-page')
   };
   const authWrapEl = document.querySelector('.auth-wrap');
@@ -3710,6 +3743,39 @@ route();
   }
 
   /* ENCERRAR SESSÃO — ao sair, navegar para fora da página ou por inatividade */
+  /* ===== ATIVAÇÃO DA CONTA DA PACIENTE (convite por link, uso único) ===== */
+  const pacAtivarForm = document.getElementById('pac-ativar-form');
+  const pacAtivarErr = document.getElementById('pac-ativar-err');
+  function checarAtivacaoPac(){
+    if(window.__ativarToken && window.__ativarTipo === 'paciente'){
+      if(pacAtivarForm) pacAtivarForm.reset();
+      if(pacAtivarErr) pacAtivarErr.classList.remove('show');
+      showCard('ativar');
+    }
+  }
+  if(pacAtivarForm){
+    pacAtivarForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const s1 = document.getElementById('pac-ativar-senha').value;
+      const s2 = document.getElementById('pac-ativar-senha2').value;
+      const erro = function(t){ pacAtivarErr.textContent = t; pacAtivarErr.classList.add('show'); };
+      if(!s1){ erro('Crie uma senha para continuar.'); return; }
+      if(s1 !== s2){ erro('As senhas não conferem.'); return; }
+      const btn = document.getElementById('pac-ativar-btn'); btn.disabled = true;
+      window.apiAtivarConta(window.__ativarToken, s1).then(function(){
+        window.__ativarToken = null; window.__ativarTipo = null;
+        pacAtivarForm.reset();
+        showCard('login');
+        formErr.textContent = 'Conta ativada! Entre com o seu e-mail e a senha que acabou de criar.';
+        formErr.classList.add('show');
+      }).catch(function(err){
+        erro(err.message || 'Não foi possível ativar a conta.');
+      }).then(function(){ btn.disabled = false; });
+    });
+  }
+  window.addEventListener('hashchange', checarAtivacaoPac);
+  checarAtivacaoPac();
+
   function resetPacienteSession(opts){
     opts = opts || {};
     if(typeof window.apiLogout === 'function') window.apiLogout();
@@ -3854,9 +3920,18 @@ route();
 
   /* Garante que a tabela de casos reflita o objeto CASOS (incluindo pacientes cadastrados
      pelo técnico em outro login/aba, graças à persistência acima) antes de cada exibição do painel. */
+  /* Aviso de acesso da paciente (só o técnico vê): convite pendente ou primeiro acesso pendente. */
+  function acessoChipHtml(caseId, caso){
+    if(currentRole !== 'tecnico') return '';
+    const ac = (typeof ACESSOS !== 'undefined') ? ACESSOS[caseId] : null;
+    if(ac && ac.status === 'convite_pendente') return '<span class="eq-adm-st pend">Convite pendente' + (ac.convite_expirado ? ' (expirado)' : '') + '</span> <button type="button" class="eq-ac-resend" data-reenviar="' + esc(caseId) + '">Reenviar convite</button>';
+    if(caso && caso.confirmacao && caso.confirmacao.status === 'pendente') return '<span class="eq-adm-st pend">Primeiro acesso pendente</span>';
+    return '';
+  }
   function caseRowHtml(caseId, caso){
     const badgeClass = caso.status==='Ativo' ? 'dash-badge-ok' : 'dash-badge-muted';
-    return '<td>'+esc(caso.paciente)+'</td><td class="eq-col-estudante">'+esc(caso.estudante)+'</td><td class="eq-col-supervisor">'+esc(caso.supervisor)+'</td><td><span class="dash-badge '+badgeClass+'">'+esc(caso.status)+'</span></td><td><button type="button" class="eq-case-open" data-case="'+caseId+'">Ver caso<svg><use href="#i-arrow"/></svg></button></td>';
+    const chip = acessoChipHtml(caseId, caso);
+    return '<td>'+esc(caso.paciente)+(chip ? '<div class="eq-ac-line">'+chip+'</div>' : '')+'</td><td class="eq-col-estudante">'+esc(caso.estudante)+'</td><td class="eq-col-supervisor">'+esc(caso.supervisor)+'</td><td><span class="dash-badge '+badgeClass+'">'+esc(caso.status)+'</span></td><td><button type="button" class="eq-case-open" data-case="'+caseId+'">Ver caso<svg><use href="#i-arrow"/></svg></button></td>';
   }
   function syncCasesTable(){
     if(!casesBody) return;
@@ -4341,7 +4416,7 @@ route();
     casesListOpen = false;
     tecView = 'painel';
     INSCRICOES = []; insAberta = {form:'', tri:''}; insConfirmando = ''; insPendenteCadastro = null;
-    if(role === 'tecnico') carregarInscricoes();
+    if(role === 'tecnico'){ carregarInscricoes(); carregarAcessos(); }
     syncCasesTable();
     const rows = casesBody ? Array.from(casesBody.querySelectorAll('tr')) : [];
     if(role === 'estudante'){
@@ -4655,6 +4730,15 @@ route();
         renderStats();
         const idGerado = resp.caso && resp.caso.cadastro && resp.caso.cadastro.id;
         if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a)'+(idGerado ? ' com o ID '+idGerado : '')+' e alocado(a) para '+estudante+'. O caso já aparece na lista de pacientes.'; msg.hidden = false; }
+        const boxAc = document.getElementById('eq-np-acesso');
+        if(boxAc){
+          const ac = resp.acesso;
+          if(ac && ac.convite){ boxAc.innerHTML = conviteHtml(ac.convite, email, 'Convite de primeiro acesso'); boxAc.hidden = false; }
+          else if(ac && ac.reaproveitada){ boxAc.textContent = 'Este e-mail já tinha acesso à plataforma; o novo caso foi ligado à mesma conta.'; boxAc.hidden = false; }
+          else if(ac && ac.status === 'erro'){ boxAc.textContent = 'O cadastro foi feito, mas o acesso da paciente não foi criado. Use "Reenviar convite" na lista de pacientes.'; boxAc.hidden = false; }
+          else boxAc.hidden = true;
+        }
+        carregarAcessos();
         newPatientForm.reset();
         limparOrigemCadastro();
         atualizaIdadeCadastro();
@@ -4663,6 +4747,7 @@ route();
       }).catch(function(err){
         console.warn('Não foi possível cadastrar o paciente no servidor:', err);
         /* 400/409: o servidor recusou os dados (CPF inválido, CPF já com caso ativo…) — mostra o motivo. */
+        { const boxAc = document.getElementById('eq-np-acesso'); if(boxAc) boxAc.hidden = true; }
         if(err && (err.status === 400 || err.status === 409)){
           if(msg){ msg.textContent = 'Cadastro não realizado: ' + err.message + '.'; msg.hidden = false; }
           return;
@@ -5020,6 +5105,30 @@ route();
     const last = parts.length>1 ? parts[parts.length-1][0] : '';
     return (first+last).toUpperCase();
   }
+  /* Situação do acesso de cada paciente (convite pendente / ativo), só para o técnico. */
+  var ACESSOS = {};
+  function carregarAcessos(){
+    if(currentRole !== 'tecnico' || typeof window.apiGetPacientesAcesso !== 'function') return Promise.resolve();
+    return window.apiGetPacientesAcesso().then(function(m){ ACESSOS = m || {}; renderPatients(); syncCasesTable(); })
+      .catch(function(err){ console.info('Não foi possível carregar a situação dos acessos:', err); });
+  }
+  function reenviarConvite(btn, boxId){
+    btn.disabled = true;
+    const caso = CASOS[btn.dataset.reenviar];
+    const box = document.getElementById(boxId);
+    window.apiReenviarConvitePaciente(btn.dataset.reenviar).then(function(r){
+      box.innerHTML = conviteHtml(r.convite, caso && caso.cadastro && caso.cadastro.email, 'Novo convite') + ' O convite anterior deixou de valer.';
+      box.hidden = false;
+      return carregarAcessos();
+    }).catch(function(err){
+      box.textContent = 'Não foi possível reenviar o convite: ' + (err.message || 'erro'); box.hidden = false; btn.disabled = false;
+    });
+  }
+  function conviteHtml(info, email, titulo){
+    if(!info) return '';
+    if(info.email_enviado) return '<b>' + esc(titulo) + '</b> enviado por e-mail' + (email ? ' para ' + esc(email) : '') + '. O link vale por ' + esc(info.validade_horas) + ' horas e é de uso único.';
+    return '<b>O e-mail não foi enviado</b> (o envio de e-mail ainda não está configurado no servidor). Repasse este link à paciente por um canal seguro. Ele é de uso único, vale por ' + esc(info.validade_horas) + ' horas e <b>não será mostrado de novo</b>.<code>' + esc(info.link) + '</code>';
+  }
   function renderPatients(){
     if(!patientsList) return;
     const term = (ptSearch && ptSearch.value || '').trim().toLowerCase();
@@ -5039,10 +5148,11 @@ route();
     visible.forEach(function(item){
       const caso = item.caso;
       const badgeClass = caso.status==='Ativo' ? 'dash-badge-ok' : 'dash-badge-muted';
+      const chip = acessoChipHtml(item.id, caso);
       html += '<div class="eq-pt-row">'
         + '<div class="eq-pt-row-main"><span class="eq-pt-avatar">' + esc(initials(caso.paciente)) + '</span>'
         + '<div class="eq-pt-row-info"><strong>' + esc(caso.paciente) + '</strong><span>Supervisão: ' + esc(caso.supervisor) + '</span></div></div>'
-        + '<div class="eq-pt-row-end"><span class="dash-badge ' + badgeClass + '">' + esc(caso.status) + '</span>'
+        + '<div class="eq-pt-row-end">' + chip + '<span class="dash-badge ' + badgeClass + '">' + esc(caso.status) + '</span>'
         + '<button type="button" class="eq-pt-open" data-case="' + esc(item.id) + '">Acessar prontuário<svg><use href="#i-arrow"/></svg></button></div>'
         + '</div>';
     });
@@ -5050,6 +5160,8 @@ route();
   }
   if(patientsList){
     patientsList.addEventListener('click', function(e){
+      const re = e.target.closest('[data-reenviar]');
+      if(re){ reenviarConvite(re, 'eq-pt-convite'); return; }
       const btn = e.target.closest('.eq-pt-open');
       if(!btn) return;
       openCase(btn.dataset.case);
@@ -5542,6 +5654,8 @@ route();
 
   if(casesBody){
     casesBody.addEventListener('click', function(e){
+      const re = e.target.closest('[data-reenviar]');
+      if(re){ reenviarConvite(re, 'eq-cases-convite'); return; }
       const btn = e.target.closest('.eq-case-open');
       if(!btn) return;
       openCase(btn.dataset.case);
@@ -6189,7 +6303,7 @@ route();
   const ativarForm = document.getElementById('eq-ativar-form');
   const ativarErr = document.getElementById('eq-ativar-err');
   function checarAtivacao(){
-    if(window.__ativarToken){
+    if(window.__ativarToken && window.__ativarTipo !== 'paciente'){
       if(ativarForm) ativarForm.reset();
       if(ativarErr) ativarErr.classList.remove('show');
       showCard('ativar');
