@@ -13,6 +13,11 @@ O QUE ESSE ARQUIVO FAZ:
     PUT  /api/casos/<id>            -> atualiza um caso (agenda, nova evolução, documento,
                                         primeira anamnese...); evoluções e anamnese já
                                         registradas são imutáveis no servidor, não só na tela
+    GET  /api/inscricoes            -> (só técnico) inscrições registradas, com histórico
+    POST /api/inscricoes            -> (só técnico) registra uma inscrição que chegou pelo
+                                        formulário externo (status "Recebido")
+    PUT  /api/inscricoes/<INS-...>  -> (só técnico) ação explícita: analisar, encaminhar,
+                                        agendar_triagem ou resultado (aprovado/não aprovado)
     GET  /api/solicitacoes          -> devolve a fila de solicitações de prontuário
     POST /api/solicitacoes          -> cria uma nova solicitação (paciente pede o prontuário)
     PUT  /api/solicitacoes/<id>     -> atualiza uma solicitação (técnico libera o acesso)
@@ -337,6 +342,10 @@ db = client[DB_NAME]
 casos_col = db["casos"]
 solicitacoes_col = db["solicitacoes"]
 reagendamentos_col = db["reagendamentos"]
+# Inscrições: o formulário de inscrição é um documento externo (tipo Google
+# Forms); o psicólogo técnico registra aqui cada resposta que chegou, e a partir
+# daí ela segue o fluxo Recebido -> Analisado -> Triagem -> Cadastro.
+inscricoes_col = db["inscricoes"]
 # Trilha de auditoria (achado da auditoria de segurança — item pendente que
 # havia sido esquecido no relatório anterior): registra quem fez o quê e
 # quando, numa coleção própria, consultável depois. Antes, o servidor só
@@ -449,10 +458,19 @@ def _validar_cadastro_paciente(body):
     email = str(body.get("email", "")).strip().lower()
     if not EMAIL_REGEX.match(email):
         return None, "informe um e-mail válido para o paciente"
+    disp, erro_disp = _validar_disponibilidade(body.get("disponibilidade"))
+    if erro_disp:
+        return None, erro_disp
+    telefone = str(body.get("telefone", "")).strip()
+    if telefone and len(_so_digitos(telefone)) not in (10, 11):
+        return None, "o telefone precisa ter DDD (10 ou 11 dígitos)"
     cadastro = {
         "nascimento": nascimento,
         "cpf": _formatar_cpf(body.get("cpf")),
         "email": email,
+        "telefone": telefone[:20],
+        "disponibilidade": disp,
+        "motivo": str(body.get("motivo", body.get("observacoes", ""))).strip()[:600],
         "responsavel": None,
     }
     if idade < 18:
@@ -479,6 +497,99 @@ def _validar_cadastro_paciente(body):
             "telefone": str(resp.get("telefone", "")).strip()[:20],
         }
     return cadastro, None
+
+
+# ---------- Inscrições e triagem ----------
+ST_INS_RECEBIDO = "Recebido"
+ST_INS_ANALISADO = "Analisado"
+ST_INS_TRIAGEM = "Aguardando triagem"
+ST_INS_APROVADO = "Aprovado para acompanhamento"
+ST_INS_NAO_APROVADO = "Não aprovado"
+ST_INS_CADASTRADO = "Cadastrado"
+DIAS_DISP = ("seg", "ter", "qua", "qui", "sex")
+TURNOS_DISP = ("manha", "tarde", "noite")
+
+
+def _agora_br():
+    return time.strftime("%d/%m/%Y às %Hh%M", time.gmtime(time.time() - 3 * 3600))
+
+
+def novo_id_de_inscricao():
+    ano = time.strftime("%Y")
+    n = inscricoes_col.count_documents({"_id": {"$regex": "^INS-%s-" % ano}}) + 1
+    candidato = "INS-%s-%04d" % (ano, n)
+    while inscricoes_col.find_one({"_id": candidato}):
+        n += 1
+        candidato = "INS-%s-%04d" % (ano, n)
+    return candidato
+
+
+def _data_br_real(valor):
+    """True só se 'DD/MM/AAAA' for uma data que existe no calendário."""
+    m = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", str(valor or "").strip())
+    if not m:
+        return False
+    try:
+        import datetime
+        datetime.date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+    except ValueError:
+        return False
+    return True
+
+
+def _validar_disponibilidade(valor):
+    """Lista de 'dia-turno' (ex.: 'seg-manha'). Devolve (lista ordenada, None)
+    ou (None, erro). Pode ser vazia: nem toda inscrição informa horários."""
+    if valor in (None, ""):
+        return [], None
+    if not isinstance(valor, list):
+        return None, "a disponibilidade precisa ser uma lista de dias e turnos"
+    saida = []
+    for item in valor:
+        partes = str(item).split("-")
+        if len(partes) != 2 or partes[0] not in DIAS_DISP or partes[1] not in TURNOS_DISP:
+            return None, "disponibilidade inválida: '%s'" % item
+        if item not in saida:
+            saida.append(item)
+    ordem = lambda it: (DIAS_DISP.index(it.split("-")[0]), TURNOS_DISP.index(it.split("-")[1]))
+    return sorted(saida, key=ordem), None
+
+
+def _validar_inscricao(body):
+    """Valida o registro de uma inscrição (nome + dados cadastrais + telefone +
+    disponibilidade). Devolve (doc parcial, None) ou (None, erro)."""
+    nome = str(body.get("nome", "")).strip()
+    if len(nome) < 3:
+        return None, "informe o nome completo do candidato"
+    if body.get("consentimento") is not True:
+        return None, "confirme que o candidato deu o consentimento para o tratamento dos dados no formulário"
+    cadastro, erro = _validar_cadastro_paciente(body)
+    if erro:
+        return None, erro
+    return {
+        "nome": nome[:120],
+        "nascimento": cadastro["nascimento"],
+        "cpf": cadastro["cpf"],
+        "email": cadastro["email"],
+        "telefone": cadastro["telefone"],
+        "responsavel": cadastro["responsavel"],
+        "disponibilidade": cadastro["disponibilidade"],
+        "motivo": cadastro["motivo"],
+        "consentimento": True,
+    }, None
+
+
+def inscricao_doc_to_json(doc):
+    out = dict(doc)
+    out["id"] = out.pop("_id")
+    return out
+
+
+def _evento_inscricao(sessao, acao, detalhe=None):
+    ev = {"em": _agora_br(), "por": (sessao or {}).get("nome", ""), "acao": acao}
+    if detalhe:
+        ev["detalhe"] = detalhe
+    return ev
 
 
 def caso_doc_to_json(doc):
@@ -806,6 +917,20 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(_lista_estudantes())
             return
 
+        if path == "/api/inscricoes":
+            # Dados pessoais de candidatos: só o psicólogo técnico acessa.
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            try:
+                lista = [inscricao_doc_to_json(d) for d in inscricoes_col.find({}).sort("criado_em", -1)]
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/inscricoes")
+                return
+            _registrar_auditoria(sessao, "listagem de inscrições")
+            self._send_json(lista)
+            return
+
         if path == "/api/reagendamentos":
             if self._exigir_papel(PAPEIS_SOLICITACOES_LEITURA) is None:
                 return
@@ -1051,6 +1176,44 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "email_enviado": email_enviado})
             return
 
+        if path == "/api/inscricoes":
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            dados, erro = _validar_inscricao(body)
+            if erro:
+                self._send_error_json(400, erro)
+                return
+            try:
+                aberta = inscricoes_col.find_one(
+                    {"cpf": dados["cpf"], "status": {"$in": [ST_INS_RECEBIDO, ST_INS_ANALISADO, ST_INS_TRIAGEM, ST_INS_APROVADO]}}
+                )
+                if aberta:
+                    self._send_error_json(409, "já existe uma inscrição em andamento com este CPF (%s)" % aberta["_id"])
+                    return
+                doc = {
+                    "_id": novo_id_de_inscricao(),
+                    **dados,
+                    "status": ST_INS_RECEBIDO,
+                    "criado_em": time.time(),
+                    "criado_em_br": _agora_br(),
+                    "triagem": {"agendamento": None, "resultado": None, "resultado_em": "", "observacao": "", "comunicacao_pendente": False},
+                    "caso_id": None,
+                    "historico": [_evento_inscricao(sessao, "Inscrição registrada no sistema")],
+                }
+                inscricoes_col.insert_one(dict(doc))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/inscricoes")
+                return
+            _registrar_auditoria(sessao, "registro de inscrição", detalhe=doc["_id"])
+            self._send_json(inscricao_doc_to_json(doc), 201)
+            return
+
         if path == "/api/casos":
             # Correção de segurança: cadastrar um paciente novo é uma ação
             # administrativa — a própria tela só mostra esse formulário para o
@@ -1091,6 +1254,25 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "POST /api/casos (cadastro)")
                 return
 
+            # Cadastro a partir de uma inscrição aprovada: só é aceito se a
+            # triagem foi 'Aprovado para acompanhamento' e a inscrição ainda não
+            # virou paciente. A inscrição é "reservada" antes de criar o caso,
+            # para que dois cliques não gerem dois pacientes.
+            inscricao_id = str(body.get("inscricao_id", "")).strip()
+            if inscricao_id:
+                try:
+                    reserva = inscricoes_col.update_one(
+                        {"_id": inscricao_id, "status": ST_INS_APROVADO, "caso_id": None},
+                        {"$set": {"status": ST_INS_CADASTRADO}},
+                    )
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/casos (inscrição)")
+                    return
+                if reserva.matched_count == 0:
+                    self._send_error_json(409, "esta inscrição não está aprovada para cadastro ou já foi usada em um cadastro")
+                    return
+                cadastro["inscricao_id"] = inscricao_id
+
             caso = {
                 "_id": novo_id_de_caso(),
                 "cadastro": cadastro,
@@ -1109,8 +1291,22 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 casos_col.insert_one(dict(caso))
             except PyMongoError as exc:
+                if inscricao_id:
+                    try:
+                        inscricoes_col.update_one({"_id": inscricao_id}, {"$set": {"status": ST_INS_APROVADO}})
+                    except PyMongoError:
+                        pass
                 self._erro_servidor(exc, "POST /api/casos")
                 return
+            if inscricao_id:
+                try:
+                    inscricoes_col.update_one(
+                        {"_id": inscricao_id},
+                        {"$set": {"caso_id": caso["_id"], "paciente_id": cadastro["id"]},
+                         "$push": {"historico": _evento_inscricao(self._sessao_atual(), "Paciente cadastrado", cadastro["id"])}},
+                    )
+                except PyMongoError as exc:
+                    print("ERRO: não foi possível vincular a inscrição %s ao caso: %s" % (inscricao_id, exc))
             sessao_login = self._sessao_atual()
             _registrar_auditoria(sessao_login, "criação de caso", caso_id=caso["_id"])
             self._send_json({"id": caso["_id"], "caso": caso_doc_to_json(caso)}, 201)
@@ -1326,6 +1522,100 @@ class Handler(BaseHTTPRequestHandler):
                 return
             _registrar_auditoria(sessao, "alteração de caso", caso_id=case_id)
             self._send_json(body)
+            return
+
+        mi = re.match(r"^/api/inscricoes/(INS-\d{4}-\d{4})$", path)
+        if mi:
+            # Ações do psicólogo técnico sobre uma inscrição. Cada ação é
+            # explícita (analisar NÃO encaminha à triagem) e fica no histórico.
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            ins_id = mi.group(1)
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            acao = str(body.get("acao", ""))
+            try:
+                ins = inscricoes_col.find_one({"_id": ins_id})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/inscricoes (busca)")
+                return
+            if ins is None:
+                self._send_error_json(404, "inscrição não encontrada")
+                return
+            status = ins.get("status")
+            novo = {}
+            filtro_status = [status]
+            if acao == "analisar":
+                if status != ST_INS_RECEBIDO:
+                    self._send_error_json(409, "só uma inscrição com status 'Recebido' pode ser marcada como analisada")
+                    return
+                novo["status"] = ST_INS_ANALISADO
+                evento = _evento_inscricao(sessao, "Marcada como analisada")
+            elif acao == "encaminhar":
+                if status not in (ST_INS_RECEBIDO, ST_INS_ANALISADO):
+                    self._send_error_json(409, "esta inscrição já foi encaminhada ou concluída")
+                    return
+                novo["status"] = ST_INS_TRIAGEM
+                evento = _evento_inscricao(sessao, "Encaminhada para triagem")
+            elif acao == "agendar_triagem":
+                if status != ST_INS_TRIAGEM:
+                    self._send_error_json(409, "a triagem só pode ser agendada para inscrições 'Aguardando triagem'")
+                    return
+                data = str(body.get("data", "")).strip()
+                hora = str(body.get("hora", "")).strip()
+                local = str(body.get("local", "")).strip()
+                if not _data_br_real(data):
+                    self._send_error_json(400, "informe uma data de triagem válida no formato DD/MM/AAAA")
+                    return
+                if not re.match(r"^([01]\d|2[0-3]):[0-5]\d$", hora):
+                    self._send_error_json(400, "informe o horário da triagem (HH:MM)")
+                    return
+                if not local:
+                    self._send_error_json(400, "informe o local da triagem")
+                    return
+                triagem = dict(ins.get("triagem") or {})
+                triagem["agendamento"] = {"data": data, "hora": hora, "local": local[:120]}
+                novo["triagem"] = triagem
+                evento = _evento_inscricao(sessao, "Triagem agendada", "%s às %s" % (data, hora))
+            elif acao == "resultado":
+                if status != ST_INS_TRIAGEM:
+                    self._send_error_json(409, "o resultado só pode ser registrado para inscrições 'Aguardando triagem'")
+                    return
+                res = str(body.get("resultado", ""))
+                if res not in ("aprovado", "nao_aprovado"):
+                    self._send_error_json(400, "resultado inválido")
+                    return
+                triagem = dict(ins.get("triagem") or {})
+                triagem["resultado"] = ST_INS_APROVADO if res == "aprovado" else ST_INS_NAO_APROVADO
+                triagem["resultado_em"] = _agora_br()
+                triagem["observacao"] = str(body.get("observacao", "")).strip()[:500]
+                # Não aprovado: deixa preparado o acionamento da comunicação ao
+                # candidato (o envio de e-mail depende do SMTP, ainda não configurado).
+                triagem["comunicacao_pendente"] = res == "nao_aprovado"
+                novo["triagem"] = triagem
+                novo["status"] = triagem["resultado"]
+                evento = _evento_inscricao(sessao, "Resultado da triagem: " + triagem["resultado"])
+            else:
+                self._send_error_json(400, "ação inválida")
+                return
+            try:
+                r = inscricoes_col.update_one(
+                    {"_id": ins_id, "status": {"$in": filtro_status}},
+                    {"$set": novo, "$push": {"historico": evento}},
+                )
+                if r.matched_count == 0:
+                    self._send_error_json(409, "esta inscrição foi alterada por outra pessoa; recarregue a lista")
+                    return
+                atualizada = inscricoes_col.find_one({"_id": ins_id})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/inscricoes")
+                return
+            _registrar_auditoria(sessao, "inscrição: " + acao, detalhe=ins_id)
+            self._send_json(inscricao_doc_to_json(atualizada))
             return
 
         m2 = re.match(r"^/api/solicitacoes/([0-9a-fA-F]{24})$", path)
