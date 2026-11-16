@@ -401,7 +401,7 @@ footer{margin-top:120px}
 .eq-np-resp[hidden]{display:none}
 .eq-np-resp legend{padding:0 8px;font-size:13.5px;font-weight:700;color:var(--navy)}
 .eq-np-resp legend span{margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00}
-.eq-np-idnote{margin:0;padding:13px 16px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}
+.eq-np-idnote{margin:0 0 16px;padding:13px 16px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}
 .eq-resumo-sec{margin:22px 0 12px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 @media (max-width:600px){.eq-field-row{grid-template-columns:1fr}}
 .eq-form-actions{margin-top:22px}
@@ -2363,10 +2363,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
                 </select>
               </div>
             </div>
-            <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-np-abertura">Data de abertura</label><input type="text" class="eq-input" id="eq-np-abertura" placeholder="dd/mm/aaaa (em branco = hoje)" inputmode="numeric" maxlength="10" autocomplete="off"></div>
-              <div class="eq-field"><label>ID do paciente</label><p class="eq-np-idnote">Gerado automaticamente pelo sistema ao cadastrar.</p></div>
-            </div>
+            <p class="eq-np-idnote">O <b>ID do paciente</b> e a <b>data de abertura</b> do caso são registrados automaticamente pelo sistema ao cadastrar.</p>
             <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5">
               <input type="checkbox" id="eq-np-lgpd-consent" style="margin-top:3px" required>
               <span>Confirmo que o paciente (ou seu responsável) foi informado e consentiu com o tratamento de seus dados pessoais e de saúde, conforme a <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Política de Privacidade</a>.</span>
@@ -3564,6 +3561,8 @@ route();
     /* Ordem alfabética, ignorando acentos e maiúsculas. */
     const nomes = Object.keys(grupos).sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
     if(casesStudentSel && casesStudentSel.indexOf('__')!==0 && !grupos[casesStudentSel]) casesStudentSel = '';
+    /* No painel técnico a lista de pacientes já abre completa; os filtros só a reduzem. */
+    if(currentRole==='tecnico' && !casesStudentSel) casesStudentSel = '__todos';
     /* RA: só aparece quando o cadastro do estudante tiver esse dado. */
     const raDe = window.PRONTUARIO_ESTUDANTES_RA || {};
     const contagem = function(total, ativos){ return total+(total===1?' caso':' casos')+' · '+ativos+(ativos===1?' ativo':' ativos'); };
@@ -3592,7 +3591,7 @@ route();
     }
     if(casesCurrent){
       casesCurrent.hidden = !casesStudentSel || casesListOpen;
-      casesCurrent.textContent = casesStudentSel==='__todos' ? 'Todos os estudantes'
+      casesCurrent.textContent = casesStudentSel==='__todos' ? (currentRole==='tecnico' ? 'Todos os pacientes (' + rows.length + ')' : 'Todos os estudantes')
         : casesStudentSel==='__ativos' ? 'Todos os pacientes ativos'
         : casesStudentSel==='__busca' ? 'Resultado da busca'
         : ('Casos de ' + casesStudentSel + (raDe[casesStudentSel] ? ' · RA ' + raDe[casesStudentSel] : ''));
@@ -4215,7 +4214,7 @@ route();
     resp.hidden = !(idade !== null && idade < 18);
     return idade;
   }
-  [['eq-np-nascimento', mascaraData], ['eq-np-abertura', mascaraData], ['eq-np-cpf', mascaraCpf], ['eq-np-resp-cpf', mascaraCpf], ['eq-np-resp-telefone', mascaraTelefone]].forEach(function(par){
+  [['eq-np-nascimento', mascaraData], ['eq-np-cpf', mascaraCpf], ['eq-np-resp-cpf', mascaraCpf], ['eq-np-resp-telefone', mascaraTelefone]].forEach(function(par){
     const el = document.getElementById(par[0]);
     if(!el) return;
     el.addEventListener('input', function(){
@@ -4231,8 +4230,6 @@ route();
       const nomeEl = document.getElementById('eq-np-nome');
       const nome = nomeEl.value.trim();
       if(!nome){ nomeEl.focus(); return; }
-      const aberturaEl = document.getElementById('eq-np-abertura');
-      const abertura = aberturaEl.value.trim() || formatToday();
       const estudanteEl = document.getElementById('eq-np-estudante');
       const estudante = estudanteEl.value;
       const supervisor = document.getElementById('eq-np-supervisor').value;
@@ -4250,7 +4247,6 @@ route();
       if(!cpfValido(cpfEl.value)){ recusa('O CPF do paciente não é válido. Confira os números.', cpfEl); return; }
       const email = emailEl.value.trim();
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ recusa('Informe um e-mail válido.', emailEl); return; }
-      if(aberturaEl.value.trim() && idadeDe(aberturaEl.value) === null){ recusa('A data de abertura não é válida (dd/mm/aaaa).', aberturaEl); return; }
       let responsavel = null;
       if(idade < 18){
         const rNome = document.getElementById('eq-np-resp-nome');
@@ -4277,7 +4273,7 @@ route();
         return;
       }
       window.apiCreateCaso({
-        paciente: nome, estudante: estudante, supervisor: supervisor, status: 'Ativo', abertura: abertura,
+        paciente: nome, estudante: estudante, supervisor: supervisor, status: 'Ativo',
         nascimento: nascEl.value.trim(), cpf: cpfEl.value, email: email, responsavel: responsavel
       }).then(function(resp){
         CASOS[resp.id] = resp.caso;

@@ -584,7 +584,10 @@ def _validar_imutabilidade_clinica(caso_atual, body):
 
 
 def _hoje_br():
-    return time.strftime("%d/%m/%Y")
+    # Horário de Brasília (UTC-3, sem horário de verão desde 2019). O servidor
+    # hospedado roda em UTC: sem isso, um cadastro feito depois das 21h sairia
+    # com a data do dia seguinte.
+    return time.strftime("%d/%m/%Y", time.gmtime(time.time() - 3 * 3600))
 
 
 def _parse_data_br(valor):
@@ -1095,7 +1098,9 @@ class Handler(BaseHTTPRequestHandler):
                 "estudante": body.get("estudante", ""),
                 "supervisor": body.get("supervisor", ""),
                 "status": status_val,
-                "abertura": body.get("abertura", ""),
+                # A data de abertura é a do dia do cadastro, definida pelo
+                # servidor — não é um campo que o profissional escolhe.
+                "abertura": _hoje_br(),
                 "anamnese": None,
                 "evolucoes": [],
                 "documentos": [],
