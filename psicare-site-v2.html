@@ -1426,65 +1426,6 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 .sup-tab:focus-visible{outline:2px solid var(--sp-gold);outline-offset:-2px}
 .sup-tab small{font-weight:600;color:var(--sp-muted);margin-left:4px}
 .sup-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.sup-ag-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
-.sup-seg{display:inline-flex;background:var(--sp-sage-l);border-radius:999px;padding:3px}
-.sup-seg-b{all:unset;cursor:pointer;padding:7px 16px;border-radius:999px;font:600 13px var(--sans);color:var(--sp-green)}
-.sup-seg-b.is-active{background:var(--sp-green);color:#fff}
-.sup-seg-b:focus-visible{outline:2px solid var(--sp-sage);outline-offset:2px}
-.sup-ag-nav{display:flex;gap:6px}
-.sup-ag-titulo{font-family:var(--serif);font-weight:500;font-size:21px;color:var(--sp-title);margin:0 0 0 auto;text-align:right}
-.sup-wk-grid{background:var(--sp-card);border:1px solid var(--sp-line);border-radius:16px;overflow:hidden}
-.sup-wk-head,.sup-wk-row{display:grid;grid-template-columns:62px repeat(7,minmax(0,1fr))}
-.sup-wk-head{border-bottom:1px solid var(--sp-line);background:var(--sp-bg)}
-.sup-wk-d{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;padding:10px 4px;gap:2px;color:var(--sp-muted)}
-.sup-wk-d small{font:600 11.5px var(--sans);letter-spacing:.08em;text-transform:uppercase}
-.sup-wk-d b{font:600 18px var(--serif);color:var(--sp-title)}
-.sup-wk-d:hover b{text-decoration:underline}
-.sup-wk-d:focus-visible{outline:2px solid var(--sp-sage);outline-offset:-2px}
-.sup-wk-d.hoje b{background:var(--sp-green);color:#fff;border-radius:999px;min-width:30px;height:30px;line-height:30px;text-align:center;padding:0 4px}
-.sup-wk-row{border-top:1px solid var(--sp-line);min-height:66px}
-.sup-wk-h{padding:8px 8px 0 0;text-align:right;font:600 12px var(--sans);color:var(--sp-muted)}
-.sup-wk-c{display:flex;gap:4px;padding:4px;border-left:1px solid var(--sp-line);min-width:0}
-.sup-wk-c.hoje{background:color-mix(in srgb,var(--sp-sage-l) 40%,#fff)}
-.sup-ev{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 0;padding:6px 8px;border-radius:10px;border-left:3px solid var(--sp-green);background:var(--sp-sage-l);color:var(--sp-green);overflow:hidden}
-.sup-ev:hover{filter:brightness(.97)}
-.sup-ev:focus-visible{outline:2px solid var(--sp-green);outline-offset:1px}
-.sup-ev b{font:700 12px var(--sans)}
-.sup-ev-p{font:600 12.5px var(--sans);color:var(--sp-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sup-ev small{font:500 11.5px var(--sans);color:var(--sp-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sup-wk-c .sup-ev-p{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
-.sup-wk-c .sup-ev small{white-space:normal;line-height:1.25}
-.sup-ev.feita{background:var(--sp-line);border-left-color:var(--sp-sage)}
-.sup-ev.cancel{background:var(--sp-bg);border-left-color:var(--sp-div)}
-.sup-ev.cancel .sup-ev-p{text-decoration:line-through;color:var(--sp-muted)}
-.sup-ev.full{flex:1 1 220px;padding:10px 14px;gap:3px}
-.sup-ev.full .sup-ev-p,.sup-ev.full small{white-space:normal}
-.sup-ev.full .sup-chip{align-self:flex-start;margin-top:3px}
-.sup-ev-lista{display:flex;flex-wrap:wrap;gap:8px;min-width:0;flex:1}
-.sup-tl-row{display:flex;gap:14px;min-height:56px;padding:6px 0;border-top:1px solid var(--sp-line)}
-.sup-tl-row:first-child{border-top:0}
-.sup-tl-row .sup-wk-h{width:52px;flex:none}
-.sup-tl-row:not(.tem) .sup-wk-h{opacity:.55}
-.sup-mes-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.sup-mes-c{all:unset;box-sizing:border-box;cursor:pointer;min-height:84px;border-radius:12px;background:var(--sp-bg);border:1px solid var(--sp-line);padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between;font:500 14px var(--sans);color:var(--sp-ink)}
-.sup-mes-c.out{background:transparent;border-color:transparent;cursor:default}
-.sup-mes-c:not(.out):hover{border-color:var(--sp-sage)}
-.sup-mes-c:focus-visible{outline:2px solid var(--sp-green);outline-offset:1px}
-.sup-mes-c.hoje{border-color:var(--sp-green);box-shadow:inset 0 0 0 1px var(--sp-green)}
-.sup-mes-c.sel{background:var(--sp-green);color:#fff;border-color:var(--sp-green)}
-.sup-mes-c em{font:600 12px var(--sans);font-style:normal;align-self:flex-start;background:var(--sp-sage-l);color:var(--sp-green);border-radius:999px;padding:2px 10px}
-.sup-mes-c.sel em{background:rgba(255,255,255,.22);color:#fff}
-.sup-wk-list{display:none;flex-direction:column;gap:10px}
-.sup-wk-dia-t{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:var(--sp-green)}
-.sup-wk-dia.hoje{border-color:var(--sp-green)}
-.sup-wk-dia .sup-empty{padding:4px 0;text-align:left}
-@media (max-width:900px){.sup-wk-grid{display:none}.sup-wk-list{display:flex}.sup-ag-titulo{margin-left:0;text-align:left;width:100%}.sup-mes-c{min-height:58px;padding:6px 7px}.sup-mes-grid{gap:4px}}
-@media (max-width:520px){.sup-mes-c em{padding:1px 6px;font-size:11px}.sup-mes-c{font-size:12.5px}}
-.sup-dl{margin:0 0 12px;display:flex;flex-direction:column}
-.sup-dl div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--sp-line)}
-.sup-dl dt{font:600 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--sp-muted)}
-.sup-dl dd{margin:0;text-align:right;font:500 14.5px var(--sans);color:var(--sp-ink);overflow-wrap:anywhere}
-.sup-dl-nota{font-size:12.5px;color:var(--sp-muted);margin:0 0 14px}
 /* ---- Visão geral: refinamento (hierarquia, linhas clicáveis, atividade compacta) ---- */
 .sup-kpi{border:0;box-shadow:0 1px 3px rgba(24,63,50,.08);padding:18px 20px}
 .sup-kpi:hover{box-shadow:0 4px 14px -6px rgba(24,63,50,.22);transform:none}
@@ -7653,156 +7594,58 @@ route();
     box.innerHTML = ids.length ? supTabelaCasos(ids, false) : '<p class="sup-empty">'+(Object.keys(CASOS).length ? 'Nenhum caso encontrado com estes filtros.' : 'Nenhum caso disponível no momento.')+'</p>';
   }
 
-  /* ---------- Agenda (somente leitura): Dia / Semana / Mês ---------- */
-  var supAgVis = 'semana', supAgRef = new Date(), supAgSit = '', supAgBusca = '';
-  var SUP_DIAS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-  var SUP_DIAS_LONGOS = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
-  function supChave(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-  function supChaveBr(k){ return k.split('-').reverse().join('/'); }
-  function supSoData(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-  function supAddDias(d, n){ const x = supSoData(d); x.setDate(x.getDate() + n); return x; }
-  function supIniSemana(d){ const x = supSoData(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
-  function supHM(h){ const m = String(h || '').match(/(\d{1,2})\D?(\d{2})/); return {h: m ? +m[1] : 0, min: m ? +m[2] : 0}; }
-  function supHoraTxt(a){ return String(a.h).padStart(2,'0') + ':' + String(a.min).padStart(2,'0'); }
-  /* Situação exibida: "Cancelada" vem do cadastro; "Realizada" é só exibição (confirmada com data/hora já passada); nada é gravado. */
-  function supSitAg(a){
-    if(a.status === 'Cancelada') return 'Cancelada';
-    const hm = supHM(a.hora);
-    return new Date(a.data.getFullYear(), a.data.getMonth(), a.data.getDate(), hm.h, hm.min).getTime() < Date.now() ? 'Realizada' : 'Confirmada';
-  }
-  function supAgItens(){
-    const q = normTxt(supAgBusca), out = [];
+  /* ---------- Agenda (somente leitura) ---------- */
+  function supAgendaItens(){
+    const porDia = {};
     Object.keys(CASOS).forEach(function(id){
       const c = CASOS[id];
       if(!supAgTodos && (c.supervisor || '') !== currentName) return;
       if(supAgEst && c.estudante !== supAgEst) return;
-      if(q && normTxt(c.paciente).indexOf(q) < 0) return;
       supAgsDe(id).forEach(function(a){
-        a.sit = supSitAg(a); a.supervisor = c.supervisor || ''; a.key = supChave(a.data);
-        const hm = supHM(a.hora); a.h = hm.h; a.min = hm.min;
-        if(supAgSit && a.sit !== supAgSit) return;
-        out.push(a);
+        const k = a.data.getFullYear()+'-'+String(a.data.getMonth()+1).padStart(2,'0')+'-'+String(a.data.getDate()).padStart(2,'0');
+        (porDia[k] = porDia[k] || []).push(a);
       });
     });
-    out.sort(function(a, b){ return a.key.localeCompare(b.key) || (a.h - b.h) || (a.min - b.min); });
-    return out;
-  }
-  function supClasseSit(s){ return s === 'Cancelada' ? 'cancel' : s === 'Realizada' ? 'feita' : 'conf'; }
-  function supEvento(a, completo){
-    return '<button type="button" class="sup-ev '+supClasseSit(a.sit)+(completo ? ' full' : '')+'" data-sup-ag="'+esc(a.id)+'|'+a.idx+'" aria-label="'+esc(supHoraTxt(a)+', '+a.paciente+', '+a.sit)+'">'+
-      '<b>'+esc(supHoraTxt(a))+'</b><span class="sup-ev-p">'+esc(a.paciente)+'</span>'+
-      '<small>'+esc(a.estudante || 'Sem estudante')+(completo ? (a.local ? ' · '+esc(a.local) : '') : '')+'</small>'+
-      (completo ? '<span class="sup-chip'+(a.sit === 'Cancelada' ? ' bad' : a.sit === 'Realizada' ? ' muted' : '')+'">'+esc(a.sit)+'</span>' : '')+'</button>';
-  }
-  function supFaixaHoras(itens){
-    let ini = 8, fim = 18;
-    itens.forEach(function(a){ if(a.h < ini) ini = a.h; if(a.h > fim) fim = a.h; });
-    return {ini: ini, fim: fim};
-  }
-  function supTituloAg(){
-    const r = supAgRef;
-    if(supAgVis === 'mes') return SUP_MESES[r.getMonth()] + ' de ' + r.getFullYear();
-    if(supAgVis === 'dia') return SUP_DIAS_LONGOS[r.getDay()] + ', ' + supChaveBr(supChave(r));
-    const i = supIniSemana(r), f = supAddDias(i, 6);
-    return supDataCurta(i) + ' a ' + supDataCurta(f) + ' de ' + f.getFullYear();
+    Object.keys(porDia).forEach(function(k){ porDia[k].sort(function(a,b){ return a.hora.localeCompare(b.hora); }); });
+    return porDia;
   }
   function supRenderAgenda(){
     const box = supEl('sup-v-agenda'); if(!box) return;
+    const porDia = supAgendaItens();
+    const hojeD = supHoje();
+    const key = function(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); };
     const nomes = {}; supEstudantes().forEach(function(e){ nomes[e.nome] = 1; });
     if(supAgTodos) Object.keys(CASOS).forEach(function(id){ if(CASOS[id].estudante) nomes[CASOS[id].estudante] = 1; });
-    const vis = [['dia','Dia'],['semana','Semana'],['mes','Mês']];
-    box.innerHTML = '<div class="sup-title-row"><h3 class="sup-h3">Agenda</h3><span class="sup-chip muted">Somente leitura</span></div>'+
-      '<div class="sup-ag-bar"><div class="sup-seg" role="group" aria-label="Visualização">'+vis.map(function(v){ return '<button type="button" class="sup-seg-b'+(supAgVis === v[0] ? ' is-active' : '')+'" aria-pressed="'+(supAgVis === v[0])+'" data-sup-agvis="'+v[0]+'">'+v[1]+'</button>'; }).join('')+'</div>'+
-      '<div class="sup-ag-nav"><button type="button" class="sup-btn" data-sup-agnav="-1" aria-label="Anterior">‹</button><button type="button" class="sup-btn" data-sup-agnav="0">Hoje</button><button type="button" class="sup-btn" data-sup-agnav="1" aria-label="Próximo">›</button></div>'+
-      '<h3 class="sup-ag-titulo" id="sup-ag-titulo" aria-live="polite"></h3></div>'+
-      '<div class="sup-tools"><label class="sr-only" for="sup-ag-est">Estudante</label><select class="sup-select" id="sup-ag-est"><option value="">Todos os estudantes</option>'+
-      Object.keys(nomes).sort().map(function(n){ return '<option value="'+esc(n)+'"'+(supAgEst === n ? ' selected' : '')+'>'+esc(n)+'</option>'; }).join('')+'</select>'+
-      '<label class="sr-only" for="sup-ag-sit">Situação</label><select class="sup-select" id="sup-ag-sit">'+[['','Todas as situações'],['Confirmada','Confirmada'],['Realizada','Realizada'],['Cancelada','Cancelada']].map(function(o){ return '<option value="'+o[0]+'"'+(supAgSit === o[0] ? ' selected' : '')+'>'+o[1]+'</option>'; }).join('')+'</select>'+
-      '<label class="sr-only" for="sup-ag-busca">Buscar paciente</label><input type="search" class="sup-input" id="sup-ag-busca" placeholder="Buscar por paciente" value="'+esc(supAgBusca)+'" autocomplete="off">'+
-      '<label class="sup-chk"><input type="checkbox" id="sup-ag-todos"'+(supAgTodos ? ' checked' : '')+'>Todo o serviço</label>'+
-      '<button type="button" class="sup-link-btn" data-sup-aglimpar>Limpar filtros</button></div>'+
-      '<div id="sup-ag-corpo"></div>';
-    supAgCorpo();
-  }
-  function supAgCorpo(){
-    const corpo = supEl('sup-ag-corpo'); if(!corpo) return;
-    const tit = supEl('sup-ag-titulo'); if(tit) tit.textContent = supTituloAg();
-    const todos = supAgItens(), hojeK = supChave(new Date());
-    if(supAgVis === 'mes') corpo.innerHTML = supAgMes(todos, hojeK);
-    else if(supAgVis === 'dia') corpo.innerHTML = supAgDia(todos);
-    else corpo.innerHTML = supAgSemana(todos, hojeK);
-  }
-  function supAgSemana(todos, hojeK){
-    const ini = supIniSemana(supAgRef), dias = [];
-    for(let i = 0; i < 7; i++) dias.push(supAddDias(ini, i));
-    const chaves = dias.map(supChave);
-    const itens = todos.filter(function(a){ return chaves.indexOf(a.key) >= 0; });
-    const fx = supFaixaHoras(itens);
-    let g = '<div class="sup-wk-grid" role="table" aria-label="Agenda semanal"><div class="sup-wk-head"><span></span>'+dias.map(function(d, i){
-      const k = chaves[i];
-      return '<button type="button" class="sup-wk-d'+(k === hojeK ? ' hoje' : '')+'" data-sup-agdia="'+k+'"><small>'+SUP_DIAS[i]+'</small><b>'+d.getDate()+'</b></button>';
-    }).join('')+'</div>';
-    for(let h = fx.ini; h <= fx.fim; h++){
-      g += '<div class="sup-wk-row"><span class="sup-wk-h">'+String(h).padStart(2,'0')+':00</span>'+chaves.map(function(k){
-        const ev = itens.filter(function(a){ return a.key === k && a.h === h; });
-        return '<div class="sup-wk-c'+(k === hojeK ? ' hoje' : '')+'">'+ev.map(function(a){ return supEvento(a, false); }).join('')+'</div>';
-      }).join('')+'</div>';
-    }
-    g += '</div>';
-    /* Telas estreitas: lista por dia (sem rolagem horizontal). */
-    const lista = '<div class="sup-wk-list">'+dias.map(function(d, i){
-      const k = chaves[i], ev = itens.filter(function(a){ return a.key === k; });
-      return '<div class="sup-card sup-wk-dia'+(k === hojeK ? ' hoje' : '')+'"><div class="sup-wk-dia-t"><b>'+SUP_DIAS[i]+' '+supDataCurta(d)+'</b>'+(k === hojeK ? '<span class="sup-chip">Hoje</span>' : '')+'</div>'+
-        (ev.length ? '<div class="sup-ev-lista">'+ev.map(function(a){ return supEvento(a, true); }).join('')+'</div>' : '<p class="sup-empty">Sem atendimentos</p>')+'</div>';
-    }).join('')+'</div>';
-    return (itens.length ? '' : '<p class="sup-note">Nenhum atendimento nesta semana com os filtros atuais.</p>')+g+lista;
-  }
-  function supAgDia(todos){
-    const k = supChave(supAgRef), itens = todos.filter(function(a){ return a.key === k; });
-    if(!itens.length) return '<div class="sup-card"><p class="sup-empty">Nenhum atendimento neste dia com os filtros atuais.</p></div>';
-    const fx = supFaixaHoras(itens); let h = '<div class="sup-card sup-tl">';
-    for(let x = fx.ini; x <= fx.fim; x++){
-      const ev = itens.filter(function(a){ return a.h === x; });
-      h += '<div class="sup-tl-row'+(ev.length ? ' tem' : '')+'"><span class="sup-wk-h">'+String(x).padStart(2,'0')+':00</span><div class="sup-ev-lista">'+ev.map(function(a){ return supEvento(a, true); }).join('')+'</div></div>';
-    }
-    return h + '</div>';
-  }
-  function supAgMes(todos, hojeK){
-    const r = supAgRef, y = r.getFullYear(), m = r.getMonth();
-    const primeiro = new Date(y, m, 1), offset = (primeiro.getDay() + 6) % 7, dias = new Date(y, m + 1, 0).getDate(), selK = supChave(r);
-    const cont = {}; todos.forEach(function(a){ cont[a.key] = (cont[a.key] || 0) + 1; });
+    const primeiro = new Date(supCalY, supCalM, 1), offset = primeiro.getDay(), dias = new Date(supCalY, supCalM+1, 0).getDate(), antes = new Date(supCalY, supCalM, 0).getDate();
     const cel = [];
-    for(let i = 0; i < offset; i++) cel.push(null);
-    for(let d = 1; d <= dias; d++) cel.push(d);
-    while(cel.length % 7 !== 0) cel.push(null);
-    let h = '<div class="sup-card"><div class="sup-mes-grid">'+SUP_DIAS.map(function(n){ return '<div class="sup-cal-dow">'+n+'</div>'; }).join('')+
-      cel.map(function(d){
-        if(!d) return '<div class="sup-mes-c out" aria-hidden="true"></div>';
-        const k = y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'), n = cont[k] || 0;
-        return '<button type="button" class="sup-mes-c'+(k === hojeK ? ' hoje' : '')+(k === selK ? ' sel' : '')+'" data-sup-agsel="'+k+'" aria-pressed="'+(k === selK)+'" aria-label="Dia '+d+(n ? ', '+n+' atendimento(s)' : ', sem atendimentos')+'"><span>'+d+'</span>'+(n ? '<em>'+n+'</em>' : '')+'</button>';
+    for(let i=0;i<offset;i++) cel.push({d:antes-offset+1+i, fora:true});
+    for(let d=1; d<=dias; d++) cel.push({d:d, fora:false});
+    while(cel.length % 7 !== 0) cel.push({d:cel.length-offset-dias+1, fora:true});
+    const mesPref = supCalY+'-'+String(supCalM+1).padStart(2,'0');
+    if(supCalSel === null || supCalSel.indexOf(mesPref) !== 0){
+      const hk = key(hojeD.getFullYear(), hojeD.getMonth(), hojeD.getDate());
+      supCalSel = (hk.indexOf(mesPref) === 0 && porDia[hk]) ? hk : (Object.keys(porDia).filter(function(k){ return k.indexOf(mesPref) === 0; }).sort()[0] || null);
+    }
+    let h = '<div class="sup-title-row"><h3 class="sup-h3">Agenda</h3><span class="sup-chip muted">Somente leitura</span></div>'+
+      '<div class="sup-tools"><label class="sr-only" for="sup-ag-est">Filtrar por estudante</label><select class="sup-select" id="sup-ag-est"><option value="">Todos os estudantes</option>'+
+      Object.keys(nomes).sort().map(function(n){ return '<option value="'+esc(n)+'"'+(supAgEst === n ? ' selected' : '')+'>'+esc(n)+'</option>'; }).join('')+'</select>'+
+      '<label class="sup-chk"><input type="checkbox" id="sup-ag-todos"'+(supAgTodos ? ' checked' : '')+'>Incluir atendimentos de todo o serviço</label></div>'+
+      '<div class="sup-cal-wrap"><div class="sup-card"><div class="sup-cal-bar"><h3>'+SUP_MESES[supCalM]+' de '+supCalY+'</h3><div class="sup-cal-nav"><button type="button" class="sup-btn" data-sup-cal="-1" aria-label="Mês anterior">‹</button><button type="button" class="sup-btn" data-sup-cal="0">Hoje</button><button type="button" class="sup-btn" data-sup-cal="1" aria-label="Próximo mês">›</button></div></div>'+
+      '<div class="sup-cal-grid">'+['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(function(n){ return '<div class="sup-cal-dow">'+n+'</div>'; }).join('')+
+      cel.map(function(c){
+        if(c.fora) return '<div class="sup-day out" aria-hidden="true"><span>'+c.d+'</span></div>';
+        const k = key(supCalY, supCalM, c.d), n = (porDia[k] || []).length;
+        const ehHoje = (k === key(hojeD.getFullYear(), hojeD.getMonth(), hojeD.getDate()));
+        return '<button type="button" class="sup-day'+(ehHoje ? ' today' : '')+(k === supCalSel ? ' sel' : '')+'" data-sup-day="'+k+'" aria-label="Dia '+c.d+(n ? ', '+n+' atendimento(s)' : ', sem atendimentos')+'" aria-pressed="'+(k === supCalSel)+'"><span>'+c.d+'</span>'+(n ? '<em>'+n+'</em>' : '<span></span>')+'</button>';
       }).join('')+'</div></div>';
-    const doDia = todos.filter(function(a){ return a.key === selK; });
-    h += '<div class="sup-card" style="margin-top:14px"><div class="sup-title-row"><h3 class="sup-h3">'+supChaveBr(selK)+'<small>'+doDia.length+' atendimento(s)</small></h3></div>'+
-      (doDia.length ? '<div class="sup-ev-lista">'+doDia.map(function(a){ return supEvento(a, true); }).join('')+'</div>' : '<p class="sup-empty">Nenhum atendimento nesta data.</p>')+'</div>';
-    return h;
-  }
-  function supAgNavegar(d){
-    if(d === 0){ supAgRef = new Date(); }
-    else if(supAgVis === 'dia') supAgRef = supAddDias(supAgRef, d);
-    else if(supAgVis === 'semana') supAgRef = supAddDias(supAgRef, 7 * d);
-    else supAgRef = new Date(supAgRef.getFullYear(), supAgRef.getMonth() + d, 1);
-    supAgCorpo();
-  }
-  function supAgDetalhe(ref){
-    const p = ref.split('|'), a = supAgItens().filter(function(x){ return x.id === p[0] && String(x.idx) === p[1]; })[0];
-    if(!a) return;
-    const linhas = [['Data', a.dataBr + ' · ' + supHoraTxt(a)],['Paciente', a.paciente],['Estudante responsável', a.estudante || '—'],['Supervisor responsável', a.supervisor || '—'],['Local', a.local || 'Não informado'],['Situação', a.sit]];
-    mdlAbrir('Detalhes do atendimento',
-      '<dl class="sup-dl">'+linhas.map(function(l){ return '<div><dt>'+esc(l[0])+'</dt><dd>'+esc(l[1])+'</dd></div>'; }).join('')+'</dl>'+
-      '<p class="sup-dl-nota">Agenda somente para consulta. Criar, editar, reagendar ou cancelar é função do psicólogo técnico.</p>'+
-      '<div class="eq-mdl-btns"><button type="button" class="btn btn-primary" id="sup-ag-abrir">Abrir caso</button><button type="button" class="btn btn-outline" data-mdl-cancel>Fechar</button></div>', null);
-    const bt = document.getElementById('sup-ag-abrir');
-    if(bt) bt.addEventListener('click', function(){ mdlFechar(); supAbrirCaso(a.id, 'agenda'); });
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">'+(supCalSel ? supCalSel.split('-').reverse().join('/') : 'Detalhes')+'</h3></div>';
+    const itens = supCalSel ? (porDia[supCalSel] || []) : [];
+    if(!itens.length) h += '<p class="sup-empty">'+(supCalSel ? 'Nenhum atendimento neste dia.' : 'Nenhum atendimento neste mês.')+'</p>';
+    else h += '<ul class="sup-list">' + itens.map(function(a){
+      const cancel = a.status === 'Cancelada';
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(a.hora)+' · '+esc(a.paciente)+'</b><small>'+esc(a.estudante || 'Sem estudante')+(a.local ? ' · '+esc(a.local) : '')+'</small><span class="sup-chip'+(cancel ? ' bad' : '')+'" style="align-self:flex-start;margin-top:4px">'+esc(a.status || '—')+'</span></div><button type="button" class="sup-btn" data-sup-open="'+esc(a.id)+'" data-sup-tab-open="agenda">Abrir caso</button></li>';
+    }).join('') + '</ul>';
+    box.innerHTML = h + '</div></div>';
   }
 
   /* ---------- Supervisões ---------- */
@@ -7963,7 +7806,7 @@ route();
     const wrap = document.querySelector('#eq-success .auth-wrap'); if(wrap) wrap.hidden = true;
     app.hidden = false;
     const hoje = new Date(); supCalY = hoje.getFullYear(); supCalM = hoje.getMonth(); supCalSel = null;
-    supCasosTab = 'meus'; supBusca = ''; supFiltroSit = 'todos'; supFiltroEst = ''; supEstSel = ''; supAtivExp = false; supAgEst = ''; supAgTodos = false; supAgVis = 'semana'; supAgRef = new Date(); supAgSit = ''; supAgBusca = ''; supSvEst = ''; supSvBusca = '';
+    supCasosTab = 'meus'; supBusca = ''; supFiltroSit = 'todos'; supFiltroEst = ''; supEstSel = ''; supAtivExp = false; supAgEst = ''; supAgTodos = false; supSvEst = ''; supSvBusca = '';
     supView = 'painel'; supVoltaPara = 'painel'; supNotifs = []; supPainel = null; supPainelEstado = 'carregando'; supCasosEm = Date.now();
     const g = supEl('sup-greeting'); if(g) g.textContent = 'Olá, ' + currentName + '!';
     const av = supEl('sup-avatar'); if(av) av.textContent = supIni(currentName);
@@ -8013,12 +7856,14 @@ route();
       el = t.closest('[data-sup-tab]'); if(el){ supCasosTab = el.dataset.supTab; supFiltroEst = ''; supRenderCasos(); return; }
       if(t.closest('[data-sup-retry]')){ supCarregarPainel(); supRenderView(); return; }
       if(t.closest('[data-sup-ativ]')){ supAtivExp = !supAtivExp; supRenderPainel(); return; }
-      el = t.closest('[data-sup-agvis]'); if(el){ supAgVis = el.dataset.supAgvis; supRenderAgenda(); return; }
-      el = t.closest('[data-sup-agnav]'); if(el){ supAgNavegar(+el.dataset.supAgnav); return; }
-      el = t.closest('[data-sup-agdia]'); if(el){ const p = el.dataset.supAgdia.split('-'); supAgRef = new Date(+p[0], +p[1]-1, +p[2]); supAgVis = 'dia'; supRenderAgenda(); return; }
-      el = t.closest('[data-sup-agsel]'); if(el){ const p = el.dataset.supAgsel.split('-'); supAgRef = new Date(+p[0], +p[1]-1, +p[2]); supAgCorpo(); supRenderAgenda(); return; }
-      el = t.closest('[data-sup-ag]'); if(el){ supAgDetalhe(el.dataset.supAg); return; }
-      if(t.closest('[data-sup-aglimpar]')){ supAgEst = ''; supAgSit = ''; supAgBusca = ''; supAgTodos = false; supRenderAgenda(); return; }
+      el = t.closest('[data-sup-cal]');
+      if(el){
+        const d = +el.dataset.supCal;
+        if(d === 0){ const h = new Date(); supCalY = h.getFullYear(); supCalM = h.getMonth(); }
+        else { supCalM += d; if(supCalM < 0){ supCalM = 11; supCalY--; } if(supCalM > 11){ supCalM = 0; supCalY++; } }
+        supCalSel = null; supRenderAgenda(); return;
+      }
+      el = t.closest('[data-sup-day]'); if(el){ supCalSel = el.dataset.supDay; supRenderAgenda(); return; }
       if(t.closest('[data-sup-registrar]')){ supRegistrarSupervisao(); return; }
       el = t.closest('[data-sup-dist]'); if(el){ supDistribuir(el.dataset.supDist); return; }
       el = t.closest('[data-sup-notif]');
@@ -8050,16 +7895,14 @@ route();
     });
     app.addEventListener('input', function(e){
       if(e.target.id === 'sup-busca'){ supBusca = e.target.value; supListaCasos(); }
-      else if(e.target.id === 'sup-ag-busca'){ supAgBusca = e.target.value; supAgCorpo(); }
       else if(e.target.id === 'sup-sv-busca'){ supSvBusca = e.target.value; supListaSupervisoes(); }
     });
     app.addEventListener('change', function(e){
       const id = e.target.id;
       if(id === 'sup-f-sit'){ supFiltroSit = e.target.value; supListaCasos(); }
       else if(id === 'sup-f-est'){ supFiltroEst = e.target.value; supListaCasos(); }
-      else if(id === 'sup-ag-est'){ supAgEst = e.target.value; supAgCorpo(); }
-      else if(id === 'sup-ag-sit'){ supAgSit = e.target.value; supAgCorpo(); }
-      else if(id === 'sup-ag-todos'){ supAgTodos = e.target.checked; if(!supAgTodos) supAgEst = ''; supRenderAgenda(); }
+      else if(id === 'sup-ag-est'){ supAgEst = e.target.value; supCalSel = null; supRenderAgenda(); }
+      else if(id === 'sup-ag-todos'){ supAgTodos = e.target.checked; if(!supAgTodos) supAgEst = ''; supCalSel = null; supRenderAgenda(); }
       else if(id === 'sup-sv-est'){ supSvEst = e.target.value; supListaSupervisoes(); }
     });
   })();
