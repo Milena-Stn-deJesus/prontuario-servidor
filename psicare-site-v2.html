@@ -895,6 +895,44 @@ footer{margin-top:120px}
   .eq-cal-day{height:32px}
 }
 
+/* ---- Agenda do técnico (página completa): células maiores, contagem e lista em cards. Escopo: só data-view="agenda" ---- */
+.eq-tec[data-view="agenda"] #eq-cal-card{padding:22px 26px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-topline{display:none}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-body{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:32px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-head h3{font-size:17px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-nav-btn{width:30px;height:30px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-today-btn{width:auto;padding:0 13px;font-size:11px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-weekdays{gap:4px;margin-bottom:6px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-weekdays span{font-size:11.5px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-grid{gap:3px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day{height:42px;font-size:14px;border:1px solid transparent;border-radius:10px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day:not(.is-outside):hover{border-color:var(--line)}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day.is-today{border-color:var(--blue)}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day.is-today::after{display:none}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day.is-selected{border-color:var(--navy)}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-dot{width:5px;height:5px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-dots{height:5px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-count{position:absolute;top:4px;right:5px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--sky);color:var(--navy);font:700 10.5px/17px var(--sans);text-align:center}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day.is-selected .eq-cal-count{background:rgba(255,255,255,.22);color:#fff}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-right{padding-left:30px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-detail-heading{font-size:12px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-detail-label{font-size:15px;display:flex;align-items:baseline;gap:10px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-detail-n{font:500 12.5px var(--sans);color:var(--muted)}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-lista{max-height:300px;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:10px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 14px;align-items:start;padding:14px 16px;margin:0;border:1px solid var(--tc-line);border-radius:14px;background:#fff}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag:last-child{padding-bottom:14px;margin:0}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-time{font-size:14px;padding:4px 10px;border-radius:999px;background:var(--sky);color:var(--navy);min-width:0}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-top strong{font-size:14.5px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-sit{font:600 11.5px var(--sans);padding:3px 10px;border-radius:999px;background:var(--sky);color:var(--navy)}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-sit.is-cancelada{background:#f3e7e3;color:#8a3b2d}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag.is-cancelada .eq-cal-appt-top strong{text-decoration:line-through;color:var(--muted)}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-meta{font-size:12.5px;margin-top:1px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-meta b{font-weight:600;color:var(--ink);margin-right:4px}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-acoes{margin-top:10px}
+@media (max-width:900px){.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-body{grid-template-columns:1fr;gap:18px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-right{padding-left:0;border-left:0;padding-top:16px;border-top:1px solid var(--line)}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day{height:42px}}
+@media (max-width:520px){.eq-tec[data-view="agenda"] #eq-cal-card{padding:18px 14px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day{height:40px;font-size:13px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-count{top:2px;right:3px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag{grid-template-columns:1fr}}
+
 /* Cabeçalho — subtítulo do estudante */
 .eq-dash-sub{margin-top:8px;font-size:14px;color:var(--muted);line-height:1.5;max-width:420px}
 
@@ -4678,6 +4716,7 @@ route();
 
   /* ===== PAINEL TÉCNICO: barra lateral, visões, pendências, estudantes ===== */
   var tecView = 'painel';
+  var tecAgAntes = false;
   var tecStPage = 1;
   var TEC_ST_POR_PAGINA = 8;
   function tecCard(){ return document.getElementById('eq-dash-card'); }
@@ -4690,6 +4729,7 @@ route();
     if(wrapEl) wrapEl.classList.toggle('eq-tec-wide', ehTec);
     if(!ehTec){ card.removeAttribute('data-view'); return; }
     card.setAttribute('data-view', tecView);
+    if((tecView === 'agenda') !== tecAgAntes){ tecAgAntes = (tecView === 'agenda'); try{ renderCalendar(); }catch(e){} }
     card.querySelectorAll('.eq-side-link[data-view]').forEach(function(b){
       const on = b.dataset.view === (tecView === 'caso' ? (caseVoltaPara === 'cadastro' || caseVoltaPara === 'estudantes' || caseVoltaPara === 'solicitacoes' || caseVoltaPara === 'painel' || caseVoltaPara === 'agenda' || caseVoltaPara === 'alocacao' ? caseVoltaPara : 'pacientes') : tecView);
       b.classList.toggle('is-active', on);
@@ -5578,9 +5618,23 @@ route();
     const parts = key.split('-');
     const dLabel = parts[2]+'/'+parts[1]+'/'+parts[0];
     const tec = currentRole==='tecnico';
-    let html = '<p class="eq-cal-detail-label">' + esc(dLabel) + '</p>';
+    let html = '<p class="eq-cal-detail-label">' + esc(dLabel) + (tec && tecView === 'agenda' && appts.length ? ' <span class="eq-cal-detail-n">' + appts.length + (appts.length === 1 ? ' atendimento' : ' atendimentos') + '</span>' : '') + '</p>';
     if(!appts.length){
       html += '<p class="eq-cal-empty">Nenhum atendimento agendado neste dia.</p>';
+    } else if(tec && tecView === 'agenda'){
+      html += '<div class="eq-cal-lista">';
+      appts.forEach(function(a){
+        html += '<div class="eq-cal-appt eq-cal-appt-ag' + (a.status === 'Cancelada' ? ' is-cancelada' : '') + '">'
+          + '<span class="eq-cal-appt-time">' + esc(a.hora) + '</span>'
+          + '<div class="eq-cal-appt-info"><div class="eq-cal-appt-top"><strong>' + esc(a.paciente) + '</strong><span class="eq-cal-sit' + (a.status === 'Cancelada' ? ' is-cancelada' : '') + '">' + esc(a.status) + '</span></div>'
+          + '<span class="eq-cal-appt-meta"><b>Estudante</b> ' + esc(a.estudante || '—') + '</span>'
+          + '<span class="eq-cal-appt-meta"><b>Supervisor</b> ' + esc(a.supervisor || '—') + '</span>'
+          + '<span class="eq-cal-appt-meta"><b>Local</b> ' + esc(a.local || '—') + '</span>'
+          + agAcoesHtml(a.caseId, a.idx, a.status) + '</div>'
+          + '<button type="button" class="eq-cal-appt-open" data-case="' + esc(a.caseId) + '">Ver caso<svg><use href="#i-arrow"/></svg></button>'
+          + '</div>';
+      });
+      html += '</div>';
     } else {
       appts.forEach(function(a){
         html += '<div class="eq-cal-appt">'
@@ -5606,6 +5660,7 @@ route();
     const daysInPrevMonth = new Date(calYear, calMonth, 0).getDate();
 
     const todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+    const emAgTec = currentRole === 'tecnico' && tecView === 'agenda';
 
     let cells = [];
     for(let i=0;i<startOffset;i++){
@@ -5646,6 +5701,7 @@ route();
       if(isSelected) cls += ' is-selected';
       html += '<button type="button" class="' + cls + '" data-key="' + key + '">' + cell.d
         + '<span class="eq-cal-dots">' + appts.slice(0,3).map(function(){ return '<span class="eq-cal-dot"></span>'; }).join('') + '</span>'
+        + (emAgTec && appts.length ? '<span class="eq-cal-count" aria-hidden="true">' + appts.length + '</span>' : '')
         + '</button>';
     });
     calGrid.innerHTML = html;
@@ -6626,7 +6682,38 @@ route();
         if(typeof syncCasesTable === 'function') syncCasesTable();
       }).catch(function(){ /* continua marcado como não visto; tenta de novo na próxima abertura */ });
     }
+    window.setTimeout(atualizarCasoAberto, 0);
   }
+
+  /* Atualização silenciosa do prontuário aberto: traz do servidor o que outra pessoa (estudante, técnico,
+     supervisor) registrou depois do login — documentos, evoluções, anamnese, agenda — sem apagar o que
+     está sendo digitado. Só mexe no caso aberto. */
+  function atualizarCasoAberto(){
+    const id = currentCaseId;
+    if(!id || !CASOS[id] || document.hidden) return;
+    if(currentRole !== 'tecnico' && currentRole !== 'estudante' && currentRole !== 'supervisor') return;
+    if(!caseDetailEl || !caseDetailEl.offsetParent) return;
+    const mdl = document.getElementById('eq-mdl'); if(mdl && !mdl.hidden) return;
+    window.apiGetCasos().then(function(d){
+      if(currentCaseId !== id || !d || !d[id]) return;
+      const novo = d[id], atual = CASOS[id];
+      const mudou = function(k){ return JSON.stringify(novo[k]) !== JSON.stringify(atual[k]); };
+      const docs = mudou('documentos'), evo = mudou('evolucoes'), ana = mudou('anamnese'), agd = mudou('agendamentos'), resto = mudou('status') || mudou('estudante') || mudou('supervisor');
+      if(!(docs || evo || ana || agd || resto)) return;
+      CASOS[id] = novo;
+      const editable = canManageCase(novo);
+      const digitando = function(painel){ const a = document.activeElement; const p = document.getElementById(painel); return !!(a && p && p.contains(a) && /^(TEXTAREA|INPUT)$/.test(a.tagName)); };
+      if(docs && !digitando('eq-panel-documentos')) renderDocumentos(novo, editable);
+      if(evo && !digitando('eq-panel-evolucoes')){ renderEvolucoes(novo, editable); carregarNotas(id).then(function(){ if(currentCaseId === id) renderEvolucoes(CASOS[id], canManageCase(CASOS[id])); }); }
+      if(ana && !digitando('eq-panel-anamnese')) renderAnamnese(novo, editable);
+      if(agd && !digitando('eq-panel-agenda')) renderAgenda(novo, currentRole === 'tecnico');
+      renderResumo(novo);
+      if(resto){ updateToggleStatusBtn(novo); }
+      if(typeof syncCasesTable === 'function') try{ syncCasesTable(); }catch(e){}
+    }).catch(function(){ /* sem conexão agora: mantém o que está na tela */ });
+  }
+  window.setInterval(atualizarCasoAberto, 30000);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) atualizarCasoAberto(); });
 
   const toggleStatusBtn = document.getElementById('eq-case-toggle-status');
   const toggleStatusIcon = document.getElementById('eq-case-toggle-icon');

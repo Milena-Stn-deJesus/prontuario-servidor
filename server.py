@@ -3199,6 +3199,12 @@ class Handler(BaseHTTPRequestHandler):
             # imutáveis só existia no front-end. Agora o servidor também a
             # garante (_validar_imutabilidade_clinica), nunca aceita um corpo
             # que viole essa regra, e registra a tentativa na auditoria.
+            # Documentos só se acrescentam: se a tela que enviou este PUT ainda não conhecia um documento
+            # anexado por outra pessoa (estudante, técnico) depois do login, ele não pode ser perdido.
+            docs_atuais = caso_atual.get("documentos") or []
+            docs_novos = body.get("documentos") if isinstance(body.get("documentos"), list) else []
+            body["documentos"] = list(docs_atuais) + [d for d in docs_novos if d not in docs_atuais]
+
             erro_imutabilidade = _validar_imutabilidade_clinica(caso_atual, body)
             if erro_imutabilidade:
                 _registrar_auditoria(
