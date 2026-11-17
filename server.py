@@ -173,7 +173,12 @@ SMTP_HOST = os.environ.get("SMTP_HOST")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER")
 SMTP_PASS = os.environ.get("SMTP_PASS")
+try:
+    sys.stdout.reconfigure(line_buffering=True)  # os logs aparecem na hora no painel do Render
+except Exception:
+    pass
 EMAIL_FROM = os.environ.get("EMAIL_FROM", SMTP_USER)
+ULTIMO_ERRO_EMAIL = {"motivo": ""}  # motivo (sem dados sigilosos) da última falha de envio, mostrado ao técnico
 # Envio por API web (HTTPS) — funciona no plano gratuito do Render, que bloqueia SMTP.
 # Serviço usado: Brevo (https://www.brevo.com). Precisa de BREVO_API_KEY e de EMAIL_FROM
 # (um remetente já verificado no Brevo). Tem prioridade sobre o SMTP quando configurado.
@@ -188,6 +193,7 @@ def _enviar_por_api(destinatario, assunto, corpo):
     import urllib.request, urllib.error
     if not EMAIL_FROM:
         print("[e-mail] EMAIL_FROM não configurado — e-mail NÃO enviado para %s" % destinatario)
+        ULTIMO_ERRO_EMAIL["motivo"] = "A variável EMAIL_FROM não está configurada no servidor."
         return False
     dados = json.dumps({
         "sender": {"name": EMAIL_FROM_NOME, "email": EMAIL_FROM},
@@ -199,12 +205,23 @@ def _enviar_por_api(destinatario, assunto, corpo):
         "api-key": BREVO_API_KEY, "Content-Type": "application/json", "Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
+            ULTIMO_ERRO_EMAIL["motivo"] = ""
             return 200 <= resp.status < 300
     except urllib.error.HTTPError as exc:
-        print("[e-mail] FALHA ao enviar para %s: a API de e-mail respondeu %s" % (destinatario, exc.code))
+        dica = {400: "dados recusados — confira se EMAIL_FROM é um remetente verificado no Brevo",
+                401: "chave de API inválida — gere outra no Brevo e cole em BREVO_API_KEY",
+                403: "chave sem permissão de envio ou conta do Brevo ainda não liberada",
+                429: "limite de envios do Brevo atingido"}.get(exc.code, "recusado pelo serviço de e-mail")
+        try:
+            detalhe = (json.loads(exc.read().decode("utf-8", "replace")) or {}).get("message", "")[:160]
+        except Exception:
+            detalhe = ""
+        print("[e-mail] FALHA ao enviar para %s: a API de e-mail respondeu %s %s" % (destinatario, exc.code, detalhe))
+        ULTIMO_ERRO_EMAIL["motivo"] = "O Brevo respondeu %s: %s%s." % (exc.code, dica, (" (" + detalhe + ")") if detalhe else "")
         return False
     except Exception as exc:
         print("[e-mail] FALHA ao enviar para %s: %s" % (destinatario, type(exc).__name__))
+        ULTIMO_ERRO_EMAIL["motivo"] = "Não foi possível falar com o serviço de e-mail (%s)." % type(exc).__name__
         return False
 
 
@@ -214,6 +231,7 @@ def _enviar_email(destinatario, assunto, corpo):
     if BREVO_API_KEY:
         return _enviar_por_api(destinatario, assunto, corpo)
     if not (SMTP_HOST and SMTP_USER and SMTP_PASS):
+        ULTIMO_ERRO_EMAIL["motivo"] = "O servidor não encontrou a variável BREVO_API_KEY (nem SMTP configurado)."
         print("[e-mail] SMTP não configurado — e-mail NÃO enviado para %s (assunto: %s)" % (destinatario, assunto))
         return False
     msg = MIMEText(corpo, "plain", "utf-8")
@@ -1067,6 +1085,7 @@ def _resposta_convite(email_enviado, token, role=None):
     configurado ou falhou): é a única forma de a pessoa receber o convite, e
     ele é mostrado uma única vez, na tela da administração — nunca no log."""
     return {"email_enviado": bool(email_enviado), "link": None if email_enviado else _link_convite(token, role),
+            "motivo": "" if email_enviado else ULTIMO_ERRO_EMAIL.get("motivo", ""),
             "validade_horas": CONVITE_VALIDADE_SEGUNDOS // 3600}
 
 

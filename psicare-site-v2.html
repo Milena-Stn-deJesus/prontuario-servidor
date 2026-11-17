@@ -5698,6 +5698,7 @@ route();
     if(!conv) return '';
     if(conv.email_enviado) return '<p>Um e-mail com o link de primeiro acesso foi enviado a '+esc(nome)+'. O estudante cria a própria senha — ela nunca aparece para você.</p>';
     return '<p class="eq-mdl-aviso">O e-mail não foi enviado (serviço de e-mail indisponível ou não configurado). Entregue o link abaixo ao estudante por um canal seguro: é de uso único e vale por tempo limitado. Ele cria a própria senha no primeiro acesso.</p>'
+      + (conv.motivo ? '<p class="eq-mdl-aviso"><b>Motivo:</b> '+esc(conv.motivo)+'</p>' : '')
       + '<label class="sr-only" for="eq-mdl-link">Link de primeiro acesso</label><input type="text" class="eq-mdl-link" id="eq-mdl-link" readonly value="'+esc(conv.link || '')+'">'
       + '<div class="eq-mdl-btns"><button type="button" class="btn btn-outline" id="eq-mdl-copiar">Copiar link</button></div>';
   }
