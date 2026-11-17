@@ -447,6 +447,27 @@ footer{margin-top:120px}
 .eq-doc-name{font-size:13.5px;font-weight:600;color:var(--ink);word-break:break-word}
 .eq-doc-meta{font-size:12px;color:var(--muted);margin-top:2px}
 .eq-upload-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.eq-doc-item{align-items:flex-start}
+.eq-doc-tipo{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:99px;background:var(--sky);color:var(--navy);font-size:11px;font-weight:700;vertical-align:1px}
+.eq-doc-obs{font-size:12.5px;color:var(--ink);margin-top:6px;white-space:pre-wrap;word-break:break-word}
+.eq-doc-obs b{font-weight:700}
+.eq-doc-obs.is-vazia{color:var(--muted);font-style:italic}
+.eq-doc-legado{font-size:12px;color:var(--muted);margin-top:6px;font-style:italic}
+.eq-doc-acoes{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px}
+.eq-doc-btn{all:unset;box-sizing:border-box;cursor:pointer;font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--blue);padding:6px 12px;border:1px solid var(--line);border-radius:99px;transition:background-color .15s,border-color .15s}
+.eq-doc-btn:hover,.eq-doc-btn:focus-visible{background:var(--sky);border-color:var(--blue)}
+.eq-doc-btn.is-discreto{border-color:transparent;color:var(--muted);font-weight:600;padding:6px 4px;text-decoration:underline}
+.eq-doc-btn.is-perigo{color:#9b2c2c}
+.eq-doc-btn.is-perigo:hover,.eq-doc-btn.is-perigo:focus-visible{background:#fbeaea;border-color:#d99}
+.eq-doc-form{border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;max-width:640px}
+.eq-doc-form h4{margin:0;font-size:14.5px;color:var(--navy)}
+.eq-doc-form small{display:block;margin-top:5px;font-size:12px;color:var(--muted);line-height:1.45}
+.eq-doc-form textarea.eq-input{min-height:84px;resize:vertical}
+.eq-doc-form .eq-case-export-msg{margin:0}
+.eq-doc-form .eq-case-export-msg.is-err{background:#fbeaea;color:#8a1f1f}
+.eq-doc-hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow:auto}
+.eq-doc-hist li{border-left:3px solid var(--blue);padding:2px 0 2px 12px;font-size:13px;color:var(--ink)}
+.eq-doc-hist li small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 /* AGENDA */
 .eq-agenda-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
 .eq-agenda-item{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:14px;padding:14px 18px;flex-wrap:wrap}
@@ -3055,7 +3076,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <div class="eq-detail-actions">
             <span class="dash-badge" id="eq-case-badge">Ativo</span>
             <button type="button" class="btn btn-outline" id="eq-case-toggle-status" hidden><svg><use href="#i-lock" id="eq-case-toggle-icon"/></svg><span id="eq-case-toggle-label">Encerrar caso</span></button>
-            <button type="button" class="btn btn-primary" id="eq-case-export"><svg><use href="#i-file"/></svg>Exportar PDF</button>
+            <button type="button" class="btn btn-primary" id="eq-case-export"><svg><use href="#i-file"/></svg>Exportar prontuário</button>
           </div>
         </div>
         <p class="eq-case-export-msg" id="eq-case-export-msg" hidden></p>
@@ -3192,6 +3213,38 @@ window.apiCreateCaso = function(payload){
 window.apiSaveCaso = function(caseId, caso){
   return _apiFetch('/api/casos/' + encodeURIComponent(caseId), {
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(caso)
+  });
+};
+/* Documentos anexados (arquivo real guardado no servidor), histórico e protocolo de exportação. */
+window.apiDocConfig = function(){ return _apiFetch('/api/documentos/config'); };
+window.apiEnviarDocumento = function(caseId, payload){
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId) + '/documentos', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+};
+window.apiArquivoDocumento = function(caseId, docId, modo){
+  return fetch(window.API_BASE + '/api/casos/' + encodeURIComponent(caseId) + '/documentos/' + encodeURIComponent(docId) + '/arquivo?modo=' + (modo === 'baixar' ? 'baixar' : 'visualizar'), {
+    headers: _apiAuthHeaders()
+  }).then(function(res){
+    if(!res.ok){
+      return res.json().catch(function(){ return {}; }).then(function(d){
+        const e = new Error(d.erro || 'não foi possível abrir o documento'); e.status = res.status; throw e;
+      });
+    }
+    return res.blob();
+  });
+};
+window.apiExcluirDocumento = function(caseId, docId, motivo){
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId) + '/documentos/' + encodeURIComponent(docId) + '/exclusao', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({motivo: motivo, confirmar: true})
+  });
+};
+window.apiHistoricoDocumentos = function(caseId){
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId) + '/documentos/historico');
+};
+window.apiCriarExportacao = function(caseId){
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId) + '/exportacoes', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
   });
 };
 window.apiGetSolicitacoes = function(){
@@ -6343,7 +6396,7 @@ route();
       historicoConferencia(caso)+
       '<div class="eq-resumo-stats">'+
         '<div class="eq-resumo-stat"><b>'+caso.evolucoes.length+'</b><span>Evoluções registradas</span></div>'+
-        '<div class="eq-resumo-stat"><b>'+caso.documentos.length+'</b><span>Documentos anexados</span></div>'+
+        '<div class="eq-resumo-stat"><b>'+docAtivos(caso).length+'</b><span>Documentos anexados</span></div>'+
         '<div class="eq-resumo-stat"><b>'+caso.agendamentos.length+'</b><span>Atendimentos na agenda</span></div>'+
       '</div>';
   }
@@ -6533,34 +6586,178 @@ route();
     }
   }
 
+  /* ----- Documentos anexados: arquivo real, tipo, observação, abertura, histórico, exclusão lógica ----- */
+  let docCfg = {tipos:['Laudo','Teste','Encaminhamento','Documento do paciente','Documento complementar'], max_bytes:10485760, exclusao_habilitada:false};
+  let docOcupado = false;
+  function docAtivos(caso){ return (caso.documentos || []).filter(function(d){ return d.status !== 'excluido'; }); }
+  function docTamanho(n){ return n >= 1048576 ? (n/1048576).toFixed(1).replace('.',',') + ' MB' : Math.max(1, Math.round(n/1024)) + ' KB'; }
+  function docPodeAnexar(caso){
+    if(currentRole === 'tecnico') return true;
+    if(currentRole === 'estudante') return caso.estudante === currentName;
+    if(currentRole === 'supervisor') return !!caso.supervisor && caso.supervisor === currentName;
+    return false;
+  }
+  function docPodeExcluir(caso){
+    return !!docCfg.exclusao_habilitada && (currentRole === 'tecnico' || (currentRole === 'supervisor' && !!caso.supervisor && caso.supervisor === currentName));
+  }
+  function docFormEmUso(){
+    const f = document.getElementById('eq-doc-input'), o = document.getElementById('eq-doc-obs');
+    return docOcupado || !!((f && f.files && f.files.length) || (o && o.value));
+  }
+  function docMsg(texto, erro){
+    const m = document.getElementById('eq-doc-msg');
+    if(!m) return;
+    m.textContent = texto || ''; m.hidden = !texto; m.classList.toggle('is-err', !!erro);
+  }
+  function docItemHtml(caso, d, podeExcluir){
+    const meta = 'Anexado por '+esc(d.autor)+' em '+esc(d.data)+(d.tamanho ? ' · '+docTamanho(d.tamanho) : '');
+    if(!d.id){
+      return '<div class="eq-doc-item"><div class="eq-doc-ic"><svg><use href="#i-file"/></svg></div><div class="eq-doc-info"><div class="eq-doc-name">'+esc(d.nome)+'</div><div class="eq-doc-meta">'+meta+'</div><div class="eq-doc-legado">Arquivo não disponível (anexado antes do armazenamento real).</div></div></div>';
+    }
+    const visual = /^(application\/pdf|image\/(jpeg|png))$/.test(d.content_type || '');
+    const obs = (d.observacao || '').trim();
+    const podeHist = currentRole === 'tecnico' || currentRole === 'supervisor';
+    return '<div class="eq-doc-item" data-doc="'+esc(d.id)+'"><div class="eq-doc-ic"><svg><use href="#i-file"/></svg></div><div class="eq-doc-info">'+
+      '<div class="eq-doc-name">'+esc(d.nome)+'<span class="eq-doc-tipo">'+esc(d.tipo || 'Documento')+'</span></div>'+
+      '<div class="eq-doc-meta">'+meta+'</div>'+
+      (obs ? '<div class="eq-doc-obs"><b>Observação:</b> '+esc(obs)+'</div>' : '<div class="eq-doc-obs is-vazia">Observação não informada.</div>')+
+      '<div class="eq-doc-acoes">'+
+        (visual ? '<button type="button" class="eq-doc-btn" data-doc-acao="ver" data-doc-id="'+esc(d.id)+'">Visualizar</button>' : '')+
+        '<button type="button" class="eq-doc-btn" data-doc-acao="baixar" data-doc-id="'+esc(d.id)+'">Baixar documento</button>'+
+        (podeHist ? '<button type="button" class="eq-doc-btn is-discreto" data-doc-acao="hist" data-doc-id="'+esc(d.id)+'">Histórico do documento</button>' : '')+
+        (podeExcluir ? '<button type="button" class="eq-doc-btn is-perigo" data-doc-acao="excluir" data-doc-id="'+esc(d.id)+'">Excluir documento</button>' : '')+
+      '</div></div></div>';
+  }
+  function docAbrir(caso, d, modo){
+    const w = (modo === 'ver') ? window.open('', '_blank') : null;
+    docMsg('');
+    window.apiArquivoDocumento(currentCaseId, d.id, modo === 'ver' ? 'visualizar' : 'baixar').then(function(blob){
+      const url = URL.createObjectURL(blob);
+      if(modo === 'ver' && w){ w.location.href = url; }
+      else {
+        const a = document.createElement('a');
+        a.href = url;
+        if(modo === 'ver') a.target = '_blank'; else a.download = d.nome;
+        a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.remove();
+      }
+      setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} }, 120000);
+    }).catch(function(err){
+      if(w){ try{ w.close(); }catch(e){} }
+      docMsg(erroTexto(err), true);
+    });
+  }
+  function docHistorico(caso, d){
+    mdlAbrir('Histórico do documento', '<p><b>'+esc(d.nome)+'</b></p><p class="eq-empty" id="eq-doc-hist-carga">Carregando…</p><ul class="eq-doc-hist" id="eq-doc-hist" hidden></ul><div class="eq-mdl-btns"><button type="button" class="btn btn-outline" data-mdl-cancel>Fechar</button></div>', null);
+    window.apiHistoricoDocumentos(currentCaseId).then(function(evs){
+      const rot = {envio:'Documento anexado', visualizacao:'Documento visualizado', download:'Documento baixado', exclusao_logica:'Documento excluído logicamente'};
+      const meus = (evs || []).filter(function(e){ return e.documento_id === d.id; }).reverse();
+      const lis = [];
+      meus.forEach(function(e){
+        if(e.resultado && e.resultado !== 'sucesso') return;
+        lis.push('<li>'+esc(rot[e.operacao] || e.operacao)+' — '+esc(e.usuario || '')+' ('+esc(e.papel || '')+')<small>'+esc(e.quando_br || '')+(e.motivo ? ' · Motivo: '+esc(e.motivo) : '')+'</small></li>');
+        if(e.operacao === 'envio' && (d.observacao || '').trim()) lis.push('<li>Observação registrada — '+esc(e.usuario || '')+'<small>'+esc(e.quando_br || '')+'</small></li>');
+      });
+      const ul = document.getElementById('eq-doc-hist'), car = document.getElementById('eq-doc-hist-carga');
+      if(!ul || !car) return;
+      if(lis.length){ ul.innerHTML = lis.join(''); ul.hidden = false; car.hidden = true; }
+      else car.textContent = 'Nenhum evento registrado para este documento.';
+    }).catch(function(err){
+      const car = document.getElementById('eq-doc-hist-carga');
+      if(car) car.textContent = erroTexto(err);
+    });
+  }
+  function docExcluir(caso, d){
+    mdlAbrir('Excluir documento',
+      '<form id="eq-mdl-form" novalidate><p>Você vai excluir logicamente o documento <b>'+esc(d.nome)+'</b> ('+esc(d.tipo || 'Documento')+'). Ele deixará de aparecer entre os anexos ativos do prontuário; o arquivo e o histórico continuam preservados.</p>'+
+      '<div class="eq-field"><label for="eq-doc-motivo">Motivo da exclusão</label><textarea class="eq-input" id="eq-doc-motivo" rows="3" maxlength="500" placeholder="Ex.: Arquivo anexado incorretamente ao prontuário."></textarea></div>'+
+      mdlRodape('Confirmar exclusão')+'</form>',
+      function(){
+        const motivo = (document.getElementById('eq-doc-motivo').value || '').trim();
+        if(motivo.length < 5){ mdlErro('Informe o motivo da exclusão (mínimo de 5 caracteres).'); return; }
+        mdlEnviar(window.apiExcluirDocumento(currentCaseId, d.id, motivo), function(){
+          d.status = 'excluido';
+          mdlFechar();
+          renderDocumentos(caso, canManageCase(caso));
+          renderResumo(caso);
+          docMsg('Documento excluído logicamente. O histórico foi preservado.');
+        });
+      });
+  }
   function renderDocumentos(caso, editable){
     const panel = document.getElementById('eq-panel-documentos');
     if(!panel) return;
-    const listHtml = caso.documentos.length
-      ? caso.documentos.map(function(d){
-          return '<div class="eq-doc-item"><div class="eq-doc-ic"><svg><use href="#i-file"/></svg></div><div class="eq-doc-info"><div class="eq-doc-name">'+esc(d.nome)+'</div><div class="eq-doc-meta">Anexado por '+esc(d.autor)+' em '+esc(d.data)+'</div></div></div>';
-        }).join('')
+    const ativos = docAtivos(caso);
+    const podeExcluir = docPodeExcluir(caso);
+    const listHtml = ativos.length
+      ? ativos.map(function(d){ return docItemHtml(caso, d, podeExcluir); }).join('')
       : '<p class="eq-empty">Nenhum documento anexado a este caso ainda.</p>';
 
-    let uploadHtml = '';
-    if(editable){
-      uploadHtml =
-        '<label class="btn btn-primary eq-upload-btn" for="eq-doc-input"><svg><use href="#i-upload"/></svg>Anexar documento</label>'+
-        '<input type="file" id="eq-doc-input" accept=".pdf,.jpg,.jpeg,.png,.docx" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">';
+    let formHtml = '';
+    if(docPodeAnexar(caso)){
+      formHtml =
+        '<form class="eq-doc-form" id="eq-doc-form" novalidate>'+
+          '<h4>Anexar documento</h4>'+
+          '<div class="eq-field"><label for="eq-doc-input">Arquivo</label><input type="file" class="eq-input" id="eq-doc-input" accept=".pdf,.jpg,.jpeg,.png,.docx"><small>PDF, JPG, PNG ou DOCX — até 10 MB.</small></div>'+
+          '<div class="eq-field"><label for="eq-doc-tipo">Tipo do documento</label><select class="eq-select" id="eq-doc-tipo"><option value="">Selecione o tipo…</option>'+
+            docCfg.tipos.map(function(t){ return '<option value="'+esc(t)+'">'+esc(t)+'</option>'; }).join('')+'</select></div>'+
+          '<div class="eq-field"><label for="eq-doc-obs">Observação do documento (opcional)</label><textarea class="eq-input" id="eq-doc-obs" rows="3" maxlength="1000" aria-describedby="eq-doc-obs-ajuda"></textarea>'+
+            '<small id="eq-doc-obs-ajuda">Descreva brevemente o conteúdo ou a finalidade deste documento. Essa observação será exibida no prontuário exportado, mesmo quando o arquivo não estiver incluído no PDF.</small></div>'+
+          '<div><button type="submit" class="btn btn-primary eq-upload-btn" id="eq-doc-enviar"><svg><use href="#i-upload"/></svg>Anexar documento</button></div>'+
+          '<p class="eq-case-export-msg" id="eq-doc-msg" role="status" hidden></p>'+
+        '</form>';
+    } else {
+      formHtml = '<p class="eq-case-export-msg" id="eq-doc-msg" role="status" hidden></p>';
     }
+    panel.innerHTML = '<div class="eq-doc-list">'+listHtml+'</div>'+formHtml;
 
-    panel.innerHTML = '<div class="eq-doc-list">'+listHtml+'</div>'+uploadHtml;
+    panel.querySelectorAll('[data-doc-acao]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const d = (caso.documentos || []).find(function(x){ return x.id === btn.dataset.docId; });
+        if(!d) return;
+        const acao = btn.dataset.docAcao;
+        if(acao === 'ver' || acao === 'baixar') docAbrir(caso, d, acao);
+        else if(acao === 'hist') docHistorico(caso, d);
+        else if(acao === 'excluir') docExcluir(caso, d);
+      });
+    });
 
-    if(editable){
-      const input = document.getElementById('eq-doc-input');
-      input.addEventListener('change', function(){
-        if(!input.files || !input.files.length) return;
-        const file = input.files[0];
-        caso.documentos.push({nome:file.name, autor:currentName, data: formatToday()});
-        persistCaso(currentCaseId);
-        input.value = '';
-        renderDocumentos(caso, editable);
-        renderResumo(caso);
+    const form = document.getElementById('eq-doc-form');
+    if(form){
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(docOcupado) return;
+        const input = document.getElementById('eq-doc-input'), tipo = document.getElementById('eq-doc-tipo'), obs = document.getElementById('eq-doc-obs');
+        const file = input.files && input.files[0];
+        if(!file){ docMsg('Selecione o arquivo a anexar.', true); return; }
+        if(!/\.(pdf|jpe?g|png|docx)$/i.test(file.name)){ docMsg('Formato não permitido — envie PDF, JPG, PNG ou DOCX.', true); return; }
+        if(file.size > docCfg.max_bytes){ docMsg('O arquivo ultrapassa o limite de 10 MB.', true); return; }
+        if(file.size === 0){ docMsg('O arquivo está vazio.', true); return; }
+        if(!tipo.value){ docMsg('Escolha o tipo do documento.', true); return; }
+        docOcupado = true;
+        const btn = document.getElementById('eq-doc-enviar'); if(btn) btn.disabled = true;
+        docMsg('Enviando…');
+        const caseId = currentCaseId;
+        const leitor = new FileReader();
+        leitor.onerror = function(){ docOcupado = false; if(btn) btn.disabled = false; docMsg('Não foi possível ler o arquivo selecionado.', true); };
+        leitor.onload = function(){
+          const b64 = String(leitor.result).split(',')[1] || '';
+          window.apiEnviarDocumento(caseId, {nome:file.name, tipo:tipo.value, observacao:obs.value.trim(), conteudo:b64}).then(function(novo){
+            docOcupado = false;
+            if(!CASOS[caseId]) return;
+            CASOS[caseId].documentos = (CASOS[caseId].documentos || []).concat([novo]);
+            if(currentCaseId === caseId){
+              renderDocumentos(CASOS[caseId], canManageCase(CASOS[caseId]));
+              renderResumo(CASOS[caseId]);
+              docMsg('Documento anexado ao prontuário.');
+            }
+          }).catch(function(err){
+            docOcupado = false;
+            const b2 = document.getElementById('eq-doc-enviar'); if(b2) b2.disabled = false;
+            docMsg(erroTexto(err), true);
+          });
+        };
+        leitor.readAsDataURL(file);
       });
     }
   }
@@ -6656,6 +6853,7 @@ route();
     renderEvolucoes(caso, editable);
     carregarNotas(caseId).then(function(){ if(currentCaseId === caseId) renderEvolucoes(caso, editable); });
     renderDocumentos(caso, editable);
+    window.apiDocConfig().then(function(cfg){ if(cfg && cfg.tipos){ docCfg = cfg; if(currentCaseId === caseId && !docFormEmUso()) renderDocumentos(CASOS[caseId] || caso, editable); } }).catch(function(){});
     renderAgenda(caso, currentRole==='tecnico');
     setActiveTab('resumo');
     if(currentRole === 'supervisor' && supMostrarCaso()){
@@ -6703,7 +6901,7 @@ route();
       CASOS[id] = novo;
       const editable = canManageCase(novo);
       const digitando = function(painel){ const a = document.activeElement; const p = document.getElementById(painel); return !!(a && p && p.contains(a) && /^(TEXTAREA|INPUT)$/.test(a.tagName)); };
-      if(docs && !digitando('eq-panel-documentos')) renderDocumentos(novo, editable);
+      if(docs && !digitando('eq-panel-documentos') && !docFormEmUso()) renderDocumentos(novo, editable);
       if(evo && !digitando('eq-panel-evolucoes')){ renderEvolucoes(novo, editable); carregarNotas(id).then(function(){ if(currentCaseId === id) renderEvolucoes(CASOS[id], canManageCase(CASOS[id])); }); }
       if(ana && !digitando('eq-panel-anamnese')) renderAnamnese(novo, editable);
       if(agd && !digitando('eq-panel-agenda')) renderAgenda(novo, currentRole === 'tecnico');
@@ -6952,15 +7150,30 @@ route();
     }
 
     // Documentos anexados
-    sectionTitle('Documentos anexados ('+caso.documentos.length+')');
-    if(caso.documentos.length){
-      caso.documentos.forEach(function(d){
-        ensureSpace(16);
-        doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(26,52,42);
-        doc.text('• '+d.nome, mx, y);
+    const docsPdf = (caso.documentos || []).filter(function(d){ return d.status !== 'excluido'; });
+    sectionTitle('Documentos anexados ('+docsPdf.length+')');
+    if(docsPdf.length){
+      docsPdf.forEach(function(d){
+        const nomeLinhas = doc.splitTextToSize('• '+d.nome, contentW-10);
+        const obsTxt = (d.observacao || '').trim() || 'Observação não informada.';
+        doc.setFont('helvetica','normal'); doc.setFontSize(9);
+        const obsLinhas = doc.splitTextToSize(obsTxt, contentW-16);
+        /* documento + tipo + autor + observação ficam juntos na mesma página */
+        ensureSpace(nomeLinhas.length*12 + 13 + 13 + 13 + obsLinhas.length*11 + 14);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(26,52,42);
+        doc.text(nomeLinhas, mx, y);
+        y += nomeLinhas.length*12;
         doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(MUTED[0],MUTED[1],MUTED[2]);
-        doc.text('Anexado por '+d.autor+' em '+d.data, mx+16, y+12);
-        y += 28;
+        doc.text('Tipo: '+(d.tipo || 'Não informado'), mx+16, y+1);
+        y += 12;
+        doc.text('Anexado por '+d.autor+' em '+d.data+'.', mx+16, y+1);
+        y += 14;
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
+        doc.text('Observação do documento:', mx+16, y);
+        y += 12;
+        doc.setFont('helvetica', (d.observacao || '').trim() ? 'normal' : 'italic'); doc.setFontSize(9); doc.setTextColor(26,52,42);
+        doc.text(obsLinhas, mx+16, y);
+        y += obsLinhas.length*11 + 14;
       });
     } else {
       ensureSpace(16);
@@ -7000,14 +7213,22 @@ route();
       const msg = document.getElementById('eq-case-export-msg');
       const caso = CASOS[currentCaseId];
       if(!caso) return;
-      const n = String(Math.floor(Math.random()*9000)+1000);
-      const ok = buildProntuarioPdf(caso, n);
-      if(msg){
-        msg.textContent = ok
-          ? 'Exportação concluída — protocolo #'+n+'. O PDF do prontuário (dados do caso, anamnese, evoluções e anexos) foi aberto em uma nova aba — use o botão de baixar/salvar do visualizador para guardá-lo.'
-          : 'Não foi possível gerar o PDF agora — tente novamente em instantes.';
-        msg.hidden = false;
-      }
+      exportBtn.disabled = true;
+      window.apiCriarExportacao(currentCaseId).then(function(r){
+        const n = String(r.protocolo);
+        const ok = buildProntuarioPdf(caso, n);
+        if(msg){
+          msg.textContent = ok
+            ? 'Exportação concluída — protocolo #'+n+'. O PDF do prontuário (dados do caso, anamnese, evoluções e anexos) foi aberto em uma nova aba — use o botão de baixar/salvar do visualizador para guardá-lo.'
+            : 'Não foi possível gerar o PDF agora — tente novamente em instantes.';
+          msg.hidden = false;
+        }
+      }).catch(function(err){
+        if(msg){
+          msg.textContent = 'Não foi possível registrar a exportação, por isso o PDF não foi gerado. ' + erroTexto(err);
+          msg.hidden = false;
+        }
+      }).then(function(){ exportBtn.disabled = false; });
     });
   }
 

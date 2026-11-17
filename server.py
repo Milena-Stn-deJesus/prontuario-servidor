@@ -31,6 +31,13 @@ O QUE ESSE ARQUIVO FAZ:
                                         só quando existe uma solicitação já liberada pela
                                         equipe (senão, 403 — a liberação é checada aqui,
                                         no servidor, não só escondendo o botão na tela)
+    POST /api/casos/<id>/documentos          -> anexa documento (PDF/JPG/PNG/DOCX até 10 MB; arquivo real no GridFS)
+    GET  /api/casos/<id>/documentos/<doc>/arquivo?modo=visualizar|baixar -> entrega o arquivo (auditado)
+    GET  /api/casos/<id>/documentos/historico -> eventos dos documentos do caso (técnico, supervisor)
+    POST /api/casos/<id>/documentos/<doc>/exclusao -> exclusão LÓGICA (desligada: DOCUMENTOS_EXCLUSAO_LOGICA=1 para ligar)
+    POST /api/casos/<id>/exportacoes         -> gera o protocolo (#1001...) e audita a exportação do prontuário
+    GET  /api/documentos/config              -> tipos, limite e se a exclusão lógica está habilitada
+    (variável opcional DOCUMENTOS_QUOTA_MB: espaço máximo para documentos; padrão 300)
     POST /api/ativar-conta          -> (convite) cria a senha de uma conta profissional nova
     GET  /api/admin/resumo | profissionais | historico | minha-conta   -> (só admin_ti)
     POST /api/admin/profissionais   -> (só admin_ti) cria conta de técnico ou supervisor
@@ -116,12 +123,16 @@ from email.mime.text import MIMEText
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote
+import base64
+import io
+import zipfile
 
 try:
     import certifi
     from pymongo import MongoClient
     from pymongo.errors import PyMongoError
     from bson import ObjectId
+    import gridfs
     from bson.errors import InvalidId
 except ImportError:
     print("=" * 70)
@@ -758,6 +769,15 @@ notificacoes_col = db["notificacoes"]  # avisos internos (sem dados clínicos)
 # de outra pessoa) não deixava rastro nenhum. Nunca grava senha nem conteúdo
 # clínico (anamnese/evolução) — só metadados do acesso.
 auditoria_col = db["auditoria"]
+# Documentos anexados aos casos: o arquivo fica no GridFS (privado, no próprio MongoDB; só o servidor lê, depois de
+# checar a permissão) e os metadados aqui. Nada é apagado fisicamente: a exclusão, quando habilitada, é lógica.
+documentos_col = db["documentos"]
+# Histórico de eventos dos documentos (envio, visualização, download, exclusão lógica). Só acréscimo: não existe rota
+# para editar nem apagar. Nunca guarda conteúdo clínico nem o conteúdo do arquivo.
+documentos_eventos_col = db["documentos_eventos"]
+# Exportações do prontuário: o protocolo (#1001, #1002...) nasce aqui, no servidor, e cada exportação fica auditada.
+exportacoes_col = db["exportacoes"]
+documentos_fs = gridfs.GridFS(db, collection="documentos_arquivos")
 print("Conectado ao MongoDB! Banco: %s" % DB_NAME)
 
 
@@ -1315,6 +1335,138 @@ def _pode_acessar_caso(sessao, caso_doc):
 
 
 # ---------------------------------------------------------------------------
+# Documentos anexados, histórico de acessos e exportação do prontuário
+# ---------------------------------------------------------------------------
+DOC_TIPOS = ["Laudo", "Teste", "Encaminhamento", "Documento do paciente", "Documento complementar"]
+DOC_MAX_BYTES = 10 * 1024 * 1024
+DOC_OBS_MAX = 1000
+DOC_NOME_MAX = 150
+DOC_MOTIVO_MIN, DOC_MOTIVO_MAX = 5, 500
+DOC_EXTENSOES = {"pdf": "application/pdf", "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+                 "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+try:
+    DOC_QUOTA_BYTES = int(float(os.environ.get("DOCUMENTOS_QUOTA_MB", "300")) * 1024 * 1024)
+except ValueError:
+    DOC_QUOTA_BYTES = 300 * 1024 * 1024
+# A exclusão lógica depende de aprovação institucional: desligada por padrão (rota responde 403).
+DOC_EXCLUSAO_HABILITADA = os.environ.get("DOCUMENTOS_EXCLUSAO_LOGICA", "").strip() == "1"
+PROTOCOLO_INICIAL = 1001
+_UPLOADS_SIMULTANEOUS = threading.BoundedSemaphore(3)
+
+
+class AuditoriaFalhou(Exception):
+    pass
+
+
+def _supervisor_do_caso(sessao, caso_doc):
+    return sessao["role"] == "supervisor" and bool(caso_doc.get("supervisor")) and caso_doc.get("supervisor") == sessao["nome"]
+
+
+def _pode_anexar_documento(sessao, caso_doc):
+    """Estudante: só nos próprios casos. Supervisor: só nos casos sob sua supervisão. Técnico: casos do serviço."""
+    if sessao["role"] == "tecnico":
+        return True
+    if sessao["role"] == "estudante":
+        return caso_doc.get("estudante") == sessao["nome"]
+    return _supervisor_do_caso(sessao, caso_doc)
+
+
+def _pode_excluir_documento(sessao, caso_doc):
+    """Estudante nunca exclui. Supervisor só nos casos sob sua supervisão. Técnico nos casos do serviço."""
+    if sessao["role"] == "tecnico":
+        return True
+    return _supervisor_do_caso(sessao, caso_doc)
+
+
+def _tipo_real_do_arquivo(dados):
+    """Tipo detectado pelo conteúdo (não pelo nome): 'pdf', 'jpg', 'png', 'docx' ou None."""
+    if dados[:5] == b"%PDF-":
+        return "pdf"
+    if dados[:3] == b"\xff\xd8\xff":
+        return "jpg"
+    if dados[:8] == b"\x89PNG\r\n\x1a\n":
+        return "png"
+    if dados[:4] == b"PK\x03\x04":
+        try:
+            with zipfile.ZipFile(io.BytesIO(dados)) as z:
+                nomes = set(z.namelist())
+                if "word/document.xml" not in nomes or "[Content_Types].xml" not in nomes:
+                    return None
+                if sum(i.file_size for i in z.infolist()) > 200 * 1024 * 1024:  # descompactado absurdo (zip bomb)
+                    return None
+            return "docx"
+        except (zipfile.BadZipFile, OSError, ValueError, RuntimeError):
+            return None
+    return None
+
+
+def _limpar_nome_arquivo(nome):
+    nome = str(nome or "").replace("\\", "/").split("/")[-1]
+    nome = re.sub(r"[\x00-\x1f\x7f\"<>|:*?]", "", nome).strip().strip(".")
+    return nome
+
+
+def _validar_upload(nome, dados):
+    """Devolve (erro, nome_limpo, content_type)."""
+    limpo = _limpar_nome_arquivo(nome)
+    if not limpo or len(limpo) > DOC_NOME_MAX:
+        return "nome de arquivo inválido (até %d caracteres)" % DOC_NOME_MAX, None, None
+    ext = limpo.rsplit(".", 1)[-1].lower() if "." in limpo else ""
+    if ext not in DOC_EXTENSOES:
+        return "formato não permitido — envie PDF, JPG, PNG ou DOCX", None, None
+    if len(dados) == 0:
+        return "o arquivo está vazio", None, None
+    if len(dados) > DOC_MAX_BYTES:
+        return "o arquivo ultrapassa o limite de 10 MB", None, None
+    real = _tipo_real_do_arquivo(dados)
+    esperado = "jpg" if ext in ("jpg", "jpeg") else ext
+    if real is None or real != esperado:
+        return "o conteúdo do arquivo não corresponde ao formato %s (arquivo inválido ou renomeado)" % ext.upper(), None, None
+    return None, limpo, DOC_EXTENSOES[ext]
+
+
+def _evento_documento(sessao, operacao, caso_id, documento_id=None, resultado="sucesso", motivo=None, obrigatorio=True):
+    """Grava o evento no histórico do documento e espelha na auditoria geral. Se 'obrigatorio' e a gravação
+    falhar, levanta AuditoriaFalhou — quem chamou NÃO pode entregar o arquivo nem concluir a operação."""
+    ev = {"_id": "ev-" + secrets.token_hex(8), "documento_id": documento_id, "caso_id": caso_id, "operacao": operacao,
+          "usuario_email": sessao.get("email"), "usuario_nome": sessao.get("nome"), "papel": sessao.get("role"),
+          "quando": time.time(), "quando_br": _agora_br(), "resultado": resultado}
+    if motivo:
+        ev["motivo"] = motivo
+    try:
+        documentos_eventos_col.insert_one(ev)
+        auditoria_col.insert_one({"quando": ev["quando"], "usuario_email": ev["usuario_email"], "usuario_nome": ev["usuario_nome"],
+                                  "papel": ev["papel"], "acao": "documento: " + operacao, "caso_id": caso_id, "resultado": resultado,
+                                  "detalhe": ("documento " + documento_id) if documento_id else None})
+    except PyMongoError as exc:
+        print("ERRO (auditoria de documento): %s" % exc)
+        if obrigatorio:
+            raise AuditoriaFalhou()
+    return ev
+
+
+def _doc_publico(d):
+    """Metadados do documento que a tela pode ver (nunca o id interno do GridFS)."""
+    return {"id": d["_id"], "nome": d["nome_original"], "autor": d["enviado_por_nome"], "data": d["enviado_em_data"],
+            "tipo": d["tipo_doc"], "observacao": d.get("observacao", ""), "tamanho": d["tamanho"], "status": d.get("status", "ativo"),
+            "disponivel": True, "content_type": d["content_type"]}
+
+
+def _proximo_protocolo(sessao, caso_id):
+    """Reserva o próximo protocolo (sequencial, único, a partir de #1001). A unicidade vem do _id da coleção."""
+    n = exportacoes_col.count_documents({}) + PROTOCOLO_INICIAL
+    for _ in range(25):
+        reg = {"_id": n, "caso_id": caso_id, "usuario_email": sessao.get("email"), "usuario_nome": sessao.get("nome"),
+               "papel": sessao.get("role"), "quando": time.time(), "quando_br": _agora_br()}
+        try:
+            exportacoes_col.insert_one(reg)
+            return reg
+        except PyMongoError:
+            n += 1
+    raise AuditoriaFalhou()
+
+
+# ---------------------------------------------------------------------------
 # Imutabilidade de registros clínicos (correção de segurança — a regra já
 # existia nas instruções do projeto e já era respeitada pela tela, que não
 # tem botão de editar uma evolução antiga: quem quer corrigir registra uma
@@ -1447,7 +1599,8 @@ class Handler(BaseHTTPRequestHandler):
             "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://vlibras.gov.br; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data: https://vlibras.gov.br; "
+            "img-src 'self' data: blob: https://vlibras.gov.br; "
+            "object-src 'self' blob:; "
             "media-src 'self' https://vlibras.gov.br; "
             "frame-src https://vlibras.gov.br; "
             "connect-src 'self' https://vlibras.gov.br; "
@@ -1579,6 +1732,78 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "GET /api/solicitacoes")
                 return
             self._send_json(fila)
+            return
+
+        if path == "/api/documentos/config":
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
+                return
+            self._send_json({"tipos": DOC_TIPOS, "max_bytes": DOC_MAX_BYTES, "formatos": ["PDF", "JPG", "PNG", "DOCX"],
+                             "exclusao_habilitada": DOC_EXCLUSAO_HABILITADA})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/documentos/historico$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico", "supervisor"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None or not _pode_acessar_caso(sessao, caso):
+                    self._send_error_json(404 if caso is None else 403, "caso não encontrado" if caso is None else "sem permissão para este caso")
+                    return
+                evs = list(documentos_eventos_col.find({"caso_id": case_id}).sort("quando", -1))[:300]
+                nomes = {d["_id"]: d["nome_original"] for d in documentos_col.find({"caso_id": case_id})}
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/casos/<id>/documentos/historico")
+                return
+            self._send_json([{"id": e["_id"], "documento_id": e.get("documento_id"), "documento": nomes.get(e.get("documento_id"), ""),
+                              "operacao": e["operacao"], "usuario": e.get("usuario_nome"), "papel": e.get("papel"),
+                              "quando_br": e.get("quando_br"), "resultado": e.get("resultado"), "motivo": e.get("motivo", "")} for e in evs])
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/documentos/([^/]+)/arquivo$", path)
+        if m:
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
+                return
+            case_id, doc_id = unquote(m.group(1)), unquote(m.group(2))
+            modo = "download" if "modo=baixar" in (self.path.split("?", 1)[1] if "?" in self.path else "") else "visualizacao"
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None:
+                    self._send_error_json(404, "caso não encontrado"); return
+                if not _pode_acessar_caso(sessao, caso):
+                    _registrar_auditoria(sessao, "tentativa de abrir documento de caso sem acesso", caso_id=case_id, resultado="negado")
+                    self._send_error_json(403, "sem permissão para este caso"); return
+                d = documentos_col.find_one({"_id": doc_id, "caso_id": case_id})
+                if d is None or d.get("status") == "excluido":
+                    self._send_error_json(404, "documento não encontrado"); return
+                try:
+                    dados = documentos_fs.get(ObjectId(d["gridfs_id"])).read()
+                except Exception as exc:
+                    print("ERRO (GridFS leitura): %s" % exc)
+                    _evento_documento(sessao, modo, case_id, doc_id, resultado="falha", obrigatorio=False)
+                    self._send_error_json(503, "não foi possível abrir o arquivo agora. Tente novamente em instantes.")
+                    return
+                _evento_documento(sessao, modo, case_id, doc_id)  # sem registro, sem arquivo
+            except AuditoriaFalhou:
+                self._send_error_json(503, "não foi possível registrar o acesso ao documento; por segurança o arquivo não foi entregue")
+                return
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/casos/<id>/documentos/<doc>/arquivo")
+                return
+            from urllib.parse import quote as _q
+            self.send_response(200)
+            self.send_header("Content-Type", d["content_type"])
+            self.send_header("Content-Length", str(len(dados)))
+            self.send_header("Content-Disposition", "%s; filename*=UTF-8''%s" % ("attachment" if modo == "download" else "inline", _q(d["nome_original"])))
+            self.send_header("Cache-Control", "private, no-store")
+            self._cors_headers()
+            self._security_headers()
+            self.end_headers()
+            self.wfile.write(dados)
             return
 
         m = re.match(r"^/api/casos/([^/]+)/notas$", path)
@@ -1849,6 +2074,8 @@ class Handler(BaseHTTPRequestHandler):
             )
             resposta = caso_doc_to_json(caso)
             resposta["protocolo"] = liberada.get("protocolo", "")
+            # Documentos excluídos logicamente não aparecem no prontuário entregue ao paciente.
+            resposta["documentos"] = [d for d in (resposta.get("documentos") or []) if d.get("status") != "excluido"]
             self._send_json(resposta)
             return
 
@@ -2327,6 +2554,167 @@ class Handler(BaseHTTPRequestHandler):
             convite_resp = _resposta_convite(_enviar_convite(est["email"], est["nome"], "estudante", token), token)
             _registrar_auditoria(sessao, "convite de estudante reenviado", detalhe="%s (RA %s)" % (est["nome"], ra))
             self._send_json({"ok": True, "convite": convite_resp})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/documentos$", path)
+        if m:
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            tamanho_req = int(self.headers.get("Content-Length", 0) or 0)
+            if tamanho_req > int(DOC_MAX_BYTES * 1.4) + 4096:
+                # Não guarda o corpo (nada de memória): só descarta o que chegou, para o navegador receber a resposta 413.
+                restante = min(tamanho_req, 64 * 1024 * 1024)
+                try:
+                    while restante > 0:
+                        pedaco = self.rfile.read(min(65536, restante))
+                        if not pedaco:
+                            break
+                        restante -= len(pedaco)
+                except Exception:
+                    pass
+                self.close_connection = True
+                self._send_error_json(413, "o arquivo ultrapassa o limite de 10 MB")
+                return
+            if not _UPLOADS_SIMULTANEOUS.acquire(blocking=False):
+                self._send_error_json(503, "muitos envios ao mesmo tempo; tente novamente em instantes")
+                return
+            gfs_id = None
+            doc_gravado = False
+            try:
+                try:
+                    body = self._read_json_body()
+                    dados = base64.b64decode(str(body.get("conteudo", "")), validate=True)
+                except Exception:
+                    self._send_error_json(400, "envio inválido"); return
+                try:
+                    caso = casos_col.find_one({"_id": case_id})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/casos/<id>/documentos"); return
+                if caso is None:
+                    self._send_error_json(404, "caso não encontrado"); return
+                if not _pode_anexar_documento(sessao, caso):
+                    _registrar_auditoria(sessao, "tentativa de anexar documento sem permissão", caso_id=case_id, resultado="negado")
+                    self._send_error_json(403, "seu perfil não pode anexar documentos a este caso"); return
+                tipo_doc = str(body.get("tipo", "")).strip()
+                if tipo_doc not in DOC_TIPOS:
+                    self._send_error_json(400, "escolha o tipo do documento"); return
+                obs = str(body.get("observacao", "") or "").strip()
+                if len(obs) > DOC_OBS_MAX:
+                    self._send_error_json(400, "a observação pode ter até %d caracteres" % DOC_OBS_MAX); return
+                erro, nome_limpo, ctype = _validar_upload(body.get("nome", ""), dados)
+                if erro:
+                    _registrar_auditoria(sessao, "envio de documento recusado", caso_id=case_id, resultado="negado", detalhe=erro[:120])
+                    self._send_error_json(400, erro); return
+                try:
+                    usado = sum(int(x.get("tamanho", 0)) for x in documentos_col.find({}))
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/casos/<id>/documentos (cota)"); return
+                if usado + len(dados) > DOC_QUOTA_BYTES:
+                    self._send_error_json(507, "o espaço de armazenamento de documentos está cheio; avise a equipe técnica")
+                    return
+                doc_id = "doc-" + secrets.token_hex(8)
+                try:
+                    gfs_id = str(documentos_fs.put(dados, filename=doc_id, content_type=ctype))
+                    meta = {"_id": doc_id, "caso_id": case_id, "nome_original": nome_limpo, "tipo_doc": tipo_doc, "observacao": obs,
+                            "content_type": ctype, "tamanho": len(dados), "sha256": hashlib.sha256(dados).hexdigest(), "gridfs_id": gfs_id,
+                            "enviado_por_email": sessao["email"], "enviado_por_nome": sessao["nome"], "enviado_por_papel": sessao["role"],
+                            "enviado_em": time.time(), "enviado_em_data": _agora_br().split(" às ")[0], "status": "ativo"}
+                    documentos_col.insert_one(meta)
+                    doc_gravado = True
+                    casos_col.update_one({"_id": case_id}, {"$push": {"documentos": _doc_publico(meta)}})
+                    _evento_documento(sessao, "envio", case_id, doc_id)
+                except (PyMongoError, AuditoriaFalhou, Exception) as exc:
+                    # Desfaz o que acabou de ser gravado: o envio não terminou, então nada fica órfão.
+                    print("ERRO (envio de documento): %s" % exc)
+                    try:
+                        casos_col.update_one({"_id": case_id}, {"$pull": {"documentos": {"id": doc_id}}})
+                    except Exception:
+                        pass
+                    if doc_gravado:
+                        try:
+                            documentos_col.delete_one({"_id": doc_id})
+                        except Exception:
+                            pass
+                    if gfs_id:
+                        try:
+                            documentos_fs.delete(ObjectId(gfs_id))
+                        except Exception:
+                            pass
+                    self._send_error_json(503, "não foi possível salvar o documento agora. Tente novamente em instantes.")
+                    return
+            finally:
+                _UPLOADS_SIMULTANEOUS.release()
+            self._send_json(_doc_publico(meta), 201)
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/documentos/([^/]+)/exclusao$", path)
+        if m:
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
+                return
+            case_id, doc_id = unquote(m.group(1)), unquote(m.group(2))
+            if not DOC_EXCLUSAO_HABILITADA:
+                _registrar_auditoria(sessao, "tentativa de excluir documento (recurso desabilitado)", caso_id=case_id, resultado="negado")
+                self._send_error_json(403, "a exclusão de documentos ainda não foi habilitada (depende de aprovação institucional)")
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido"); return
+            motivo = str(body.get("motivo", "")).strip()
+            if body.get("confirmar") is not True:
+                self._send_error_json(400, "confirme a exclusão"); return
+            if not (DOC_MOTIVO_MIN <= len(motivo) <= DOC_MOTIVO_MAX):
+                self._send_error_json(400, "informe o motivo da exclusão (de %d a %d caracteres)" % (DOC_MOTIVO_MIN, DOC_MOTIVO_MAX)); return
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None:
+                    self._send_error_json(404, "caso não encontrado"); return
+                if not _pode_excluir_documento(sessao, caso):
+                    _registrar_auditoria(sessao, "tentativa de excluir documento sem permissão", caso_id=case_id, resultado="negado")
+                    self._send_error_json(403, "seu perfil não pode excluir documentos deste caso"); return
+                d = documentos_col.find_one({"_id": doc_id, "caso_id": case_id})
+                if d is None or d.get("status") == "excluido":
+                    self._send_error_json(404, "documento não encontrado"); return
+                marca = {"status": "excluido", "excluido_por_nome": sessao["nome"], "excluido_por_email": sessao["email"],
+                         "excluido_em": time.time(), "excluido_em_br": _agora_br(), "motivo_exclusao": motivo}
+                _evento_documento(sessao, "exclusao_logica", case_id, doc_id, motivo=motivo)  # auditoria primeiro
+                documentos_col.update_one({"_id": doc_id}, {"$set": marca})
+                casos_col.update_one({"_id": case_id, "documentos.id": doc_id}, {"$set": {"documentos.$.status": "excluido"}})
+            except AuditoriaFalhou:
+                self._send_error_json(503, "não foi possível registrar a exclusão; nada foi alterado"); return
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/casos/<id>/documentos/<doc>/exclusao"); return
+            self._send_json({"ok": True, "id": doc_id})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/exportacoes$", path)
+        if m:
+            sessao = self._exigir_papel(PAPEIS_CASOS)
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None:
+                    self._send_error_json(404, "caso não encontrado"); return
+                if not _pode_acessar_caso(sessao, caso):
+                    _registrar_auditoria(sessao, "tentativa de exportar prontuário sem acesso", caso_id=case_id, resultado="negado")
+                    self._send_error_json(403, "sem permissão para este caso"); return
+                reg = _proximo_protocolo(sessao, case_id)
+                try:
+                    auditoria_col.insert_one({"quando": reg["quando"], "usuario_email": sessao["email"], "usuario_nome": sessao["nome"],
+                                              "papel": sessao["role"], "acao": "exportação do prontuário", "caso_id": case_id,
+                                              "resultado": "sucesso", "detalhe": "protocolo #%s" % reg["_id"]})
+                except PyMongoError:
+                    raise AuditoriaFalhou()
+            except AuditoriaFalhou:
+                self._send_error_json(503, "não foi possível registrar a exportação; o PDF não foi gerado"); return
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/casos/<id>/exportacoes"); return
+            self._send_json({"protocolo": str(reg["_id"]), "quando_br": reg["quando_br"]}, 201)
             return
 
         m = re.match(r"^/api/casos/([^/]+)/evolucoes/(\d+)/notas$", path)
@@ -3201,9 +3589,9 @@ class Handler(BaseHTTPRequestHandler):
             # que viole essa regra, e registra a tentativa na auditoria.
             # Documentos só se acrescentam: se a tela que enviou este PUT ainda não conhecia um documento
             # anexado por outra pessoa (estudante, técnico) depois do login, ele não pode ser perdido.
-            docs_atuais = caso_atual.get("documentos") or []
-            docs_novos = body.get("documentos") if isinstance(body.get("documentos"), list) else []
-            body["documentos"] = list(docs_atuais) + [d for d in docs_novos if d not in docs_atuais]
+            # Agora os documentos têm rota própria (envio com arquivo real, auditoria e permissões): o PUT do caso
+            # nunca os altera — sempre mantém exatamente o que o servidor tem.
+            body["documentos"] = list(caso_atual.get("documentos") or [])
 
             erro_imutabilidade = _validar_imutabilidade_clinica(caso_atual, body)
             if erro_imutabilidade:
