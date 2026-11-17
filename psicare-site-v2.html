@@ -4550,7 +4550,7 @@ route();
           agendamento_alterado: ['Agendamento alterado', 'Um atendimento seu foi alterado: ' + (x.detalhe || 'confira a agenda') + '.'],
           agendamento_cancelado: ['Agendamento cancelado', 'Um atendimento seu foi cancelado (' + (x.detalhe || 'confira a agenda') + ').']
         };
-        const t = TXT[x.tipo] || ['Nova nota de acompanhamento', 'O psicólogo técnico adicionou uma nota a uma evolução sob sua responsabilidade.'];
+        const t = TXT[x.tipo] || ['Nova nota de acompanhamento', (x.papel === 'supervisor' ? 'Seu supervisor' : 'O psicólogo técnico') + ' adicionou uma nota a uma evolução sob sua responsabilidade.'];
         return '<li><button type="button" class="eq-notif-item" data-notif-nota="'+esc(x.id)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(t[0])+'</b><small>'+esc(t[1])+' '+esc(x.criada_em_br || '')+'</small></span></button></li>';
       }).join('');
       if(notifEmpty) notifEmpty.hidden = n.length > 0;
@@ -6346,16 +6346,16 @@ route();
   /* Notas de acompanhamento: o técnico escreve, o estudante responsável só lê. Ficam em
      coleção separada: nunca alteram o texto da evolução e não podem ser editadas nem apagadas. */
   function notasHtml(idx){
-    if(currentRole !== 'tecnico' && currentRole !== 'estudante') return '';
+    if(currentRole !== 'tecnico' && currentRole !== 'supervisor' && currentRole !== 'estudante') return '';
     const todas = (window.PRONTUARIO_NOTAS || {})[currentCaseId] || [];
     const notas = todas.filter(function(x){ return x.evolucao === idx; });
     if(currentRole === 'estudante' && !notas.length) return '';
     const lista = notas.map(function(x){
-      return '<li class="eq-nota"><span class="eq-nota-meta">Nota de '+esc(x.autor)+' · '+esc(x.criado_em_br)+'</span><p class="eq-nota-txt">'+esc(x.texto)+'</p>'+
-        (currentRole === 'tecnico' ? '<span class="eq-nota-lida">'+(x.lida_em_br ? 'Lida pelo estudante em '+esc(x.lida_em_br) : 'Ainda não lida pelo estudante')+'</span>' : '')+'</li>';
+      return '<li class="eq-nota"><span class="eq-nota-meta">Nota de '+esc(x.autor)+(x.papel === 'supervisor' ? ' (supervisão)' : '')+' · '+esc(x.criado_em_br)+'</span><p class="eq-nota-txt">'+esc(x.texto)+'</p>'+
+        (currentRole !== 'estudante' ? '<span class="eq-nota-lida">'+(x.lida_em_br ? 'Lida pelo estudante em '+esc(x.lida_em_br) : 'Ainda não lida pelo estudante')+'</span>' : '')+'</li>';
     }).join('');
     let form = '';
-    if(currentRole === 'tecnico'){
+    if(currentRole === 'tecnico' || currentRole === 'supervisor'){
       form = '<button type="button" class="eq-case-open" data-nota-nova="'+idx+'">Adicionar nota de acompanhamento</button>'+
         '<form class="eq-nota-form" data-nota-form="'+idx+'" hidden novalidate>'+
           '<label for="eq-nota-txt-'+idx+'">Nova nota de acompanhamento</label>'+
@@ -6369,7 +6369,7 @@ route();
       (notas.length ? '<ol class="eq-notas-lista">'+lista+'</ol>' : '<p class="eq-nota-aviso">Nenhuma nota nesta evolução.</p>')+form+'</div>';
   }
   function carregarNotas(casoId){
-    if(currentRole !== 'tecnico' && currentRole !== 'estudante') return Promise.resolve();
+    if(currentRole !== 'tecnico' && currentRole !== 'supervisor' && currentRole !== 'estudante') return Promise.resolve();
     return window.apiGetNotas(casoId).then(function(l){ window.PRONTUARIO_NOTAS[casoId] = l || []; }).catch(function(){ /* sem notas disponíveis agora */ });
   }
   (function(){

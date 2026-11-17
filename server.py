@@ -1583,9 +1583,9 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/casos/([^/]+)/notas$", path)
         if m:
-            # Notas de acompanhamento de um caso: o técnico lê todas; o estudante, só as
-            # dos casos sob sua responsabilidade; supervisor e demais perfis não leem (nesta etapa).
-            sessao = self._exigir_papel({"tecnico", "estudante"})
+            # Notas de acompanhamento de um caso: técnico e supervisor leem todas; o estudante,
+            # só as dos casos sob sua responsabilidade; demais perfis não leem.
+            sessao = self._exigir_papel({"tecnico", "supervisor", "estudante"})
             if sessao is None:
                 return
             case_id = unquote(m.group(1))
@@ -1600,7 +1600,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "GET /api/casos/<id>/notas")
                 return
             self._send_json([{"id": n["_id"], "evolucao": n["evolucao_idx"], "autor": n["autor"], "criado_em_br": n["criado_em_br"],
-                              "texto": n["texto"], "lida_em_br": n.get("lida_em_br", "")} for n in notas])
+                              "texto": n["texto"], "lida_em_br": n.get("lida_em_br", ""), "papel": n.get("autor_papel", "tecnico")} for n in notas])
             return
 
         if path == "/api/notificacoes":
@@ -1626,7 +1626,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             # Sem nome de paciente nem conteúdo: só a referência ao registro.
             self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d["caso_id"], "evolucao": d.get("evolucao_idx"),
-                              "detalhe": d.get("detalhe", ""), "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+                              "detalhe": d.get("detalhe", ""), "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida")),
+                              "papel": d.get("autor_papel", "")} for d in docs])
             return
 
         if path == "/api/supervisor/painel":
@@ -2330,9 +2331,9 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/casos/([^/]+)/evolucoes/(\d+)/notas$", path)
         if m:
-            # Nota de acompanhamento (só técnico). Registro adicional e separado: a evolução
+            # Nota de acompanhamento (técnico ou supervisor). Registro adicional e separado: a evolução
             # original não é tocada e a nota nunca é editada nem apagada.
-            sessao = self._exigir_papel({"tecnico"})
+            sessao = self._exigir_papel({"tecnico", "supervisor"})
             if sessao is None:
                 return
             case_id, idx = unquote(m.group(1)), int(m.group(2))
@@ -2348,23 +2349,26 @@ class Handler(BaseHTTPRequestHandler):
                 caso = casos_col.find_one({"_id": case_id})
                 if caso is None:
                     self._send_error_json(404, "caso não encontrado"); return
+                if not _pode_acessar_caso(sessao, caso):
+                    _registrar_auditoria(sessao, "tentativa de criar nota em caso sem acesso", caso_id=case_id, resultado="negado")
+                    self._send_error_json(403, "sem permissão para este caso"); return
                 if idx >= len(caso.get("evolucoes") or []):
                     self._send_error_json(404, "evolução não encontrada"); return
                 agora_ts = time.time()
                 nota = {"_id": "nt-" + secrets.token_hex(6), "caso_id": case_id, "evolucao_idx": idx, "autor": sessao["nome"],
-                        "autor_email": sessao["email"], "criado_em": agora_ts, "criado_em_br": _agora_br(), "texto": texto,
+                        "autor_email": sessao["email"], "autor_papel": sessao["role"], "criado_em": agora_ts, "criado_em_br": _agora_br(), "texto": texto,
                         "destinatario": caso.get("estudante") or ""}
                 notas_col.insert_one(nota)
                 if nota["destinatario"]:
                     notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": "nota_acompanhamento", "destinatario": nota["destinatario"],
-                                                 "caso_id": case_id, "evolucao_idx": idx, "nota_id": nota["_id"], "criada_em": agora_ts,
+                                                 "caso_id": case_id, "evolucao_idx": idx, "nota_id": nota["_id"], "autor_papel": sessao["role"], "criada_em": agora_ts,
                                                  "criada_em_br": nota["criado_em_br"], "lida": False})
             except PyMongoError as exc:
                 self._erro_servidor(exc, "POST /api/casos/<id>/evolucoes/<n>/notas")
                 return
             _registrar_auditoria(sessao, "nota de acompanhamento adicionada", caso_id=case_id, detalhe="evolução %d" % (idx + 1))
             self._send_json({"id": nota["_id"], "evolucao": idx, "autor": nota["autor"], "criado_em_br": nota["criado_em_br"],
-                             "texto": nota["texto"], "lida_em_br": "", "notificado": bool(nota["destinatario"])}, 201)
+                             "texto": nota["texto"], "lida_em_br": "", "papel": nota["autor_papel"], "notificado": bool(nota["destinatario"])}, 201)
             return
 
         m = re.match(r"^/api/casos/([^/]+)/agendamentos$", path)
