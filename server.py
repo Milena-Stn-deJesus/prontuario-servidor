@@ -378,7 +378,9 @@ PAPEIS_CASOS = {"tecnico", "supervisor", "estudante"}
 # inscrições, triagem, agendas, solicitações).
 PAPEIS_ADMIN = {"admin_ti"}
 PAPEIS_SOLICITACOES_LEITURA = {"tecnico", "supervisor"}
-PAPEIS_SOLICITACOES_ESCRITA = {"tecnico", "supervisor"}
+# Instruções, seção 9: o acesso do paciente ao prontuário é liberado SOMENTE pelo
+# psicólogo técnico; e agendamentos/reagendamentos são do técnico (único perfil).
+PAPEIS_SOLICITACOES_ESCRITA = {"tecnico"}
 
 if not MONGODB_URI:
     print("=" * 70)
@@ -902,21 +904,19 @@ def reagendamento_doc_to_json(doc):
 # responsabilidade de quem pedia. Isso foi comprovado em teste: um estudante
 # conseguia ler e editar prontuário de paciente de outro estudante. As
 # funções abaixo implementam a regra real do serviço-escola: um estudante só
-# acessa os casos em que ele mesmo é "estudante" responsável; um supervisor
-# só acessa os casos em que ele é o "supervisor"; o técnico (papel
-# administrativo, que também processa solicitações de prontuário e
-# reagendamentos de qualquer paciente) mantém acesso a todos os casos, como
-# já funcionava antes.
+# acessa os casos em que ele mesmo é "estudante" responsável; o supervisor
+# e o técnico acessam todos os casos (matriz de permissões das Instruções para
+# desenvolvimento do prontuário). Só o técnico cria/altera agendamentos,
+# libera acesso ao prontuário e confirma reagendamentos.
 
 def _filtro_visibilidade_casos(sessao):
     """Filtro do MongoDB a aplicar em GET /api/casos conforme o papel da
-    sessão. Devolve {} (sem filtro = vê tudo) para técnico; para estudante e
-    supervisor, restringe à coluna correspondente com o nome da própria
-    sessão."""
+    sessão. Segundo as Instruções para desenvolvimento do prontuário (matriz de
+    permissões, "Ver lista de casos"): técnico e supervisor veem todos os casos
+    (visão do serviço) e o estudante só os seus. Devolve {} (sem filtro) para
+    técnico e supervisor."""
     if sessao["role"] == "estudante":
         return {"estudante": sessao["nome"]}
-    if sessao["role"] == "supervisor":
-        return {"supervisor": sessao["nome"]}
     return {}
 
 
@@ -930,7 +930,7 @@ def _pode_acessar_caso(sessao, caso_doc):
     if sessao["role"] == "estudante":
         return caso_doc.get("estudante") == sessao["nome"]
     if sessao["role"] == "supervisor":
-        return caso_doc.get("supervisor") == sessao["nome"]
+        return True  # matriz de permissões: supervisor acessa todos os casos
     return False
 
 
@@ -2160,6 +2160,16 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 body.pop("confirmacao", None)
             body["paciente"] = caso_atual.get("paciente", body.get("paciente", ""))
+
+            # Matriz de permissões ("Criar/editar agendamentos": técnico, único perfil;
+            # supervisor e estudante só veem). Qualquer mudança na agenda do caso
+            # vinda de outro papel é recusada e fica na auditoria.
+            if sessao["role"] != "tecnico" and (body.get("agendamentos") or []) != (caso_atual.get("agendamentos") or []):
+                _registrar_auditoria(
+                    sessao, "tentativa de alterar agendamentos sem permissão", caso_id=case_id, resultado="negado"
+                )
+                self._send_error_json(403, "apenas o psicólogo técnico cria ou altera agendamentos")
+                return
 
             # Só técnico e supervisor podem encerrar/reabrir um caso — a
             # própria tela já impede isso para o estudante (canCloseCase()),
