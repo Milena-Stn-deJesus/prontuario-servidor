@@ -470,6 +470,8 @@ footer{margin-top:120px}
 .eq-comp-form{display:flex;flex-direction:column;gap:8px;margin-top:8px;max-width:460px;font-size:12.5px;color:var(--muted)}
 .eq-comp-form label{display:flex;flex-direction:column;gap:4px}
 .eq-comp-form-acoes{display:flex;gap:8px;align-items:center}
+.eq-cal-comp{font-weight:700}
+.eq-cal-comp.is-faltou{color:#9b2c2c}
 .eq-comp-erro{font-size:12.5px;color:#8a1f1f;margin:0}
 .eq-agenda-comp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:6px;font-size:12.5px}
 .eq-doc-tipo{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:99px;background:var(--sky);color:var(--navy);font-size:11px;font-weight:700;vertical-align:1px}
@@ -5696,7 +5698,7 @@ route();
         const key = parts[2]+'-'+parts[1]+'-'+parts[0];
         if(f && !agPassaFiltro(f, caso, ag, key)) return;
         if(!byDate[key]) byDate[key] = [];
-        byDate[key].push({hora:ag.hora, local:ag.local, status:ag.status, paciente:caso.paciente, caseId:caseId, idx:idx, estudante:caso.estudante||'', supervisor:caso.supervisor||''});
+        byDate[key].push({hora:ag.hora, local:ag.local, status:ag.status, paciente:caso.paciente, caseId:caseId, idx:idx, estudante:caso.estudante||'', supervisor:caso.supervisor||'', comp:ag.comparecimento||null, iniciou:agIniciou(ag)});
       });
     });
     Object.keys(byDate).forEach(function(k){ byDate[k].sort(function(a,b){ return a.hora.localeCompare(b.hora); }); });
@@ -5721,7 +5723,8 @@ route();
           + '<span class="eq-cal-appt-meta"><b>Estudante</b> ' + esc(a.estudante || '—') + '</span>'
           + '<span class="eq-cal-appt-meta"><b>Supervisor</b> ' + esc(a.supervisor || '—') + '</span>'
           + '<span class="eq-cal-appt-meta"><b>Local</b> ' + esc(a.local || '—') + '</span>'
-          + agAcoesHtml(a.caseId, a.idx, a.status) + '</div>'
+          + ((a.status !== 'Cancelada' && (a.comp || a.iniciou)) ? '<span class="eq-cal-appt-meta"><b>Comparecimento</b> <span class="eq-cal-comp' + (a.comp && a.comp.situacao === 'faltou' ? ' is-faltou' : '') + '">' + (a.comp ? (a.comp.situacao === 'faltou' ? 'Faltou' : 'Compareceu') : 'Pendente') + '</span></span>' : '')
+          + agAcoesHtml(a.caseId, a.idx, a.status, a.comp) + '</div>'
           + '<button type="button" class="eq-cal-appt-open" data-case="' + esc(a.caseId) + '">Ver caso<svg><use href="#i-arrow"/></svg></button>'
           + '</div>';
       });
@@ -5731,7 +5734,7 @@ route();
         html += '<div class="eq-cal-appt">'
           + '<span class="eq-cal-appt-time">' + esc(a.hora) + '</span>'
           + '<div class="eq-cal-appt-info"><strong>' + esc(a.paciente) + '</strong><span>' + esc(a.local) + ' · ' + esc(a.status) + '</span>'
-          + (tec ? '<span class="eq-cal-appt-meta">Estudante: ' + esc(a.estudante || '—') + ' · Supervisor: ' + esc(a.supervisor || '—') + '</span>' + agAcoesHtml(a.caseId, a.idx, a.status) : '')
+          + (tec ? '<span class="eq-cal-appt-meta">Estudante: ' + esc(a.estudante || '—') + ' · Supervisor: ' + esc(a.supervisor || '—') + '</span>' + agAcoesHtml(a.caseId, a.idx, a.status, a.comp) : '')
           + '</div>'
           + '<button type="button" class="eq-cal-appt-open" data-case="' + esc(a.caseId) + '">Ver caso<svg><use href="#i-arrow"/></svg></button>'
           + '</div>';
@@ -6249,8 +6252,8 @@ route();
       par[0].value = par[1][atual] ? atual : '';
     });
   }
-  function agAcoesHtml(caseId, idx, status){
-    if(status !== 'Confirmada') return '';
+  function agAcoesHtml(caseId, idx, status, comp){
+    if(status !== 'Confirmada' || comp) return '';
     const a = ' data-caso="'+esc(caseId)+'" data-idx="'+idx+'"';
     return '<div class="eq-cal-appt-acoes"><button type="button" data-ag-acao="editar"'+a+'>Editar</button><button type="button" data-ag-acao="reagendar"'+a+'>Reagendar</button><button type="button" class="is-danger" data-ag-acao="cancelar"'+a+'>Cancelar</button></div>';
   }
