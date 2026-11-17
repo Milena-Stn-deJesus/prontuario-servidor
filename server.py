@@ -13,11 +13,9 @@ O QUE ESSE ARQUIVO FAZ:
     PUT  /api/casos/<id>            -> atualiza um caso (agenda, nova evolução, documento,
                                         primeira anamnese...); evoluções e anamnese já
                                         registradas são imutáveis no servidor, não só na tela
-    GET  /api/inscricoes            -> (só técnico) inscrições registradas, com histórico
-    POST /api/inscricoes            -> (só técnico) registra uma inscrição que chegou pelo
-                                        formulário externo (status "Recebido")
-    PUT  /api/inscricoes/<INS-...>  -> (só técnico) ação explícita: analisar, encaminhar,
-                                        agendar_triagem ou resultado (aprovado/não aprovado)
+    GET  /api/inscricoes            -> DESCONTINUADA (410): inscrição e triagem são feitas fora do sistema
+    POST /api/inscricoes            -> DESCONTINUADA (410)
+    PUT  /api/inscricoes/<INS-...>  -> DESCONTINUADA (410); os dados antigos seguem no banco
     GET  /api/solicitacoes          -> devolve a fila de solicitações de prontuário
     POST /api/solicitacoes          -> cria uma nova solicitação (paciente pede o prontuário)
     PUT  /api/solicitacoes/<id>     -> atualiza uma solicitação (técnico libera o acesso)
@@ -1117,6 +1115,11 @@ class Handler(BaseHTTPRequestHandler):
             return {}
         return json.loads(raw.decode("utf-8"))
 
+    def _modulo_descontinuado(self):
+        """Inscrição e triagem passaram a ser feitas fora do sistema (formulário
+        institucional). As rotas antigas respondem 410 e nada é lido nem gravado."""
+        self._send_error_json(410, "recurso descontinuado: a inscrição e a triagem são feitas fora do sistema")
+
     def log_message(self, fmt, *args):
         print("%s - %s" % (self.log_date_time_string(), fmt % args))
 
@@ -1249,6 +1252,9 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/inscricoes":
+            self._modulo_descontinuado()
+            return
+        if False:  # módulo de inscrição/triagem desativado (dados preservados no banco)
             # Dados pessoais de candidatos: só o psicólogo técnico acessa.
             sessao = self._exigir_papel({"tecnico"})
             if sessao is None:
@@ -1752,6 +1758,9 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/inscricoes":
+            self._modulo_descontinuado()
+            return
+        if False:  # módulo de inscrição/triagem desativado (dados preservados no banco)
             sessao = self._exigir_papel({"tecnico"})
             if sessao is None:
                 return
@@ -1841,7 +1850,9 @@ class Handler(BaseHTTPRequestHandler):
             # triagem foi 'Aprovado para acompanhamento' e a inscrição ainda não
             # virou paciente. A inscrição é "reservada" antes de criar o caso,
             # para que dois cliques não gerem dois pacientes.
-            inscricao_id = str(body.get("inscricao_id", "")).strip()
+            # Módulo de inscrição/triagem descontinuado: o cadastro nunca mais
+            # lê nem altera inscrições (os dados antigos continuam no banco).
+            inscricao_id = ""
             if inscricao_id:
                 try:
                     reserva = inscricoes_col.update_one(
@@ -2309,6 +2320,9 @@ class Handler(BaseHTTPRequestHandler):
 
         mi = re.match(r"^/api/inscricoes/(INS-\d{4}-\d{4})$", path)
         if mi:
+            self._modulo_descontinuado()
+            return
+        if False and mi:  # módulo de inscrição/triagem desativado (dados preservados no banco)
             # Ações do psicólogo técnico sobre uma inscrição. Cada ação é
             # explícita (analisar NÃO encaminha à triagem) e fica no histórico.
             sessao = self._exigir_papel({"tecnico"})

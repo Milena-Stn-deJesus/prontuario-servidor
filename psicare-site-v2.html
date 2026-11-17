@@ -596,49 +596,15 @@ footer{margin-top:120px}
 .eq-tec[data-view="estudantes"] [data-in]:not([data-in~="estudantes"]),
 .eq-tec[data-view="agenda"] [data-in]:not([data-in~="agenda"]),
 .eq-tec[data-view="solicitacoes"] [data-in]:not([data-in~="solicitacoes"]),
-.eq-tec[data-view="formularios"] [data-in]:not([data-in~="formularios"]),
-.eq-tec[data-view="triagem"] [data-in]:not([data-in~="triagem"]),
 .eq-tec[data-view="cadastro"] [data-in]:not([data-in~="cadastro"]){display:none!important}
-/* Formulários e Triagem */
-.eq-ins-item{border:1px solid var(--line);border-radius:16px;margin-bottom:10px;background:#fff;overflow:hidden}
-.eq-ins-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:14px;width:100%;padding:14px 18px;border:0;background:none;font-family:var(--sans);text-align:left;cursor:pointer;color:var(--navy)}
-.eq-ins-row:focus-visible{outline:2px solid #8fc4aa;outline-offset:-2px}
-.eq-ins-row b{display:block;font-size:15px;font-weight:600}
-.eq-ins-row small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted)}
-.eq-ins-chev{width:16px;height:16px;color:var(--muted);transition:transform .2s}
-.eq-ins-item.is-open .eq-ins-chev{transform:rotate(90deg)}
-.eq-ins-body{padding:4px 18px 18px;border-top:1px solid var(--line)}
-.eq-ins-dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px;margin:16px 0 4px}
-.eq-ins-dl div{min-width:0}
-.eq-ins-dl span{display:block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-.eq-ins-dl strong{font-size:14px;font-weight:600;color:var(--ink);overflow-wrap:anywhere}
-.eq-ins-dl .wide{grid-column:1/-1}
-.eq-ins-sub{margin:18px 0 8px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.eq-ins-hist{list-style:none;margin:0;padding:0;font-size:13px;color:var(--muted)}
-.eq-ins-hist li{padding:5px 0;border-top:1px dashed var(--line)}
-.eq-ins-hist li:first-child{border-top:0}
-.eq-ins-hist b{color:var(--navy);font-weight:600}
-.eq-ins-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-items:center}
-.eq-ins-actions .btn{padding:10px 20px;font-size:13.5px}
-.eq-ins-confirm{font-size:13px;color:var(--navy);font-weight:600}
-.eq-ins-tri{margin-top:16px;padding:16px 18px;border-radius:14px;background:#f6f4ee}
-.eq-ins-tri h5{margin:0 0 10px;font-size:13.5px;font-weight:700;color:var(--navy)}
-.eq-ins-tri .eq-field-row{grid-template-columns:repeat(3,minmax(0,1fr))}
-.eq-ins-note{font-size:13px;line-height:1.55;color:var(--muted);margin:10px 0 0}
-.eq-ins-chip{display:inline-block;margin:0 6px 6px 0;padding:3px 10px;border-radius:999px;background:#eef3f0;color:var(--navy);font-size:12.5px;font-weight:600}
+/* Disponibilidade semanal (cadastro de paciente e estudantes) */
 .eq-disp{display:grid;grid-template-columns:62px repeat(5,minmax(0,1fr));gap:8px 6px;align-items:center;max-width:430px;margin-top:4px}
 .eq-disp b{font-size:12px;font-weight:700;text-align:center;color:var(--muted)}
 .eq-disp .eq-disp-t{font-size:12.5px;color:var(--navy);font-weight:600}
 .eq-disp-c{display:flex;justify-content:center}
 .eq-disp-c input{width:18px;height:18px;accent-color:var(--blue)}
-.eq-np-origem{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between;margin:0 0 18px;padding:14px 16px;border:1px solid #cfe3da;border-radius:14px;background:#f1f7f3;font-size:13px;line-height:1.55;color:var(--navy)}
-.eq-np-origem[hidden]{display:none}
-.eq-np-origem p{margin:0;flex:1 1 320px}
-.eq-np-origem details{flex:1 1 100%}
-.eq-np-origem summary{cursor:pointer;font-weight:700;font-size:13px}
-.eq-np-origem .eq-case-open{flex:none}
 .dash-badge-info{background:#e6eef7;color:#2a5f93}
-@media (max-width:640px){.eq-ins-dl,.eq-ins-tri .eq-field-row{grid-template-columns:1fr}.eq-ins-row{grid-template-columns:minmax(0,1fr) auto}.eq-ins-row .eq-ins-chev{display:none}.eq-disp{grid-template-columns:54px repeat(5,minmax(0,1fr))}}
+@media (max-width:640px){.eq-disp{grid-template-columns:54px repeat(5,minmax(0,1fr))}}
 .eq-side{background:var(--navy);color:#cfe3da;padding:28px 14px 18px;display:flex;flex-direction:column;gap:24px}
 .eq-side-brand{padding:0 10px}
 .eq-side-brand b{display:block;font-family:var(--serif);font-weight:500;font-size:17px;line-height:1.25;color:#fff}
@@ -2374,8 +2340,6 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <button type="button" class="eq-side-link" data-view="pacientes"><svg aria-hidden="true"><use href="#i-user"/></svg>Pacientes</button>
             <button type="button" class="eq-side-link" data-view="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg>Estudantes</button>
             <button type="button" class="eq-side-link" data-view="agenda"><svg aria-hidden="true"><use href="#i-cal"/></svg>Agenda</button>
-            <button type="button" class="eq-side-link" data-view="formularios"><svg aria-hidden="true"><use href="#i-file"/></svg>Formulários<span class="eq-side-count" id="eq-side-count-ins" hidden>0</span></button>
-            <button type="button" class="eq-side-link" data-view="triagem"><svg aria-hidden="true"><use href="#i-search"/></svg>Triagem<span class="eq-side-count" id="eq-side-count-tri" hidden>0</span></button>
             <button type="button" class="eq-side-link" data-view="solicitacoes"><svg aria-hidden="true"><use href="#i-file"/></svg>Solicitações<span class="eq-side-count" id="eq-side-count" hidden>0</span></button>
           </nav>
           <div class="eq-side-foot">
@@ -2609,67 +2573,6 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <p class="eq-pt-empty" id="eq-reagendamentos-msg" hidden></p>
         </div>
 
-        <div class="dash-hist eq-tec-only" id="eq-ins-card" data-in="formularios">
-          <div class="eq-tec-page-head">
-            <h3 class="eq-tec-title">Formulários</h3>
-            <p>Inscrições recebidas pelo formulário externo do Serviço-Escola. Registre cada resposta aqui, analise e escolha, uma a uma, quais seguem para a triagem.</p>
-          </div>
-          <div class="eq-tec-controls">
-            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-ins-search">Buscar</label><input type="search" class="eq-input" id="eq-ins-search" placeholder="Nome ou código da inscrição" autocomplete="off"></div>
-            <div class="eq-tec-control"><label for="eq-ins-filter">Status</label><select class="eq-select" id="eq-ins-filter"><option value="">Todos</option><option>Recebido</option><option>Analisado</option><option>Aguardando triagem</option><option>Aprovado para acompanhamento</option><option>Não aprovado</option><option>Cadastrado</option></select></div>
-            <div class="eq-tec-control"><label for="eq-ins-sort">Ordem</label><select class="eq-select" id="eq-ins-sort"><option value="novas">Mais recentes primeiro</option><option value="antigas">Mais antigas primeiro</option></select></div>
-            <div class="eq-tec-control" style="justify-content:flex-end"><button type="button" class="btn btn-primary" id="eq-ins-new-btn" aria-expanded="false" aria-controls="eq-ins-form"><svg><use href="#i-plus"/></svg>Registrar inscrição</button></div>
-          </div>
-          <form id="eq-ins-form" novalidate hidden style="margin:0 0 22px;padding:20px 20px 6px;border:1px solid var(--line);border-radius:16px;background:#fbfaf6">
-            <h4 class="eq-ins-sub" style="margin-top:0">Dados da inscrição (copie da resposta do formulário)</h4>
-            <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-in-nome">Nome completo</label><input type="text" class="eq-input" id="eq-in-nome" autocomplete="off"></div>
-              <div class="eq-field"><label for="eq-in-nascimento">Data de nascimento</label><input type="text" class="eq-input" id="eq-in-nascimento" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off"><p class="eq-field-hint" id="eq-in-idade" aria-live="polite" hidden></p></div>
-            </div>
-            <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-in-cpf">CPF</label><input type="text" class="eq-input" id="eq-in-cpf" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="off"></div>
-              <div class="eq-field"><label for="eq-in-email">E-mail</label><input type="email" class="eq-input" id="eq-in-email" autocomplete="off"></div>
-            </div>
-            <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-in-telefone">Telefone</label><input type="tel" class="eq-input" id="eq-in-telefone" placeholder="(11) 90000-0000" inputmode="numeric" maxlength="15" autocomplete="off"></div>
-              <div class="eq-field"></div>
-            </div>
-            <fieldset class="eq-np-resp" id="eq-in-resp" hidden>
-              <legend>Dados do responsável <span>candidato menor de idade</span></legend>
-              <div class="eq-field-row">
-                <div class="eq-field"><label for="eq-in-resp-nome">Nome completo do responsável</label><input type="text" class="eq-input" id="eq-in-resp-nome" autocomplete="off"></div>
-                <div class="eq-field"><label for="eq-in-resp-parentesco">Vínculo com o candidato</label><select class="eq-select" id="eq-in-resp-parentesco"><option value="">Selecione…</option><option>Mãe</option><option>Pai</option><option>Avó ou avô</option><option>Tutor(a) ou guardião legal</option><option>Outro responsável legal</option></select></div>
-              </div>
-              <div class="eq-field-row">
-                <div class="eq-field"><label for="eq-in-resp-cpf">CPF do responsável</label><input type="text" class="eq-input" id="eq-in-resp-cpf" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="off"></div>
-                <div class="eq-field"><label for="eq-in-resp-telefone">Telefone do responsável</label><input type="tel" class="eq-input" id="eq-in-resp-telefone" placeholder="(11) 90000-0000" inputmode="numeric" maxlength="15" autocomplete="off"></div>
-              </div>
-            </fieldset>
-            <div class="eq-field"><span class="eq-label-like" style="font-size:14px;font-weight:600;color:var(--navy)">Dias e turnos disponíveis</span><div id="eq-in-disp"></div></div>
-            <div class="eq-field" style="margin-top:14px"><label for="eq-in-motivo">Motivo da procura (como o candidato escreveu)</label><textarea class="eq-textarea" id="eq-in-motivo" rows="3" maxlength="600"></textarea></div>
-            <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5"><input type="checkbox" id="eq-in-consent" style="margin-top:3px"><span>O candidato deu o consentimento para o tratamento dos seus dados pessoais e de saúde no formulário de inscrição.</span></label>
-            <div class="eq-form-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:0;margin-bottom:16px"><button type="submit" class="btn btn-primary"><svg><use href="#i-plus"/></svg>Registrar inscrição</button><button type="button" class="btn btn-outline" id="eq-ins-cancel">Cancelar</button></div>
-            <p class="eq-case-export-msg" id="eq-ins-form-msg" hidden></p>
-          </form>
-          <p class="eq-case-export-msg" id="eq-ins-msg" hidden></p>
-          <div id="eq-ins-list"></div>
-          <p class="eq-pt-empty" id="eq-ins-empty" hidden></p>
-        </div>
-
-        <div class="dash-hist eq-tec-only" id="eq-tri-card" data-in="triagem">
-          <div class="eq-tec-page-head">
-            <h3 class="eq-tec-title">Triagem</h3>
-            <p>Inscrições que você encaminhou. A convocação depende da disponibilidade de vagas, e ser selecionado para a triagem não garante o início do acompanhamento.</p>
-          </div>
-          <div class="eq-tec-controls">
-            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-tri-search">Buscar</label><input type="search" class="eq-input" id="eq-tri-search" placeholder="Nome ou código da inscrição" autocomplete="off"></div>
-            <div class="eq-tec-control"><label for="eq-tri-filter">Status</label><select class="eq-select" id="eq-tri-filter"><option value="">Todos</option><option>Aguardando triagem</option><option>Aprovado para acompanhamento</option><option>Não aprovado</option><option>Cadastrado</option></select></div>
-          </div>
-          <p class="eq-case-export-msg" id="eq-tri-msg" hidden></p>
-          <div id="eq-tri-list"></div>
-          <p class="eq-pt-empty" id="eq-tri-empty" hidden></p>
-        </div>
-
         <div class="eq-pt-card" id="eq-newpatient-card" data-in="cadastro" hidden>
           <div class="eq-pt-head">
             <div class="eq-pt-head-title">
@@ -2685,11 +2588,6 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <div class="eq-field-row">
               <div class="eq-field"><label for="eq-np-cpf">CPF do paciente</label><input type="text" class="eq-input" id="eq-np-cpf" required placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="off"></div>
               <div class="eq-field"><label for="eq-np-email">E-mail</label><input type="email" class="eq-input" id="eq-np-email" required placeholder="nome@exemplo.com" autocomplete="off"></div>
-            </div>
-            <div class="eq-np-origem" id="eq-np-origem" hidden>
-              <p>Cadastro iniciado a partir da inscrição <b id="eq-np-origem-id"></b>. <span style="color:var(--muted)">Confira os dados preenchidos automaticamente com as informações da inscrição antes de concluir o cadastro.</span></p>
-              <button type="button" class="eq-case-open" id="eq-np-origem-limpar">Cadastrar sem inscrição</button>
-              <details><summary>Ver dados originais da inscrição</summary><div id="eq-np-origem-dados"></div></details>
             </div>
             <div class="eq-field-row">
               <div class="eq-field"><label for="eq-np-telefone">Telefone</label><input type="tel" class="eq-input" id="eq-np-telefone" placeholder="(11) 90000-0000" inputmode="numeric" maxlength="15" autocomplete="off"></div>
@@ -2943,19 +2841,6 @@ window.apiCadastroVisto = function(casoId){
 };
 window.apiReenviarConvitePaciente = function(casoId){
   return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/convite', {method:'PUT', headers:{'Content-Type':'application/json'}, body:'{}'});
-};
-window.apiGetInscricoes = function(){
-  return _apiFetch('/api/inscricoes');
-};
-window.apiCreateInscricao = function(payload){
-  return _apiFetch('/api/inscricoes', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  });
-};
-window.apiUpdateInscricao = function(id, payload){
-  return _apiFetch('/api/inscricoes/' + encodeURIComponent(id), {
-    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  });
 };
 window.apiCreateReagendamento = function(payload){
   return _apiFetch('/api/reagendamentos', {
@@ -4357,9 +4242,9 @@ route();
     fillNpEstudantes();
   }
   function setTecView(view){
+    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
     tecView = view;
     applyTecView();
-    if(view === 'formularios' || view === 'triagem') carregarInscricoes();
     const card = tecCard();
     if(card){
       const topo = card.getBoundingClientRect().top + window.scrollY - 110;
@@ -4576,8 +4461,7 @@ route();
     casesStudentSel = '';
     casesListOpen = false;
     tecView = 'painel';
-    INSCRICOES = []; insAberta = {form:'', tri:''}; insConfirmando = ''; insPendenteCadastro = null;
-    if(role === 'tecnico'){ carregarInscricoes(); carregarAcessos(); }
+    if(role === 'tecnico'){ carregarAcessos(); }
     syncCasesTable();
     const rows = casesBody ? Array.from(casesBody.querySelectorAll('tr')) : [];
     if(role === 'estudante'){
@@ -4981,8 +4865,7 @@ route();
         nascimento: nascEl.value.trim(), cpf: cpfEl.value, email: email, responsavel: responsavel,
         telefone: document.getElementById('eq-np-telefone').value.trim(),
         disponibilidade: getDisp('np'),
-        motivo: document.getElementById('eq-np-motivo').value.trim(),
-        inscricao_id: insPendenteCadastro || undefined
+        motivo: document.getElementById('eq-np-motivo').value.trim()
       }).then(function(resp){
         CASOS[resp.id] = resp.caso;
         syncCasesTable();
@@ -4999,7 +4882,6 @@ route();
         }
         carregarAcessos();
         newPatientForm.reset();
-        limparOrigemCadastro();
         atualizaIdadeCadastro();
         document.getElementById('eq-np-estudante').value = '';
         fillNpEstudantes();
@@ -5018,14 +4900,6 @@ route();
   }
 
 
-  /* ===== FORMULÁRIOS E TRIAGEM (psicólogo técnico) =====
-     O formulário de inscrição é externo; aqui o técnico registra cada resposta e conduz
-     Recebido -> Analisado -> Aguardando triagem -> Aprovado / Não aprovado -> Cadastrado. */
-  var INSCRICOES = [];
-  var insAberta = {form:'', tri:''};
-  var insConfirmando = '';
-  var insPendenteCadastro = null;
-  var insErroCarga = false;
   const DISP_DIAS = [['seg','Seg'],['ter','Ter'],['qua','Qua'],['qui','Qui'],['sex','Sex']];
   const DISP_TURNOS = [['manha','Manhã'],['tarde','Tarde'],['noite','Noite']];
   function dispGridHtml(pref){
@@ -5051,296 +4925,10 @@ route();
       return d[1] + ': ' + DISP_TURNOS.filter(function(t){ return porDia[d[0]].indexOf(t[0]) !== -1; }).map(function(t){ return t[1].toLowerCase(); }).join(', ');
     }).join(' · ');
   }
-  ['eq-in-disp','eq-np-disp','eq-st-disp'].forEach(function(id){
+  ['eq-np-disp','eq-st-disp'].forEach(function(id){
     const el = document.getElementById(id);
-    if(el) el.innerHTML = dispGridHtml(id === 'eq-in-disp' ? 'in' : (id === 'eq-st-disp' ? 'st' : 'np'));
+    if(el) el.innerHTML = dispGridHtml(id === 'eq-st-disp' ? 'st' : 'np');
   });
-  [['eq-in-nascimento', mascaraData], ['eq-in-cpf', mascaraCpf], ['eq-in-resp-cpf', mascaraCpf], ['eq-in-telefone', mascaraTelefone], ['eq-in-resp-telefone', mascaraTelefone], ['eq-np-telefone', mascaraTelefone]].forEach(function(par){
-    const el = document.getElementById(par[0]);
-    if(!el) return;
-    el.addEventListener('input', function(){ el.value = par[1](el.value); if(par[0] === 'eq-in-nascimento') atualizaIdadeInscricao(); });
-  });
-  function atualizaIdadeInscricao(){
-    const campo = document.getElementById('eq-in-nascimento');
-    const dica = document.getElementById('eq-in-idade');
-    const resp = document.getElementById('eq-in-resp');
-    if(!campo || !dica || !resp) return null;
-    const valor = campo.value.trim();
-    const idade = valor.length === 10 ? idadeDe(valor) : null;
-    dica.className = 'eq-field-hint';
-    if(valor.length < 10){ dica.hidden = true; dica.textContent = ''; }
-    else if(idade === null){ dica.hidden = false; dica.classList.add('is-erro'); dica.textContent = 'Data de nascimento inválida.'; }
-    else if(idade < 18){ dica.hidden = false; dica.classList.add('is-minor'); dica.textContent = 'Idade: ' + textoIdade(idade) + ' · menor de idade — preencha os dados do responsável.'; }
-    else { dica.hidden = false; dica.textContent = 'Idade: ' + textoIdade(idade); }
-    resp.hidden = !(idade !== null && idade < 18);
-    return idade;
-  }
-  function carregarInscricoes(){
-    if(currentRole !== 'tecnico' || typeof window.apiGetInscricoes !== 'function') return Promise.resolve();
-    return window.apiGetInscricoes().then(function(lista){
-      INSCRICOES = Array.isArray(lista) ? lista : [];
-      insErroCarga = false;
-      renderInscricoes();
-    }).catch(function(err){
-      console.warn('Não foi possível carregar as inscrições:', err);
-      insErroCarga = true;
-      renderInscricoes();
-    });
-  }
-  function insBadge(st){
-    const cls = st === 'Recebido' ? 'dash-badge-pending' : st === 'Analisado' ? 'dash-badge-info' : st === 'Aguardando triagem' ? 'dash-badge-info'
-      : st === 'Não aprovado' ? 'dash-badge-muted' : 'dash-badge-ok';
-    return '<span class="dash-badge '+cls+'">'+esc(st)+'</span>';
-  }
-  function insDados(i){
-    const idade = idadeDe(i.nascimento);
-    const campo = function(r, v, wide){ return '<div'+(wide?' class="wide"':'')+'><span>'+r+'</span><strong>'+(v ? esc(v) : '—')+'</strong></div>'; };
-    let h = '<div class="eq-ins-dl">' +
-      campo('Nome', i.nome) + campo('Nascimento', i.nascimento + (idade !== null ? ' · ' + textoIdade(idade) : '')) +
-      campo('CPF', i.cpf) + campo('E-mail', i.email) + campo('Telefone', i.telefone) +
-      campo('Disponibilidade informada', dispTexto(i.disponibilidade)) + campo('Motivo da procura', i.motivo, true) + '</div>';
-    if(i.responsavel){
-      const r = i.responsavel;
-      h += '<h5 class="eq-ins-sub">Responsável</h5><div class="eq-ins-dl">' + campo('Nome', r.nome) + campo('Vínculo', r.parentesco) + campo('CPF', r.cpf) + campo('Telefone', r.telefone) + '</div>';
-    }
-    return h;
-  }
-  function insHistorico(i){
-    return '<h5 class="eq-ins-sub">Histórico</h5><ul class="eq-ins-hist">' + (i.historico || []).slice().reverse().map(function(h){
-      return '<li><b>'+esc(h.acao)+'</b>' + (h.detalhe ? ' — ' + esc(h.detalhe) : '') + '<br><small>' + esc(h.em) + (h.por ? ' · ' + esc(h.por) : '') + '</small></li>';
-    }).join('') + '</ul>';
-  }
-  function insBotao(i, acao, rotulo, classe, confirmaTxt){
-    const chave = i.id + ':' + acao;
-    if(confirmaTxt && insConfirmando === chave){
-      return '<span class="eq-ins-confirm">' + esc(confirmaTxt) + '</span>' +
-        '<button type="button" class="btn btn-primary" data-ins-act="'+acao+'" data-id="'+esc(i.id)+'">Confirmar</button>' +
-        '<button type="button" class="btn btn-outline" data-ins-act="cancelar" data-id="'+esc(i.id)+'">Cancelar</button>';
-    }
-    return '<button type="button" class="btn '+classe+'" data-ins-act="'+acao+'" data-id="'+esc(i.id)+'"'+(confirmaTxt ? ' data-confirm="1"' : '')+'>'+rotulo+'</button>';
-  }
-  function insItemHtml(i, modo){
-    const aberto = insAberta[modo] === i.id;
-    const ag = i.triagem && i.triagem.agendamento;
-    const sub = i.id + ' · recebida em ' + esc(i.criado_em_br || '') + (modo === 'tri' && ag ? ' · triagem em ' + esc(ag.data) + ' às ' + esc(ag.hora) : '');
-    let corpo = '';
-    if(aberto){
-      corpo = '<div class="eq-ins-body">' + insDados(i);
-      if(modo === 'form'){
-        let acoes = '';
-        if(i.status === 'Recebido') acoes += insBotao(i, 'analisar', 'Marcar como analisado', 'btn-outline');
-        if(i.status === 'Recebido' || i.status === 'Analisado') acoes += insBotao(i, 'encaminhar', 'Encaminhar para triagem', 'btn-primary', 'Encaminhar esta inscrição para a triagem?');
-        if(acoes) corpo += '<div class="eq-ins-actions">' + acoes + '</div>';
-        if(i.status === 'Recebido') corpo += '<p class="eq-ins-note">Abrir ou analisar uma inscrição não a encaminha para a triagem: o encaminhamento é sempre uma ação sua.</p>';
-        else if(i.status !== 'Analisado') corpo += '<p class="eq-ins-note">Esta inscrição já seguiu o fluxo. Acompanhe os próximos passos na página Triagem.</p>';
-      } else {
-        const t = i.triagem || {};
-        if(i.status === 'Aguardando triagem'){
-          corpo += '<div class="eq-ins-tri"><h5>' + (ag ? 'Triagem agendada — reagendar' : 'Agendar a triagem') + '</h5><div class="eq-field-row">' +
-            '<div class="eq-field"><label>Data</label><input type="date" class="eq-input" data-tri-data></div>' +
-            '<div class="eq-field"><label>Horário</label><input type="time" class="eq-input" data-tri-hora></div>' +
-            '<div class="eq-field"><label>Local</label><input type="text" class="eq-input" data-tri-local placeholder="Clínica-Escola, sala…" value="'+esc(ag ? ag.local : '')+'"></div></div>' +
-            '<div class="eq-ins-actions"><button type="button" class="btn btn-outline" data-ins-act="agendar" data-id="'+esc(i.id)+'">' + (ag ? 'Salvar novo agendamento' : 'Registrar agendamento') + '</button></div></div>';
-          corpo += '<div class="eq-ins-tri"><h5>Resultado da avaliação</h5><div class="eq-field"><label>Observação (opcional)</label><textarea class="eq-textarea" rows="2" maxlength="500" data-tri-obs></textarea></div>' +
-            '<div class="eq-ins-actions">' + insBotao(i, 'aprovar', 'Aprovado para acompanhamento', 'btn-primary', 'Registrar como aprovado para acompanhamento?') + insBotao(i, 'nao_aprovar', 'Não aprovado', 'btn-outline', 'Registrar como não aprovado?') + '</div></div>';
-        } else if(i.status === 'Aprovado para acompanhamento'){
-          corpo += '<p class="eq-ins-note"><b>Resultado:</b> aprovado em ' + esc(t.resultado_em || '') + (t.observacao ? ' — ' + esc(t.observacao) : '') + '</p>' +
-            '<div class="eq-ins-actions"><button type="button" class="btn btn-primary" data-ins-act="cadastrar" data-id="'+esc(i.id)+'"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button></div>';
-        } else if(i.status === 'Não aprovado'){
-          corpo += '<p class="eq-ins-note"><b>Resultado:</b> não aprovado em ' + esc(t.resultado_em || '') + (t.observacao ? ' — ' + esc(t.observacao) : '') + '. A inscrição permanece no histórico. ' +
-            (t.comunicacao_pendente ? 'Comunicação ao candidato: pendente — o envio automático de e-mail ainda não está configurado, então o contato precisa ser feito pela equipe.' : '') + '</p>';
-        } else if(i.status === 'Cadastrado'){
-          corpo += '<p class="eq-ins-note">Paciente cadastrado' + (i.paciente_id ? ' com o ID <b>' + esc(i.paciente_id) + '</b>' : '') + '.</p>';
-        }
-      }
-      corpo += insHistorico(i) + '</div>';
-    }
-    return '<div class="eq-ins-item' + (aberto ? ' is-open' : '') + '" data-ins="'+esc(i.id)+'">' +
-      '<button type="button" class="eq-ins-row" data-ins-toggle="'+esc(i.id)+'" aria-expanded="'+(aberto?'true':'false')+'"><span><b>'+esc(i.nome)+'</b><small>'+sub+'</small></span>' + insBadge(i.status) +
-      '<svg class="eq-ins-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>' + corpo + '</div>';
-  }
-  function renderInscricoes(){
-    const novos = INSCRICOES.filter(function(i){ return i.status === 'Recebido'; }).length;
-    const aguardando = INSCRICOES.filter(function(i){ return i.status === 'Aguardando triagem'; }).length;
-    [['eq-side-count-ins', novos], ['eq-side-count-tri', aguardando]].forEach(function(par){
-      const el = document.getElementById(par[0]);
-      if(!el) return;
-      el.textContent = String(par[1]);
-      el.hidden = par[1] === 0;
-    });
-    const termoDe = function(id){ const e = document.getElementById(id); return e ? semAcento(e.value) : ''; };
-    const valorDe = function(id){ const e = document.getElementById(id); return e ? e.value : ''; };
-    const achou = function(i, t){ return !t || semAcento(i.nome).indexOf(t) !== -1 || semAcento(i.id).indexOf(t) !== -1; };
-    const listaF = document.getElementById('eq-ins-list'), vazioF = document.getElementById('eq-ins-empty');
-    if(listaF){
-      const filtro = valorDe('eq-ins-filter'), termo = termoDe('eq-ins-search');
-      const ordem = valorDe('eq-ins-sort') === 'antigas' ? 1 : -1;
-      const itens = INSCRICOES.filter(function(i){ return (!filtro || i.status === filtro) && achou(i, termo); })
-        .sort(function(a,b){ return ordem * ((a.criado_em || 0) - (b.criado_em || 0)); });
-      listaF.innerHTML = itens.map(function(i){ return insItemHtml(i, 'form'); }).join('');
-      if(vazioF){
-        vazioF.hidden = itens.length > 0;
-        vazioF.textContent = insErroCarga ? 'Não foi possível carregar as inscrições. Verifique a conexão com o servidor e tente novamente.'
-          : INSCRICOES.length ? 'Nenhuma inscrição encontrada com esses critérios.'
-          : 'Nenhuma inscrição registrada ainda. Quando chegar uma resposta no formulário externo, use "Registrar inscrição".';
-      }
-    }
-    const listaT = document.getElementById('eq-tri-list'), vazioT = document.getElementById('eq-tri-empty');
-    if(listaT){
-      const filtro = valorDe('eq-tri-filter'), termo = termoDe('eq-tri-search');
-      const naTriagem = ['Aguardando triagem','Aprovado para acompanhamento','Não aprovado','Cadastrado'];
-      const itens = INSCRICOES.filter(function(i){ return naTriagem.indexOf(i.status) !== -1 && (!filtro || i.status === filtro) && achou(i, termo); })
-        .sort(function(a,b){ return (a.criado_em || 0) - (b.criado_em || 0); });
-      listaT.innerHTML = itens.map(function(i){ return insItemHtml(i, 'tri'); }).join('');
-      if(vazioT){
-        vazioT.hidden = itens.length > 0;
-        vazioT.textContent = insErroCarga ? 'Não foi possível carregar as inscrições. Verifique a conexão com o servidor e tente novamente.'
-          : 'Nenhuma inscrição na triagem. Encaminhe inscrições pela página Formulários.';
-      }
-    }
-  }
-  function insMsg(modo, texto, erro){
-    const el = document.getElementById(modo === 'tri' ? 'eq-tri-msg' : 'eq-ins-msg');
-    if(!el) return;
-    el.textContent = texto || '';
-    el.hidden = !texto;
-  }
-  function dataBrDeInput(v){ const p = String(v || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; }
-  function insAplicar(id, payload, modo, sucesso){
-    return window.apiUpdateInscricao(id, payload).then(function(nova){
-      INSCRICOES = INSCRICOES.map(function(i){ return i.id === nova.id ? nova : i; });
-      insConfirmando = '';
-      insMsg(modo, sucesso);
-      renderInscricoes();
-    }).catch(function(err){
-      insConfirmando = '';
-      insMsg(modo, 'Não foi possível concluir: ' + (err && err.message ? err.message : 'erro desconhecido') + '.');
-      renderInscricoes();
-    });
-  }
-  function preencherCadastroDeInscricao(i){
-    insPendenteCadastro = i.id;
-    const set = function(id, v){ const e = document.getElementById(id); if(e) e.value = v || ''; };
-    setTecView('cadastro');
-    set('eq-np-nome', i.nome); set('eq-np-nascimento', i.nascimento); set('eq-np-cpf', i.cpf); set('eq-np-email', i.email);
-    set('eq-np-telefone', i.telefone); set('eq-np-motivo', i.motivo);
-    setDisp('np', i.disponibilidade);
-    const r = i.responsavel || {};
-    set('eq-np-resp-nome', r.nome); set('eq-np-resp-parentesco', r.parentesco); set('eq-np-resp-cpf', r.cpf); set('eq-np-resp-telefone', r.telefone);
-    atualizaIdadeCadastro();
-    const box = document.getElementById('eq-np-origem');
-    if(box){
-      box.hidden = false;
-      document.getElementById('eq-np-origem-id').textContent = i.id;
-      document.getElementById('eq-np-origem-dados').innerHTML = insDados(i);
-    }
-    const msg = document.getElementById('eq-newpatient-msg');
-    if(msg){ msg.hidden = true; msg.textContent = ''; }
-    const nome = document.getElementById('eq-np-nome');
-    if(nome) setTimeout(function(){ nome.focus(); }, 80);
-  }
-  function limparOrigemCadastro(){
-    insPendenteCadastro = null;
-    const box = document.getElementById('eq-np-origem');
-    if(box) box.hidden = true;
-  }
-  (function(){
-    const card = tecCard();
-    if(!card) return;
-    ['eq-ins-search','eq-ins-filter','eq-ins-sort','eq-tri-search','eq-tri-filter'].forEach(function(id){
-      const el = document.getElementById(id);
-      if(el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', renderInscricoes);
-    });
-    const limpar = document.getElementById('eq-np-origem-limpar');
-    if(limpar) limpar.addEventListener('click', function(){
-      limparOrigemCadastro();
-      const f = document.getElementById('eq-newpatient-form');
-      if(f){ f.reset(); atualizaIdadeCadastro(); }
-    });
-    /* registrar inscrição */
-    const btnNovo = document.getElementById('eq-ins-new-btn');
-    const formIns = document.getElementById('eq-ins-form');
-    const fecharForm = function(){ if(formIns){ formIns.hidden = true; formIns.reset(); atualizaIdadeInscricao(); } if(btnNovo) btnNovo.setAttribute('aria-expanded','false'); };
-    if(btnNovo && formIns) btnNovo.addEventListener('click', function(){
-      formIns.hidden = !formIns.hidden;
-      btnNovo.setAttribute('aria-expanded', formIns.hidden ? 'false' : 'true');
-      const m = document.getElementById('eq-ins-form-msg'); if(m) m.hidden = true;
-      if(!formIns.hidden) document.getElementById('eq-in-nome').focus();
-    });
-    const cancelar = document.getElementById('eq-ins-cancel');
-    if(cancelar) cancelar.addEventListener('click', fecharForm);
-    if(formIns) formIns.addEventListener('submit', function(e){
-      e.preventDefault();
-      const msg = document.getElementById('eq-ins-form-msg');
-      const recusa = function(t, campo){ if(msg){ msg.textContent = t; msg.hidden = false; } if(campo) campo.focus(); };
-      const el = function(id){ return document.getElementById(id); };
-      const idade = idadeDe(el('eq-in-nascimento').value);
-      if(el('eq-in-nome').value.trim().length < 3){ recusa('Informe o nome completo do candidato.', el('eq-in-nome')); return; }
-      if(idade === null){ recusa('Informe a data de nascimento (dd/mm/aaaa).', el('eq-in-nascimento')); return; }
-      if(!cpfValido(el('eq-in-cpf').value)){ recusa('O CPF não é válido. Confira os números.', el('eq-in-cpf')); return; }
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el('eq-in-email').value.trim())){ recusa('Informe um e-mail válido.', el('eq-in-email')); return; }
-      const tel = soDigitos(el('eq-in-telefone').value);
-      if(tel && tel.length !== 10 && tel.length !== 11){ recusa('O telefone precisa ter DDD.', el('eq-in-telefone')); return; }
-      let responsavel = null;
-      if(idade < 18){
-        if(!el('eq-in-resp-nome').value.trim()){ recusa('Candidato menor de idade: informe o nome do responsável.', el('eq-in-resp-nome')); return; }
-        if(!el('eq-in-resp-parentesco').value){ recusa('Informe o vínculo do responsável.', el('eq-in-resp-parentesco')); return; }
-        if(!cpfValido(el('eq-in-resp-cpf').value)){ recusa('O CPF do responsável não é válido.', el('eq-in-resp-cpf')); return; }
-        if(soDigitos(el('eq-in-resp-cpf').value) === soDigitos(el('eq-in-cpf').value)){ recusa('O CPF do responsável não pode ser o mesmo do candidato.', el('eq-in-resp-cpf')); return; }
-        const t2 = soDigitos(el('eq-in-resp-telefone').value);
-        if(t2.length !== 10 && t2.length !== 11){ recusa('Informe o telefone do responsável com DDD.', el('eq-in-resp-telefone')); return; }
-        responsavel = { nome: el('eq-in-resp-nome').value.trim(), parentesco: el('eq-in-resp-parentesco').value, cpf: el('eq-in-resp-cpf').value, telefone: el('eq-in-resp-telefone').value };
-      }
-      if(!el('eq-in-consent').checked){ recusa('Confirme que o candidato deu o consentimento para o tratamento dos dados.', el('eq-in-consent')); return; }
-      window.apiCreateInscricao({
-        nome: el('eq-in-nome').value.trim(), nascimento: el('eq-in-nascimento').value.trim(), cpf: el('eq-in-cpf').value, email: el('eq-in-email').value.trim(),
-        telefone: el('eq-in-telefone').value.trim(), responsavel: responsavel, disponibilidade: getDisp('in'), motivo: el('eq-in-motivo').value.trim(), consentimento: true
-      }).then(function(nova){
-        INSCRICOES.unshift(nova);
-        fecharForm();
-        insAberta.form = nova.id;
-        insMsg('form', 'Inscrição ' + nova.id + ' registrada com o status "Recebido".');
-        renderInscricoes();
-      }).catch(function(err){
-        recusa('Inscrição não registrada: ' + (err && err.message ? err.message : 'erro desconhecido') + '.');
-      });
-    });
-    /* abrir/fechar e ações dentro das listas */
-    card.addEventListener('click', function(e){
-      const tg = e.target.closest('[data-ins-toggle]');
-      if(tg){
-        const modo = tg.closest('#eq-tri-list') ? 'tri' : 'form';
-        const id = tg.dataset.insToggle;
-        insAberta[modo] = insAberta[modo] === id ? '' : id;
-        insConfirmando = '';
-        renderInscricoes();
-        return;
-      }
-      const bt = e.target.closest('[data-ins-act]');
-      if(!bt) return;
-      const id = bt.dataset.id, acao = bt.dataset.insAct;
-      const modo = bt.closest('#eq-tri-list') ? 'tri' : 'form';
-      const ins = INSCRICOES.filter(function(i){ return i.id === id; })[0];
-      if(!ins) return;
-      if(acao === 'cancelar'){ insConfirmando = ''; renderInscricoes(); return; }
-      if(bt.dataset.confirm === '1'){ insConfirmando = id + ':' + acao; renderInscricoes(); return; }
-      if(acao === 'analisar') insAplicar(id, {acao:'analisar'}, modo, 'Inscrição marcada como analisada. Ela continua na lista de Formulários até você decidir encaminhá-la.');
-      else if(acao === 'encaminhar') insAplicar(id, {acao:'encaminhar'}, modo, 'Inscrição encaminhada. Ela já aparece na página Triagem com o status "Aguardando triagem".');
-      else if(acao === 'aprovar' || acao === 'nao_aprovar'){
-        const obs = bt.closest('.eq-ins-body').querySelector('[data-tri-obs]');
-        insAplicar(id, {acao:'resultado', resultado: acao === 'aprovar' ? 'aprovado' : 'nao_aprovado', observacao: obs ? obs.value.trim() : ''}, modo,
-          acao === 'aprovar' ? 'Resultado registrado: aprovado para acompanhamento. Agora você pode cadastrar o paciente.' : 'Resultado registrado: não aprovado. A inscrição fica no histórico.');
-      } else if(acao === 'agendar'){
-        const corpo = bt.closest('.eq-ins-body');
-        const data = dataBrDeInput(corpo.querySelector('[data-tri-data]').value);
-        const hora = corpo.querySelector('[data-tri-hora]').value;
-        const local = corpo.querySelector('[data-tri-local]').value.trim();
-        if(!data || !hora || !local){ insMsg('tri', 'Informe data, horário e local para registrar o agendamento da triagem.'); return; }
-        insAplicar(id, {acao:'agendar_triagem', data:data, hora:hora, local:local}, modo, 'Agendamento da triagem registrado.');
-      } else if(acao === 'cadastrar') preencherCadastroDeInscricao(ins);
-    });
-  })();
-
   /* INDICADORES DE ACOMPANHAMENTO — contagens dinâmicas a partir dos casos visíveis ao perfil logado */
   function getVisibleCases(){
     return Object.keys(CASOS).map(function(id){ return {id:id, caso:CASOS[id]}; }).filter(function(item){
