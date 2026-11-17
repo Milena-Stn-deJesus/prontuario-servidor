@@ -350,6 +350,136 @@ def _lista_estudantes_com_disponibilidade():
     return lista
 
 
+# ---------------------------------------------------------------------------
+# Vínculos de supervisão, alocação de pacientes e agendamentos (painel do técnico)
+#
+# FONTE DE VERDADE dos vínculos ativos: a coleção "vinculos_supervisao" (um
+# documento por estudante, chave = RA, com o supervisor ATUAL e o histórico dos
+# anteriores). O campo "supervisor"/"estudante" de cada caso continua sendo o
+# vínculo daquele paciente (usado por prontuário, agenda e permissões) e nunca é
+# reescrito por causa de mudança de vínculo: casos históricos ficam como estão.
+# Os casos antigos servem apenas de REFERÊNCIA para o técnico validar vínculos.
+# ---------------------------------------------------------------------------
+import datetime as _dt
+import threading
+
+# Uma operação de alocação/agenda por vez (o servidor é um processo único):
+# impede que dois cliques simultâneos aloquem dois estudantes ou marquem o
+# mesmo horário duas vezes.
+TRAVA_OPERACOES = threading.Lock()
+ALOC_AGUARDANDO = "Aguardando alocação"
+ALOC_ALOCADO = "Alocado"
+ST_AG_CANCELADA = "Cancelada"
+
+
+def _lista_supervisores_ativos():
+    nomes = {}
+    for conta in CONTAS.values():
+        if conta.get("role") == "supervisor":
+            nomes[conta["nome"]] = ""
+    for d in contas_col.find({"role": "supervisor"}):
+        if d.get("status") == "desativada":
+            nomes.pop(d.get("nome"), None)
+        elif d.get("nome"):
+            nomes[d["nome"]] = d.get("crp") or ""
+    return [{"nome": n, "crp": nomes[n]} for n in sorted(nomes, key=lambda x: x.casefold())]
+
+
+def _estudante_por_ra(ra):
+    for e in _lista_estudantes():
+        if e["ra"] == ra:
+            return e
+    return None
+
+
+def _painel_vinculos():
+    """Estudantes com o vínculo ativo + referências a validar (sem alterar nada)."""
+    com_conta = {c["nome"] for c in CONTAS.values() if c.get("role") == "estudante"}
+    docs = {d["_id"]: d for d in vinculos_col.find({})}
+    estudantes = []
+    for e in _lista_estudantes():
+        d = docs.get(e["ra"]) or {}
+        ativo = bool(d.get("ativo"))
+        estudantes.append({
+            "ra": e["ra"], "nome": e["nome"], "tem_conta": e["nome"] in com_conta,
+            "supervisor": d.get("supervisor", "") if ativo else "",
+            "desde": d.get("desde", "") if ativo else "",
+            "historico": d.get("historico") or [],
+        })
+    por_nome = {e["nome"]: e for e in estudantes}
+    pares, inconsistencias = {}, []
+    for c in casos_col.find({}):
+        if c.get("status") == "Encerrado":
+            continue
+        est, sup = (c.get("estudante") or "").strip(), (c.get("supervisor") or "").strip()
+        base = {"caso_id": c["_id"], "paciente": c.get("paciente", ""), "estudante": est, "supervisor": sup}
+        if not sup:
+            inconsistencias.append({**base, "tipo": "caso_sem_supervisor", "mensagem": "caso ativo sem supervisor definido"})
+            continue
+        if not est:
+            continue
+        v = por_nome.get(est)
+        if v is None:
+            inconsistencias.append({**base, "tipo": "estudante_sem_cadastro", "mensagem": "estudante do caso não consta no cadastro de estudantes"})
+        elif not v["supervisor"]:
+            inconsistencias.append({**base, "tipo": "estudante_sem_vinculo", "mensagem": "estudante sem vínculo ativo com supervisor"})
+            pares[(v["ra"], est, sup)] = pares.get((v["ra"], est, sup), 0) + 1
+        elif v["supervisor"] != sup:
+            inconsistencias.append({**base, "tipo": "vinculo_divergente", "vinculo_supervisor": v["supervisor"],
+                                    "mensagem": "supervisor do caso difere do vínculo ativo do estudante"})
+    sugestoes = [{"ra": ra, "estudante": est, "supervisor": sup, "casos": n} for (ra, est, sup), n in sorted(pares.items())]
+    return {"estudantes": estudantes, "sugestoes": sugestoes, "inconsistencias": inconsistencias}
+
+
+def _data_para_br(valor):
+    """Aceita 'AAAA-MM-DD' ou 'DD/MM/AAAA'; devolve 'DD/MM/AAAA' válida ou None."""
+    v = str(valor or "").strip()
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", v)
+    if m:
+        a, mm, d = (int(x) for x in m.groups())
+    else:
+        m = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", v)
+        if not m:
+            return None
+        d, mm, a = (int(x) for x in m.groups())
+    try:
+        _dt.date(a, mm, d)
+    except ValueError:
+        return None
+    return "%02d/%02d/%04d" % (d, mm, a)
+
+
+def _hora_para_br(valor):
+    m = re.match(r"^([01]\d|2[0-3])[:h]([0-5]\d)$", str(valor or "").strip())
+    return "%sh%s" % (m.group(1), m.group(2)) if m else None
+
+
+def _norm_hora(h):
+    return str(h or "").replace(":", "h")
+
+
+def _conflito_agenda(data, hora, caso_id, estudante, ignorar=None):
+    """Devolve a mensagem de conflito (mesmo paciente ou mesmo estudante no mesmo
+    dia e horário) ou None. Não inventa duração nem intervalo: só coincidência exata."""
+    for c in casos_col.find({}):
+        for i, a in enumerate(c.get("agendamentos") or []):
+            if ignorar == (c["_id"], i) or a.get("status") == ST_AG_CANCELADA:
+                continue
+            if a.get("data") != data or _norm_hora(a.get("hora")) != hora:
+                continue
+            if c["_id"] == caso_id:
+                return "este paciente já tem um atendimento nesse dia e horário"
+            if estudante and c.get("estudante") == estudante:
+                return "o estudante já tem um atendimento nesse dia e horário (paciente %s)" % c.get("paciente", "")
+    return None
+
+
+def _futuros_ativos(caso):
+    hoje = _parse_data_br(_hoje_br())
+    return sum(1 for a in (caso.get("agendamentos") or [])
+               if a.get("status") == "Confirmada" and (_parse_data_br(a.get("data")) or (0, 0, 0)) >= hoje)
+
+
 # Sessões ativas: token -> {"email", "role", "nome", "criado_em"}. Guardadas só
 # na memória do processo (zeram se o servidor reiniciar) — suficiente para um
 # protótipo acadêmico; um sistema maior guardaria isso no próprio MongoDB.
@@ -423,6 +553,7 @@ contas_col = db["contas"]
 # guarda senha, token nem link de convite.
 historico_admin_col = db["historico_admin"]
 disp_estudantes_col = db["disponibilidade_estudantes"]
+vinculos_col = db["vinculos_supervisao"]  # fonte de verdade dos vínculos ativos supervisor <-> estudante
 # Trilha de auditoria (achado da auditoria de segurança — item pendente que
 # havia sido esquecido no relatório anterior): registra quem fez o quê e
 # quando, numa coleção própria, consultável depois. Antes, o servidor só
@@ -1201,6 +1332,18 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(fila)
             return
 
+        if path in ("/api/supervisores", "/api/vinculos"):
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            try:
+                dados = _lista_supervisores_ativos() if path == "/api/supervisores" else _painel_vinculos()
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET " + path)
+                return
+            self._send_json(dados)
+            return
+
         if path == "/api/estudantes":
             # Só técnico e supervisor consultam o cadastro de estudantes (nome + RA).
             sessao = self._exigir_papel({"tecnico", "supervisor"})
@@ -1798,6 +1941,52 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(inscricao_doc_to_json(doc), 201)
             return
 
+        m = re.match(r"^/api/casos/([^/]+)/agendamentos$", path)
+        if m:
+            # Novo agendamento (Agenda principal ou atalho no prontuário): só o técnico.
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            data, hora = _data_para_br(body.get("data")), _hora_para_br(body.get("hora"))
+            local = str(body.get("local", "")).strip()
+            if not data:
+                self._send_error_json(400, "data inválida"); return
+            if not hora:
+                self._send_error_json(400, "horário inválido"); return
+            if not local or len(local) > 200:
+                self._send_error_json(400, "informe o local do atendimento (até 200 caracteres)"); return
+            if _parse_data_br(data) < _parse_data_br(_hoje_br()):
+                self._send_error_json(400, "não é possível agendar em uma data que já passou"); return
+            with TRAVA_OPERACOES:
+                try:
+                    caso = casos_col.find_one({"_id": case_id})
+                    if caso is None:
+                        self._send_error_json(404, "caso não encontrado"); return
+                    if caso.get("status") != "Ativo":
+                        self._send_error_json(409, "o caso está encerrado: reabra-o antes de agendar"); return
+                    if not (caso.get("estudante") or "").strip():
+                        self._send_error_json(409, "o paciente ainda não tem estudante responsável: faça a alocação antes de agendar"); return
+                    conflito = _conflito_agenda(data, hora, case_id, caso.get("estudante"))
+                    if conflito:
+                        self._send_error_json(409, conflito); return
+                    ags = list(caso.get("agendamentos") or [])
+                    ags.append({"data": data, "hora": hora, "local": local, "status": "Confirmada",
+                                "criado_por": sessao["nome"], "criado_em": _agora_br()})
+                    casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
+                    novo = casos_col.find_one({"_id": case_id})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/casos/<id>/agendamentos")
+                    return
+            _registrar_auditoria(sessao, "agendamento criado", caso_id=case_id, detalhe="%s %s" % (data, hora))
+            self._send_json({"ok": True, "indice": len(ags) - 1, "caso": caso_doc_to_json(novo)})
+            return
+
         if path == "/api/casos":
             # Correção de segurança: cadastrar um paciente novo é uma ação
             # administrativa — a própria tela só mostra esse formulário para o
@@ -1825,6 +2014,15 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 return
 
+            supervisor_resp = str(body.get("supervisor", "")).strip()
+            try:
+                supervisores_ok = {x["nome"] for x in _lista_supervisores_ativos()}
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/casos (supervisores)")
+                return
+            if supervisor_resp not in supervisores_ok:
+                self._send_error_json(400, "selecione o supervisor responsável (um supervisor ativo)")
+                return
             cadastro, erro_cadastro = _validar_cadastro_paciente(body)
             if erro_cadastro:
                 self._send_error_json(400, erro_cadastro)
@@ -1871,8 +2069,10 @@ class Handler(BaseHTTPRequestHandler):
                 "_id": novo_id_de_caso(),
                 "cadastro": cadastro,
                 "paciente": nome_paciente,
-                "estudante": body.get("estudante", ""),
-                "supervisor": body.get("supervisor", ""),
+                # O estudante é escolhido depois, em "Alocação de Pacientes".
+                "estudante": "",
+                "supervisor": supervisor_resp,
+                "alocacao": ALOC_AGUARDANDO,
                 "status": status_val,
                 # A data de abertura é a do dia do cadastro, definida pelo
                 # servidor — não é um campo que o profissional escolhe.
@@ -2052,6 +2252,205 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "disponibilidade": disp, "disponibilidade_atualizada_em": doc["atualizado_em_br"]})
             return
 
+        m = re.match(r"^/api/vinculos/([^/]+)$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            ra = unquote(m.group(1))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            sup = str(body.get("supervisor", "")).strip()
+            with TRAVA_OPERACOES:
+                try:
+                    est = _estudante_por_ra(ra)
+                    if est is None:
+                        self._send_error_json(404, "estudante não encontrado"); return
+                    if sup and sup not in {s["nome"] for s in _lista_supervisores_ativos()}:
+                        self._send_error_json(400, "supervisor inexistente ou inativo"); return
+                    doc = vinculos_col.find_one({"_id": ra})
+                    atual = doc.get("supervisor", "") if doc and doc.get("ativo") else ""
+                    if sup == atual:
+                        self._send_error_json(409, "nenhuma alteração no vínculo"); return
+                    hist = list((doc or {}).get("historico") or [])
+                    agora = _agora_br()
+                    if atual:
+                        hist.append({"supervisor": atual, "de": doc.get("desde", ""), "ate": agora, "por": sessao["nome"]})
+                    novo = {"ra": ra, "estudante": est["nome"], "supervisor": sup, "ativo": bool(sup),
+                            "desde": agora if sup else "", "historico": hist}
+                    if vinculos_col.update_one({"_id": ra}, {"$set": novo}).matched_count == 0:
+                        vinculos_col.insert_one({"_id": ra, **novo})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "PUT /api/vinculos/<ra>")
+                    return
+            _registrar_auditoria(sessao, "vínculo de supervisão alterado", detalhe="%s: %s -> %s" % (est["nome"], atual or "(sem vínculo)", sup or "(encerrado)"))
+            self._send_json({"ok": True, "vinculo": novo})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/alocacao$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            ra = str(body.get("ra", "")).strip()
+            motivo = str(body.get("motivo", "")).strip()[:300]
+            with TRAVA_OPERACOES:
+                try:
+                    caso = casos_col.find_one({"_id": case_id})
+                    if caso is None:
+                        self._send_error_json(404, "caso não encontrado"); return
+                    if caso.get("status") != "Ativo":
+                        self._send_error_json(409, "o caso está encerrado"); return
+                    sup = (caso.get("supervisor") or "").strip()
+                    if not sup:
+                        self._send_error_json(409, "o caso não tem supervisor responsável: defina o supervisor antes de alocar"); return
+                    est = _estudante_por_ra(ra)
+                    if est is None:
+                        self._send_error_json(404, "estudante não encontrado"); return
+                    v = vinculos_col.find_one({"_id": ra})
+                    if not v or not v.get("ativo"):
+                        self._send_error_json(409, "o estudante não tem vínculo ativo com supervisor"); return
+                    if v.get("supervisor") != sup:
+                        self._send_error_json(409, "o estudante é vinculado a outro supervisor; altere formalmente o supervisor do caso antes de alocar"); return
+                    anterior = (caso.get("estudante") or "").strip()
+                    if anterior == est["nome"]:
+                        self._send_error_json(409, "este estudante já é o responsável pelo caso"); return
+                    if anterior and (not body.get("realocar") or not motivo):
+                        self._send_error_json(409, "o caso já tem estudante: a realocação exige confirmação explícita e um motivo"); return
+                    hist = list(caso.get("historico_vinculos") or [])
+                    hist.append({"tipo": "realocação" if anterior else "alocação", "estudante_de": anterior,
+                                 "estudante_para": est["nome"], "supervisor": sup, "quando": _agora_br(),
+                                 "por": sessao["nome"], "motivo": motivo})
+                    casos_col.update_one({"_id": case_id}, {"$set": {"estudante": est["nome"], "alocacao": ALOC_ALOCADO, "historico_vinculos": hist}})
+                    novo = casos_col.find_one({"_id": case_id})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "PUT /api/casos/<id>/alocacao")
+                    return
+            _registrar_auditoria(sessao, "paciente alocado a estudante" if not anterior else "paciente realocado",
+                                 caso_id=case_id, detalhe="%s -> %s (supervisor %s)" % (anterior or "(ninguém)", est["nome"], sup))
+            self._send_json({"ok": True, "caso": caso_doc_to_json(novo), "agendamentos_futuros": _futuros_ativos(novo) if anterior else 0})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/supervisor$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            novo_sup = str(body.get("supervisor", "")).strip()
+            motivo = str(body.get("motivo", "")).strip()[:300]
+            with TRAVA_OPERACOES:
+                try:
+                    caso = casos_col.find_one({"_id": case_id})
+                    if caso is None:
+                        self._send_error_json(404, "caso não encontrado"); return
+                    if caso.get("status") != "Ativo":
+                        self._send_error_json(409, "o caso está encerrado"); return
+                    if novo_sup not in {s["nome"] for s in _lista_supervisores_ativos()}:
+                        self._send_error_json(400, "selecione um supervisor ativo"); return
+                    atual = (caso.get("supervisor") or "").strip()
+                    if novo_sup == atual:
+                        self._send_error_json(409, "este já é o supervisor responsável"); return
+                    est_atual = (caso.get("estudante") or "").strip()
+                    mudanca = {"supervisor": novo_sup}
+                    liberou = False
+                    if est_atual:
+                        if not body.get("confirmar_transferencia") or not motivo:
+                            self._send_error_json(409, "o caso já tem estudante: a troca de supervisor é uma transferência e exige confirmação explícita e um motivo"); return
+                        # O estudante só continua se for vinculado ao novo supervisor; senão o caso
+                        # volta para "Aguardando alocação" (nunca fica estudante de um supervisor e caso de outro).
+                        vinc = next((e for e in _painel_vinculos()["estudantes"] if e["nome"] == est_atual), None)
+                        if not vinc or vinc["supervisor"] != novo_sup:
+                            mudanca.update(estudante="", alocacao=ALOC_AGUARDANDO)
+                            liberou = True
+                    elif not caso.get("alocacao"):
+                        mudanca["alocacao"] = ALOC_AGUARDANDO
+                    hist = list(caso.get("historico_vinculos") or [])
+                    hist.append({"tipo": "troca de supervisor", "supervisor_de": atual, "supervisor_para": novo_sup,
+                                 "estudante_de": est_atual, "estudante_para": "" if liberou else est_atual,
+                                 "quando": _agora_br(), "por": sessao["nome"], "motivo": motivo})
+                    mudanca["historico_vinculos"] = hist
+                    casos_col.update_one({"_id": case_id}, {"$set": mudanca})
+                    novo = casos_col.find_one({"_id": case_id})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "PUT /api/casos/<id>/supervisor")
+                    return
+            _registrar_auditoria(sessao, "supervisor do caso alterado", caso_id=case_id,
+                                 detalhe="%s -> %s%s" % (atual or "(nenhum)", novo_sup, "; estudante liberado" if liberou else ""))
+            self._send_json({"ok": True, "caso": caso_doc_to_json(novo), "estudante_liberado": liberou,
+                             "agendamentos_futuros": _futuros_ativos(novo) if liberou else 0})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/agendamentos/(\d+)$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id, idx = unquote(m.group(1)), int(m.group(2))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            acao = body.get("acao")
+            if acao not in ("editar", "reagendar", "cancelar"):
+                self._send_error_json(400, "ação inválida (editar, reagendar ou cancelar)"); return
+            with TRAVA_OPERACOES:
+                try:
+                    caso = casos_col.find_one({"_id": case_id})
+                    ags = list((caso or {}).get("agendamentos") or [])
+                    if caso is None or idx >= len(ags):
+                        self._send_error_json(404, "agendamento não encontrado"); return
+                    ag = dict(ags[idx])
+                    if ag.get("status") != "Confirmada":
+                        self._send_error_json(409, "só atendimentos com status Confirmada podem ser alterados"); return
+                    if acao == "cancelar":
+                        ag.update(status=ST_AG_CANCELADA, cancelado_em=_agora_br(), cancelado_por=sessao["nome"],
+                                  motivo_cancelamento=str(body.get("motivo", "")).strip()[:300])
+                    else:
+                        if acao == "editar":
+                            local = str(body.get("local", "")).strip()
+                            if not local or len(local) > 200:
+                                self._send_error_json(400, "informe o local do atendimento (até 200 caracteres)"); return
+                            ag["local"] = local
+                        else:
+                            data, hora = _data_para_br(body.get("data")), _hora_para_br(body.get("hora"))
+                            if not data or not hora:
+                                self._send_error_json(400, "data ou horário inválido"); return
+                            if _parse_data_br(data) < _parse_data_br(_hoje_br()):
+                                self._send_error_json(400, "não é possível reagendar para uma data que já passou"); return
+                            if (data, hora) == (ag.get("data"), _norm_hora(ag.get("hora"))):
+                                self._send_error_json(409, "informe uma data ou horário diferente do atual"); return
+                            conflito = _conflito_agenda(data, hora, case_id, caso.get("estudante"), ignorar=(case_id, idx))
+                            if conflito:
+                                self._send_error_json(409, conflito); return
+                            ag.setdefault("reagendamentos", []).append({"de": "%s %s" % (ag.get("data"), ag.get("hora")), "quando": _agora_br(), "por": sessao["nome"]})
+                            ag["data"], ag["hora"] = data, hora
+                    ags[idx] = ag
+                    casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
+                    novo = casos_col.find_one({"_id": case_id})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "PUT /api/casos/<id>/agendamentos/<n>")
+                    return
+            _registrar_auditoria(sessao, {"editar": "agendamento editado", "reagendar": "agendamento reagendado", "cancelar": "agendamento cancelado"}[acao],
+                                 caso_id=case_id, detalhe="%s %s" % (ag.get("data"), ag.get("hora")))
+            self._send_json({"ok": True, "caso": caso_doc_to_json(novo)})
+            return
+
         m = re.match(r"^/api/casos/([^/]+)/cadastro-visto$", path)
         if m:
             # O técnico viu a atualização cadastral feita pela paciente: o aviso some.
@@ -2170,6 +2569,15 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 self._send_error_json(403, "apenas o psicólogo técnico cria ou altera agendamentos")
                 return
+
+            # Alocação, histórico de vínculos e agenda só mudam pelas rotas próprias
+            # (com trava, validação e auditoria): uma tela desatualizada não os desfaz.
+            for campo in ("alocacao", "historico_vinculos"):
+                if campo in caso_atual:
+                    body[campo] = caso_atual[campo]
+                else:
+                    body.pop(campo, None)
+            body["agendamentos"] = caso_atual.get("agendamentos") or []
 
             # Só técnico e supervisor podem encerrar/reabrir um caso — a
             # própria tela já impede isso para o estudante (canCloseCase()),

@@ -596,7 +596,55 @@ footer{margin-top:120px}
 .eq-tec[data-view="estudantes"] [data-in]:not([data-in~="estudantes"]),
 .eq-tec[data-view="agenda"] [data-in]:not([data-in~="agenda"]),
 .eq-tec[data-view="solicitacoes"] [data-in]:not([data-in~="solicitacoes"]),
-.eq-tec[data-view="cadastro"] [data-in]:not([data-in~="cadastro"]){display:none!important}
+.eq-tec[data-view="cadastro"] [data-in]:not([data-in~="cadastro"]),
+.eq-tec[data-view="alocacao"] [data-in]:not([data-in~="alocacao"]),
+.eq-tec[data-view="caso"] [data-in]:not([data-in~="caso"]){display:none!important}
+/* Alocação de pacientes, agenda do técnico e prontuário dentro do painel — só reaproveitam os tokens do painel */
+.eq-aloc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 18px}
+.eq-aloc-tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font:600 13.5px var(--sans);color:var(--navy);cursor:pointer}
+.eq-aloc-tab b{margin-left:8px;font-weight:700;color:var(--muted)}
+.eq-aloc-tab.is-active{background:var(--navy);border-color:var(--navy);color:#fff}
+.eq-aloc-tab.is-active b{color:#cfe3da}
+.eq-aloc-tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.eq-aloc-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.eq-aloc-sub{display:block;font-size:12px;color:var(--muted)}
+.eq-aloc-sec{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.eq-aloc-sec h4{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--navy);margin-bottom:6px}
+.eq-aloc-sec>p{font-size:13.5px;color:var(--muted);margin-bottom:14px;max-width:70ch}
+.eq-vinc-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.eq-vinc-row .eq-select{min-width:200px;flex:1 1 200px}
+.eq-incons{margin:12px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.eq-incons li{margin:3px 0}
+.eq-ag-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.eq-ag-tools{margin-bottom:18px}
+.eq-ag-tools .eq-tec-controls{margin-top:14px}
+.eq-cal-appt-acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.eq-cal-appt-acoes button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font:600 12.5px var(--sans);color:var(--navy);cursor:pointer}
+.eq-cal-appt-acoes button:hover{border-color:var(--blue);color:var(--blue)}
+.eq-cal-appt-acoes button.is-danger{color:#8a3b2d}
+.eq-cal-appt-meta{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.eq-case-host-back{display:inline-flex;align-items:center;gap:8px;border:0;background:none;color:var(--muted);font:500 14px var(--sans);cursor:pointer;margin:0 0 18px;padding:0}
+.eq-case-host-back svg{width:16px;height:16px;transform:rotate(180deg)}
+.eq-case-host-back:hover{color:var(--blue)}
+.eq-case-host .eq-detail{padding:0;border:0;box-shadow:none;background:transparent;max-width:none;width:100%}
+.eq-ag-novo-atalho{margin-top:16px}
+.eq-ag-grupo{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5d7a6c;margin:18px 0 8px}
+.eq-mdl-overlay{align-items:flex-start;overflow:auto}
+.eq-mdl{background:#fff;border-radius:22px;padding:28px 30px;width:100%;max-width:600px;margin:auto;box-shadow:0 40px 90px -30px rgba(10,26,20,.5);text-align:left}
+.eq-mdl-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.eq-mdl-head h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--navy);margin:0}
+.eq-mdl-x{border:0;background:none;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;padding:0 4px}
+.eq-mdl-b p{font-size:14px;line-height:1.55;color:var(--muted);margin:0 0 12px}
+.eq-mdl-b .eq-field{margin-bottom:12px}
+.eq-mdl-ro{font-size:14.5px;color:var(--navy);font-weight:600}
+.eq-mdl-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.eq-mdl-erro{color:#8a3b2d;font-size:13.5px;margin-top:10px}
+.eq-mdl-aviso{background:#fbf3df;border:1px solid #ecd9a2;border-radius:12px;padding:10px 14px;font-size:13.5px;color:#6b5420;margin:0 0 12px}
+.eq-mdl-lista{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.eq-mdl-lista label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:13.5px}
+.eq-mdl-lista input{margin-top:3px;accent-color:var(--blue)}
+.eq-mdl-lista label:has(input:checked){border-color:var(--blue);background:var(--sky)}
+@media(max-width:640px){.eq-mdl{padding:22px 18px}.eq-aloc-acoes .btn,.eq-aloc-acoes .eq-case-open{flex:1 1 auto}}
 /* Disponibilidade semanal (cadastro de paciente e estudantes) */
 .eq-disp{display:grid;grid-template-columns:62px repeat(5,minmax(0,1fr));gap:8px 6px;align-items:center;max-width:430px;margin-top:4px}
 .eq-disp b{font-size:12px;font-weight:700;text-align:center;color:var(--muted)}
@@ -2338,6 +2386,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <nav class="eq-side-nav" id="eq-side-nav">
             <button type="button" class="eq-side-link" data-view="painel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</button>
             <button type="button" class="eq-side-link" data-view="pacientes"><svg aria-hidden="true"><use href="#i-user"/></svg>Pacientes</button>
+            <button type="button" class="eq-side-link" data-view="alocacao"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Alocação de Pacientes</button>
             <button type="button" class="eq-side-link" data-view="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg>Estudantes</button>
             <button type="button" class="eq-side-link" data-view="agenda"><svg aria-hidden="true"><use href="#i-cal"/></svg>Agenda</button>
             <button type="button" class="eq-side-link" data-view="solicitacoes"><svg aria-hidden="true"><use href="#i-file"/></svg>Solicitações<span class="eq-side-count" id="eq-side-count" hidden>0</span></button>
@@ -2387,6 +2436,23 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <span class="eq-stat-label">Total acompanhado</span>
           </div>
         </div>
+
+        <section class="eq-ag-tools eq-tec-only" id="eq-ag-tools" data-in="agenda" aria-label="Gerenciar atendimentos">
+          <div class="eq-ag-head">
+            <div class="eq-tec-page-head"><h3 class="eq-tec-title">Agenda</h3><p>Crie, edite, reagende e cancele atendimentos sem abrir o prontuário.</p></div>
+            <button type="button" class="btn btn-primary" id="eq-ag-novo"><span aria-hidden="true">+</span> Novo agendamento</button>
+          </div>
+          <p class="eq-case-export-msg" id="eq-ag-msg" role="status" hidden></p>
+          <div class="eq-tec-controls">
+            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-agf-pac">Paciente</label><input type="search" class="eq-input" id="eq-agf-pac" placeholder="Nome do paciente" autocomplete="off"></div>
+            <div class="eq-tec-control"><label for="eq-agf-est">Estudante</label><select class="eq-select" id="eq-agf-est"><option value="">Todos</option></select></div>
+            <div class="eq-tec-control"><label for="eq-agf-sup">Supervisor</label><select class="eq-select" id="eq-agf-sup"><option value="">Todos</option></select></div>
+            <div class="eq-tec-control"><label for="eq-agf-de">De</label><input type="date" class="eq-input" id="eq-agf-de"></div>
+            <div class="eq-tec-control"><label for="eq-agf-ate">Até</label><input type="date" class="eq-input" id="eq-agf-ate"></div>
+            <div class="eq-tec-control"><label for="eq-agf-st">Status</label><select class="eq-select" id="eq-agf-st"><option value="">Todos</option><option>Confirmada</option><option>Concluída</option><option>Cancelada</option></select></div>
+            <div class="eq-tec-control"><label>&nbsp;</label><button type="button" class="eq-case-open" id="eq-agf-limpar">Limpar filtros</button></div>
+          </div>
+        </section>
 
         <div class="eq-cal-card" id="eq-cal-card" data-in="painel agenda">
           <div class="eq-cal-topline">
@@ -2573,6 +2639,45 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           <p class="eq-pt-empty" id="eq-reagendamentos-msg" hidden></p>
         </div>
 
+        <div class="dash-hist eq-tec-only" id="eq-aloc-card" data-in="alocacao">
+          <div class="eq-tec-page-head">
+            <h3 class="eq-tec-title">Alocação de Pacientes</h3>
+            <p>Distribua os pacientes entre os estudantes do supervisor responsável. Alocar não é agendar: os atendimentos são marcados na Agenda.</p>
+          </div>
+          <div class="eq-aloc-tabs" role="group" aria-label="Situação da alocação" id="eq-aloc-tabs">
+            <button type="button" class="eq-aloc-tab is-active" data-aloc="aguardando" aria-pressed="true">Aguardando alocação<b id="eq-aloc-n-aguardando">0</b></button>
+            <button type="button" class="eq-aloc-tab" data-aloc="alocados" aria-pressed="false">Alocados<b id="eq-aloc-n-alocados">0</b></button>
+            <button type="button" class="eq-aloc-tab" data-aloc="encerrados" aria-pressed="false">Encerrados<b id="eq-aloc-n-encerrados">0</b></button>
+          </div>
+          <div class="eq-tec-controls">
+            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-aloc-busca">Buscar</label><input type="search" class="eq-input" id="eq-aloc-busca" placeholder="Nome do paciente" autocomplete="off"></div>
+            <div class="eq-tec-control"><label for="eq-aloc-sup">Supervisor</label><select class="eq-select" id="eq-aloc-sup"><option value="">Todos</option></select></div>
+          </div>
+          <p class="eq-case-export-msg" id="eq-aloc-msg" role="status" hidden></p>
+          <table class="dash-table">
+            <caption class="sr-only">Pacientes por situação de alocação, com supervisor, estudante e ações</caption>
+            <thead><tr><th scope="col">Paciente</th><th scope="col">Supervisor</th><th scope="col">Estudante</th><th scope="col">Situação</th><th scope="col">Cadastro</th><th scope="col">Ações</th></tr></thead>
+            <tbody id="eq-aloc-body"></tbody>
+          </table>
+          <p class="eq-pt-empty" id="eq-aloc-empty" hidden>Nenhum paciente nesta lista.</p>
+          <section class="eq-aloc-sec" aria-labelledby="eq-vinc-t">
+            <h4 id="eq-vinc-t">Vínculos de supervisão</h4>
+            <p>Define quais estudantes cada supervisor acompanha. Só estudantes com vínculo ativo aparecem como opção na alocação. Os casos antigos servem de referência: nada é vinculado sem a sua validação.</p>
+            <table class="dash-table">
+              <caption class="sr-only">Vínculo ativo de cada estudante com um supervisor</caption>
+              <thead><tr><th scope="col">Estudante</th><th scope="col">Acesso</th><th scope="col">Supervisor vinculado</th></tr></thead>
+              <tbody id="eq-vinc-body"></tbody>
+            </table>
+            <p class="eq-case-export-msg" id="eq-vinc-msg" role="status" hidden></p>
+            <ul class="eq-incons" id="eq-vinc-incons"></ul>
+          </section>
+        </div>
+
+        <div class="eq-case-host eq-tec-only" id="eq-case-host" data-in="caso">
+          <button type="button" class="eq-case-host-back" id="eq-case-host-back"><svg aria-hidden="true"><use href="#i-arrow"/></svg><span id="eq-case-host-back-t">Voltar aos pacientes</span></button>
+          <div id="eq-case-slot"></div>
+        </div>
+
         <div class="eq-pt-card" id="eq-newpatient-card" data-in="cadastro" hidden>
           <div class="eq-pt-head">
             <div class="eq-pt-head-title">
@@ -2612,20 +2717,14 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <div class="eq-field"><span style="font-size:14px;font-weight:600;color:var(--navy)">Dias e turnos disponíveis do paciente</span><div id="eq-np-disp"></div></div>
             <div class="eq-field" style="margin:14px 0"><label for="eq-np-motivo">Motivo da procura</label><textarea class="eq-textarea" id="eq-np-motivo" rows="3" maxlength="600"></textarea></div>
             <div class="eq-field-row">
-              <div class="eq-field"><label for="eq-np-estudante">Alocar para o estudante</label>
-                <select class="eq-select" id="eq-np-estudante">
-                  <option value="Ana Beatriz Lima">Ana Beatriz Lima</option>
-                  <option value="Rafael Augusto Pires">Rafael Augusto Pires</option>
-                </select>
-              </div>
               <div class="eq-field"><label for="eq-np-supervisor">Supervisor responsável</label>
-                <select class="eq-select" id="eq-np-supervisor">
-                  <option value="Dra. Patrícia Novaes">Dra. Patrícia Novaes</option>
-                  <option value="Dr. Henrique Lacerda">Dr. Henrique Lacerda</option>
+                <select class="eq-select" id="eq-np-supervisor" required aria-describedby="eq-np-sup-dica">
+                  <option value="">Selecione o supervisor…</option>
                 </select>
+                <small class="eq-aloc-sub" id="eq-np-sup-dica">Obrigatório. O estudante será escolhido depois, em “Alocação de Pacientes”.</small>
               </div>
+              <div class="eq-field"></div>
             </div>
-            <div class="eq-compat" id="eq-np-compat" aria-live="polite"></div>
             <p class="eq-np-idnote">O <b>ID do paciente</b> e a <b>data de abertura</b> do caso são registrados automaticamente pelo sistema ao cadastrar.</p>
             <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5">
               <input type="checkbox" id="eq-np-lgpd-consent" style="margin-top:3px" required>
@@ -2681,6 +2780,13 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     </div>
   </div>
 </section>
+</div>
+
+<div class="pac-modal-overlay eq-mdl-overlay" id="eq-mdl" hidden>
+  <div class="eq-mdl" role="dialog" aria-modal="true" aria-labelledby="eq-mdl-t">
+    <div class="eq-mdl-head"><h3 id="eq-mdl-t"></h3><button type="button" class="eq-mdl-x" id="eq-mdl-x" aria-label="Fechar">&times;</button></div>
+    <div class="eq-mdl-b" id="eq-mdl-b"></div>
+  </div>
 </div>
 
 <!-- ACESSIBILIDADE -->
@@ -2814,6 +2920,23 @@ window.apiSalvarDispEstudante = function(ra, lista){
 };
 window.apiGetEstudantes = function(){
   return _apiFetch('/api/estudantes');
+};
+window.apiGetSupervisores = function(){ return _apiFetch('/api/supervisores'); };
+window.apiGetVinculos = function(){ return _apiFetch('/api/vinculos'); };
+window.apiSalvarVinculo = function(ra, supervisor){
+  return _apiFetch('/api/vinculos/' + encodeURIComponent(ra), {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({supervisor: supervisor})});
+};
+window.apiAlocar = function(casoId, p){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/alocacao', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiTrocarSupervisor = function(casoId, p){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/supervisor', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiAgCriar = function(casoId, p){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/agendamentos', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiAgAcao = function(casoId, idx, p){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/agendamentos/' + idx, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
 };
 window.apiAdminResumo = function(){ return _apiFetch('/api/admin/resumo'); };
 window.apiAdminProfissionais = function(){ return _apiFetch('/api/admin/profissionais'); };
@@ -3965,7 +4088,7 @@ route();
   function caseRowHtml(caseId, caso){
     const badgeClass = caso.status==='Ativo' ? 'dash-badge-ok' : 'dash-badge-muted';
     const chip = acessoChipHtml(caseId, caso);
-    return '<td>'+esc(caso.paciente)+(chip ? '<div class="eq-ac-line">'+chip+'</div>' : '')+'</td><td class="eq-col-estudante">'+esc(caso.estudante)+'</td><td class="eq-col-supervisor">'+esc(caso.supervisor)+'</td><td><span class="dash-badge '+badgeClass+'">'+esc(caso.status)+'</span></td><td><button type="button" class="eq-case-open" data-case="'+caseId+'">Ver caso<svg><use href="#i-arrow"/></svg></button></td>';
+    return '<td>'+esc(caso.paciente)+(chip ? '<div class="eq-ac-line">'+chip+'</div>' : '')+'</td><td class="eq-col-estudante">'+esc(caso.estudante||'Aguardando alocação')+'</td><td class="eq-col-supervisor">'+esc(caso.supervisor)+'</td><td><span class="dash-badge '+badgeClass+'">'+esc(caso.status)+'</span></td><td><button type="button" class="eq-case-open" data-case="'+caseId+'">Ver caso<svg><use href="#i-arrow"/></svg></button></td>';
   }
   function syncCasesTable(){
     if(!casesBody) return;
@@ -3983,6 +4106,7 @@ route();
     applyCasesFilter();
     renderTecStudents();
     renderTecRecent();
+    if(typeof renderAloc === 'function') renderAloc();
   }
 
   /* Técnico e supervisor não veem mais a lista inteira de uma vez: escolhem
@@ -4202,7 +4326,7 @@ route();
     if(!ehTec){ card.removeAttribute('data-view'); return; }
     card.setAttribute('data-view', tecView);
     card.querySelectorAll('.eq-side-link[data-view]').forEach(function(b){
-      const on = b.dataset.view === tecView;
+      const on = b.dataset.view === (tecView === 'caso' ? (caseVoltaPara === 'cadastro' || caseVoltaPara === 'estudantes' || caseVoltaPara === 'solicitacoes' || caseVoltaPara === 'painel' || caseVoltaPara === 'agenda' || caseVoltaPara === 'alocacao' ? caseVoltaPara : 'pacientes') : tecView);
       b.classList.toggle('is-active', on);
       if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
     });
@@ -4240,9 +4364,10 @@ route();
     renderTecStudents();
     renderTecRecent();
     fillNpEstudantes();
+    if(typeof aoEntrarNaVisao === 'function') aoEntrarNaVisao(tecView);
   }
   function setTecView(view){
-    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
+    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro','alocacao','caso'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
     tecView = view;
     applyTecView();
     const card = tecCard();
@@ -4818,9 +4943,8 @@ route();
       const nomeEl = document.getElementById('eq-np-nome');
       const nome = nomeEl.value.trim();
       if(!nome){ nomeEl.focus(); return; }
-      const estudanteEl = document.getElementById('eq-np-estudante');
-      const estudante = estudanteEl.value;
-      const supervisor = document.getElementById('eq-np-supervisor').value;
+      const supervisorEl = document.getElementById('eq-np-supervisor');
+      const supervisor = supervisorEl.value;
       const msg = document.getElementById('eq-newpatient-msg');
       function recusa(texto, campo){
         if(msg){ msg.textContent = texto; msg.hidden = false; }
@@ -4849,11 +4973,7 @@ route();
         if(tel.length !== 10 && tel.length !== 11){ recusa('Informe o telefone do responsável com DDD.', rTel); return; }
         responsavel = { nome: rNome.value.trim(), parentesco: rPar.value, cpf: rCpf.value, telefone: rTel.value };
       }
-      if(!estudante){
-        if(msg){ msg.textContent = 'Escolha o estudante que vai acompanhar o paciente.'; msg.hidden = false; }
-        estudanteEl.focus();
-        return;
-      }
+      if(!supervisor){ recusa('Selecione o supervisor responsável pelo paciente.', supervisorEl); return; }
       const lgpdConsent = document.getElementById('eq-np-lgpd-consent');
       if(lgpdConsent && !lgpdConsent.checked){
         if(msg){ msg.textContent = 'Confirme que o paciente consentiu com o tratamento dos dados antes de cadastrar.'; msg.hidden = false; }
@@ -4861,7 +4981,7 @@ route();
         return;
       }
       window.apiCreateCaso({
-        paciente: nome, estudante: estudante, supervisor: supervisor, status: 'Ativo',
+        paciente: nome, supervisor: supervisor, status: 'Ativo',
         nascimento: nascEl.value.trim(), cpf: cpfEl.value, email: email, responsavel: responsavel,
         telefone: document.getElementById('eq-np-telefone').value.trim(),
         disponibilidade: getDisp('np'),
@@ -4871,7 +4991,7 @@ route();
         syncCasesTable();
         renderStats();
         const idGerado = resp.caso && resp.caso.cadastro && resp.caso.cadastro.id;
-        if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a)'+(idGerado ? ' com o ID '+idGerado : '')+' e alocado(a) para '+estudante+'. O caso já aparece na lista de pacientes.'; msg.hidden = false; }
+        if(msg){ msg.textContent = 'Paciente "'+nome+'" cadastrado(a)'+(idGerado ? ' com o ID '+idGerado : '')+' com o supervisor '+supervisor+'. Situação: Aguardando alocação — escolha o estudante em “Alocação de Pacientes”. Nenhum atendimento foi agendado.'; msg.hidden = false; }
         const boxAc = document.getElementById('eq-np-acesso');
         if(boxAc){
           const ac = resp.acesso;
@@ -4883,8 +5003,8 @@ route();
         carregarAcessos();
         newPatientForm.reset();
         atualizaIdadeCadastro();
-        document.getElementById('eq-np-estudante').value = '';
-        fillNpEstudantes();
+        fillNpSupervisores();
+        renderAloc();
       }).catch(function(err){
         console.warn('Não foi possível cadastrar o paciente no servidor:', err);
         /* 400/409: o servidor recusou os dados (CPF inválido, CPF já com caso ativo…) — mostra o motivo. */
@@ -5043,15 +5163,17 @@ route();
   /* Monta um índice { "AAAA-MM-DD": [ {hora, local, status, paciente, caseId} ] } com os agendamentos visíveis ao perfil logado */
   function getVisibleAppointmentsByDate(){
     const byDate = {};
+    const f = (currentRole==='tecnico') ? agFiltros() : null;
     Object.keys(CASOS).forEach(function(caseId){
       const caso = CASOS[caseId];
       if(currentRole==='estudante' && caso.estudante !== currentName) return;
-      (caso.agendamentos||[]).forEach(function(ag){
+      (caso.agendamentos||[]).forEach(function(ag, idx){
         const parts = ag.data.split('/');
         if(parts.length!==3) return;
         const key = parts[2]+'-'+parts[1]+'-'+parts[0];
+        if(f && !agPassaFiltro(f, caso, ag, key)) return;
         if(!byDate[key]) byDate[key] = [];
-        byDate[key].push({hora:ag.hora, local:ag.local, status:ag.status, paciente:caso.paciente, caseId:caseId});
+        byDate[key].push({hora:ag.hora, local:ag.local, status:ag.status, paciente:caso.paciente, caseId:caseId, idx:idx, estudante:caso.estudante||'', supervisor:caso.supervisor||''});
       });
     });
     Object.keys(byDate).forEach(function(k){ byDate[k].sort(function(a,b){ return a.hora.localeCompare(b.hora); }); });
@@ -5063,6 +5185,7 @@ route();
     const appts = apptsByDate[key] || [];
     const parts = key.split('-');
     const dLabel = parts[2]+'/'+parts[1]+'/'+parts[0];
+    const tec = currentRole==='tecnico';
     let html = '<p class="eq-cal-detail-label">' + esc(dLabel) + '</p>';
     if(!appts.length){
       html += '<p class="eq-cal-empty">Nenhum atendimento agendado neste dia.</p>';
@@ -5070,7 +5193,9 @@ route();
       appts.forEach(function(a){
         html += '<div class="eq-cal-appt">'
           + '<span class="eq-cal-appt-time">' + esc(a.hora) + '</span>'
-          + '<div class="eq-cal-appt-info"><strong>' + esc(a.paciente) + '</strong><span>' + esc(a.local) + ' · ' + esc(a.status) + '</span></div>'
+          + '<div class="eq-cal-appt-info"><strong>' + esc(a.paciente) + '</strong><span>' + esc(a.local) + ' · ' + esc(a.status) + '</span>'
+          + (tec ? '<span class="eq-cal-appt-meta">Estudante: ' + esc(a.estudante || '—') + ' · Supervisor: ' + esc(a.supervisor || '—') + '</span>' + agAcoesHtml(a.caseId, a.idx, a.status) : '')
+          + '</div>'
           + '<button type="button" class="eq-cal-appt-open" data-case="' + esc(a.caseId) + '">Ver caso<svg><use href="#i-arrow"/></svg></button>'
           + '</div>';
       });
@@ -5179,6 +5304,434 @@ route();
     });
   }
 
+  /* ===== ALOCAÇÃO DE PACIENTES, VÍNCULOS DE SUPERVISÃO E AGENDA — painel do psicólogo técnico ===== */
+  var caseVoltaPara = 'pacientes';
+  var alocTab = 'aguardando';
+  var dadosAlocCarregadoEm = 0;
+  window.PRONTUARIO_SUPERVISORES = window.PRONTUARIO_SUPERVISORES || [];
+  window.PRONTUARIO_VINCULOS = window.PRONTUARIO_VINCULOS || {estudantes:[], sugestoes:[], inconsistencias:[]};
+  const caseDetailEl = document.querySelector('#eq-case-section .eq-detail');
+  const caseOrigemEl = caseDetailEl ? caseDetailEl.parentNode : null;
+  const caseSlotEl = document.getElementById('eq-case-slot');
+  const ROTULOS_VISAO = {painel:'ao painel', pacientes:'à lista de pacientes', alocacao:'à Alocação de Pacientes', agenda:'à Agenda', estudantes:'aos estudantes', solicitacoes:'às solicitações', cadastro:'ao cadastro'};
+
+  function normTxt(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
+  function hojeIso(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function brParaIso(br){ const p = String(br||'').split('/'); return p.length===3 ? p[2]+'-'+p[1]+'-'+p[0] : ''; }
+  function horaParaInput(h){ return String(h||'').replace('h',':'); }
+  function msgEm(id, texto){ const el = document.getElementById(id); if(!el) return; el.textContent = texto || ''; el.hidden = !texto; }
+  function erroTexto(err){ return (err && err.message) ? err.message : 'Não foi possível concluir. Verifique a conexão e tente novamente.'; }
+
+  /* Dados de apoio (supervisores ativos e vínculos) vêm do servidor, só para o técnico. */
+  function fillNpSupervisores(){
+    const sel = document.getElementById('eq-np-supervisor');
+    if(!sel) return;
+    const atual = sel.value;
+    const lista = window.PRONTUARIO_SUPERVISORES || [];
+    sel.innerHTML = '<option value="">Selecione o supervisor…</option>' + lista.map(function(s){
+      return '<option value="'+esc(s.nome)+'">'+esc(s.nome)+(s.crp ? ' — CRP '+esc(s.crp) : '')+'</option>';
+    }).join('');
+    sel.value = lista.some(function(s){ return s.nome === atual; }) ? atual : '';
+  }
+  function carregarDadosAlocacao(forcar){
+    if(currentRole !== 'tecnico') return Promise.resolve();
+    if(!forcar && Date.now() - dadosAlocCarregadoEm < 15000) return Promise.resolve();
+    dadosAlocCarregadoEm = Date.now();
+    return Promise.all([
+      window.apiGetSupervisores().catch(function(){ return null; }),
+      window.apiGetVinculos().catch(function(){ return null; })
+    ]).then(function(r){
+      if(r[0]) window.PRONTUARIO_SUPERVISORES = r[0];
+      if(r[1]) window.PRONTUARIO_VINCULOS = r[1];
+      fillNpSupervisores(); renderAloc(); renderVinculos();
+    });
+  }
+  function aoEntrarNaVisao(v){
+    if(currentRole !== 'tecnico') return;
+    carregarDadosAlocacao(v === 'alocacao' || v === 'cadastro');
+    if(v === 'agenda') popularFiltrosAgenda();
+    renderAloc();
+  }
+  function aposMudancaDeCaso(id, caso){
+    CASOS[id] = caso;
+    syncCasesTable(); renderStats(); renderAloc(); renderCalendar(); popularFiltrosAgenda();
+    if(currentCaseId === id && tecView === 'caso'){ renderAgenda(CASOS[id], true); renderResumo(CASOS[id]); }
+  }
+
+  /* ----- Janela de diálogo compartilhada ----- */
+  const mdlEl = document.getElementById('eq-mdl');
+  var mdlOk = null, mdlFoco = null;
+  function mdlAbrir(titulo, html, ok){
+    if(!mdlEl) return;
+    mdlFoco = document.activeElement;
+    document.getElementById('eq-mdl-t').textContent = titulo;
+    document.getElementById('eq-mdl-b').innerHTML = html;
+    mdlOk = ok;
+    mdlEl.hidden = false;
+    const f = mdlEl.querySelector('input:not([disabled]):not([type=radio]),select:not([disabled]),textarea,input[type=radio]');
+    if(f) f.focus();
+  }
+  function mdlFechar(){
+    if(!mdlEl) return;
+    mdlEl.hidden = true; mdlOk = null;
+    if(mdlFoco && mdlFoco.focus){ try{ mdlFoco.focus(); }catch(e){} }
+  }
+  function mdlErro(t){ const e = document.getElementById('eq-mdl-erro'); if(e){ e.textContent = t || ''; e.hidden = !t; } }
+  function mdlRodape(rotuloOk){
+    return '<p class="eq-mdl-erro" id="eq-mdl-erro" role="alert" hidden></p><div class="eq-mdl-btns"><button type="submit" class="btn btn-primary" id="eq-mdl-ok">'+esc(rotuloOk)+'</button><button type="button" class="btn btn-outline" data-mdl-cancel>Cancelar</button></div>';
+  }
+  /* Executa a chamada ao servidor sem permitir duplo clique. */
+  function mdlEnviar(promessa, aoSucesso){
+    const b = document.getElementById('eq-mdl-ok');
+    if(b) b.disabled = true;
+    mdlErro('');
+    promessa.then(function(resp){ aoSucesso(resp); }).catch(function(err){
+      mdlErro(erroTexto(err));
+      if(b) b.disabled = false;
+    });
+  }
+  if(mdlEl){
+    mdlEl.addEventListener('submit', function(e){ e.preventDefault(); if(mdlOk) mdlOk(); });
+    mdlEl.addEventListener('click', function(e){
+      if(e.target === mdlEl || e.target.id === 'eq-mdl-x' || e.target.closest('[data-mdl-cancel]')) mdlFechar();
+    });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !mdlEl.hidden) mdlFechar(); });
+  }
+
+  /* ----- Página Alocação de Pacientes ----- */
+  function alocCategoria(c){ return c.status === 'Encerrado' ? 'encerrados' : (c.estudante ? 'alocados' : 'aguardando'); }
+  function renderAloc(){
+    const corpo = document.getElementById('eq-aloc-body');
+    if(!corpo) return;
+    const busca = normTxt(document.getElementById('eq-aloc-busca').value);
+    const selSup = document.getElementById('eq-aloc-sup');
+    const supsConhecidos = {};
+    (window.PRONTUARIO_SUPERVISORES || []).forEach(function(s){ supsConhecidos[s.nome] = 1; });
+    Object.keys(CASOS).forEach(function(id){ if(CASOS[id].supervisor) supsConhecidos[CASOS[id].supervisor] = 1; });
+    const nomesSup = Object.keys(supsConhecidos).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
+    const filtroSup = selSup.value;
+    selSup.innerHTML = '<option value="">Todos</option><option value="__sem">Sem supervisor</option>' + nomesSup.map(function(n){ return '<option value="'+esc(n)+'">'+esc(n)+'</option>'; }).join('');
+    selSup.value = (filtroSup === '__sem' || supsConhecidos[filtroSup]) ? filtroSup : '';
+    const fs = selSup.value;
+    const cont = {aguardando:0, alocados:0, encerrados:0};
+    const linhas = [];
+    Object.keys(CASOS).forEach(function(id){
+      const c = CASOS[id];
+      if(busca && normTxt(c.paciente).indexOf(busca) === -1) return;
+      if(fs && (fs === '__sem' ? c.supervisor : c.supervisor !== fs)) return;
+      const cat = alocCategoria(c);
+      cont[cat]++;
+      if(cat === alocTab) linhas.push({id:id, c:c, cat:cat});
+    });
+    ['aguardando','alocados','encerrados'].forEach(function(k){
+      const n = document.getElementById('eq-aloc-n-'+k); if(n) n.textContent = String(cont[k]);
+    });
+    document.querySelectorAll('#eq-aloc-tabs .eq-aloc-tab').forEach(function(b){
+      const on = b.dataset.aloc === alocTab;
+      b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    linhas.sort(function(a,b){ return a.c.paciente.localeCompare(b.c.paciente,'pt-BR'); });
+    corpo.innerHTML = linhas.map(function(l){
+      const c = l.c, id = esc(l.id);
+      const sup = c.supervisor ? esc(c.supervisor) : '<span class="dash-badge dash-badge-muted">Sem supervisor</span>';
+      const sit = l.cat === 'encerrados' ? '<span class="dash-badge dash-badge-muted">Encerrado</span>'
+        : (l.cat === 'alocados' ? '<span class="dash-badge dash-badge-ok">Alocado</span>' : '<span class="dash-badge dash-badge-info">Aguardando alocação</span>');
+      let ac = '';
+      if(l.cat === 'aguardando' && c.supervisor) ac += '<button type="button" class="btn btn-primary" data-aloc-acao="alocar" data-caso="'+id+'">Alocar estudante</button>';
+      if(l.cat === 'alocados') ac += '<button type="button" class="eq-case-open" data-aloc-acao="alocar" data-caso="'+id+'">Realocar</button>';
+      if(l.cat !== 'encerrados') ac += '<button type="button" class="eq-case-open" data-aloc-acao="supervisor" data-caso="'+id+'">'+(c.supervisor ? 'Alterar supervisor' : 'Definir supervisor')+'</button>';
+      ac += '<button type="button" class="eq-case-open" data-aloc-acao="ver" data-caso="'+id+'">Ver caso</button>';
+      return '<tr><td>'+esc(c.paciente)+(c.cadastro && c.cadastro.id ? '<span class="eq-aloc-sub">'+esc(c.cadastro.id)+'</span>' : '')+'</td><td>'+sup+'</td><td>'+(c.estudante ? esc(c.estudante) : '—')+'</td><td>'+sit+'</td><td>'+esc(c.abertura || '—')+'</td><td><div class="eq-aloc-acoes">'+ac+'</div></td></tr>';
+    }).join('');
+    const vazio = document.getElementById('eq-aloc-empty');
+    if(vazio){ vazio.hidden = linhas.length > 0; vazio.textContent = alocTab === 'aguardando' ? 'Nenhum paciente aguardando alocação.' : (alocTab === 'alocados' ? 'Nenhum paciente alocado com esses critérios.' : 'Nenhum caso encerrado com esses critérios.'); }
+  }
+  (function(){
+    const tabs = document.getElementById('eq-aloc-tabs');
+    if(tabs) tabs.addEventListener('click', function(e){ const b = e.target.closest('[data-aloc]'); if(b){ alocTab = b.dataset.aloc; renderAloc(); } });
+    ['eq-aloc-busca','eq-aloc-sup'].forEach(function(i){ const el = document.getElementById(i); if(el) el.addEventListener(i === 'eq-aloc-busca' ? 'input' : 'change', renderAloc); });
+    const corpo = document.getElementById('eq-aloc-body');
+    if(corpo) corpo.addEventListener('click', function(e){
+      const b = e.target.closest('[data-aloc-acao]'); if(!b) return;
+      const id = b.dataset.caso;
+      if(b.dataset.alocAcao === 'alocar') abrirAlocar(id);
+      else if(b.dataset.alocAcao === 'supervisor') abrirTrocaSupervisor(id);
+      else openCase(id);
+    });
+    const volta = document.getElementById('eq-case-host-back');
+    if(volta) volta.addEventListener('click', function(){ setTecView(caseVoltaPara || 'pacientes'); });
+  })();
+
+  function abrirAlocar(id){
+    const c = CASOS[id]; if(!c) return;
+    const realoc = !!c.estudante;
+    const todos = (window.PRONTUARIO_VINCULOS.estudantes || []);
+    const elegiveis = todos.filter(function(e){ return e.supervisor === c.supervisor && e.nome !== c.estudante; });
+    const pac = (c.cadastro || {}).disponibilidade || [];
+    const dispDe = window.PRONTUARIO_ESTUDANTES_DISP || {};
+    const ativos = {};
+    Object.keys(CASOS).forEach(function(k){ const x = CASOS[k]; if(x.status === 'Ativo' && x.estudante) ativos[x.estudante] = (ativos[x.estudante]||0) + 1; });
+    let lista;
+    if(!elegiveis.length){
+      lista = '<p class="eq-mdl-aviso">Nenhum estudante ativo está vinculado a '+esc(c.supervisor)+'. Regularize em “Vínculos de supervisão” (abaixo da lista) ou altere o supervisor do caso.</p>';
+    } else {
+      lista = '<ul class="eq-mdl-lista">' + elegiveis.map(function(e){
+        const disp = dispDe[e.nome] || [], ocup = slotsOcupados(e.nome);
+        const comum = pac.filter(function(x){ return disp.indexOf(x) !== -1; });
+        const livres = comum.filter(function(x){ return ocup.indexOf(x) === -1; });
+        let det;
+        if(!disp.length) det = 'Disponibilidade ainda não informada';
+        else if(!comum.length) det = 'Nenhum horário em comum com o paciente';
+        else det = 'Em comum: '+dispTexto(livres.length ? livres : comum) + (livres.length < comum.length ? ' (parte já ocupada)' : '');
+        const q = ativos[e.nome] || 0;
+        return '<li><label><input type="radio" name="mdl-est" value="'+esc(e.ra)+'"><span><b>'+esc(e.nome)+'</b> <small>RA '+esc(e.ra)+' · '+q+(q===1?' paciente ativo':' pacientes ativos')+(e.tem_conta ? '' : ' · sem conta de acesso')+'</small><br><small>Disponibilidade: '+esc(disp.length ? dispTexto(disp) : 'não informada')+'</small><br><small>'+esc(det)+'</small></span></label></li>';
+      }).join('') + '</ul>';
+    }
+    const html = '<form id="eq-mdl-form" novalidate>'
+      + '<p>'+(realoc ? 'Realocação: o estudante atual é <b>'+esc(c.estudante)+'</b>. O histórico e os registros clínicos já feitos são preservados.' : 'Escolha o estudante que vai acompanhar este paciente. Somente estudantes do supervisor responsável são listados.')+'</p>'
+      + '<div class="eq-field-row"><div class="eq-field"><label>Paciente</label><div class="eq-mdl-ro">'+esc(c.paciente)+'</div></div><div class="eq-field"><label>Supervisor responsável</label><div class="eq-mdl-ro">'+esc(c.supervisor)+'</div></div></div>'
+      + '<div class="eq-field"><label>Disponibilidade do paciente</label><div class="eq-mdl-ro">'+esc(pac.length ? dispTexto(pac) : 'não informada')+'</div></div>'
+      + '<div class="eq-field"><label>Estudantes de '+esc(c.supervisor)+'</label>'+lista+'</div>'
+      + '<div class="eq-field"><label for="eq-mdl-mot">Motivo'+(realoc ? '' : ' (opcional)')+'</label><textarea class="eq-textarea" id="eq-mdl-mot" rows="2" maxlength="300"></textarea></div>'
+      + mdlRodape(realoc ? 'Confirmar realocação' : 'Confirmar alocação') + '</form>';
+    mdlAbrir(realoc ? 'Realocar paciente' : 'Alocar estudante', html, function(){
+      const r = document.querySelector('#eq-mdl-b input[name=mdl-est]:checked');
+      const mot = document.getElementById('eq-mdl-mot').value.trim();
+      if(!r){ mdlErro('Selecione um estudante.'); return; }
+      if(realoc && !mot){ mdlErro('Informe o motivo da realocação.'); return; }
+      mdlEnviar(window.apiAlocar(id, {ra:r.value, realocar:realoc, motivo:mot}), function(resp){
+        aposMudancaDeCaso(id, resp.caso);
+        mdlFechar();
+        msgEm('eq-aloc-msg', (realoc ? 'Paciente realocado(a) para ' : 'Paciente alocado(a) para ') + resp.caso.estudante + '.' + (resp.agendamentos_futuros ? ' Há ' + resp.agendamentos_futuros + ' atendimento(s) futuro(s) já marcados: revise-os na Agenda.' : ''));
+        carregarDadosAlocacao(true);
+      });
+    });
+  }
+  function abrirTrocaSupervisor(id){
+    const c = CASOS[id]; if(!c) return;
+    const temEst = !!c.estudante;
+    const opcoes = (window.PRONTUARIO_SUPERVISORES || []).filter(function(s){ return s.nome !== c.supervisor; });
+    const html = '<form id="eq-mdl-form" novalidate>'
+      + '<p>Supervisor atual: <b>'+esc(c.supervisor || 'não definido')+'</b>.</p>'
+      + (temEst ? '<p class="eq-mdl-aviso">Este paciente já está com <b>'+esc(c.estudante)+'</b>. Trocar o supervisor é uma <b>transferência</b>: se o estudante não for vinculado ao novo supervisor, o paciente volta para “Aguardando alocação”. Os registros clínicos e o histórico são preservados.</p>' : '')
+      + '<div class="eq-field"><label for="eq-mdl-sup">Novo supervisor responsável</label><select class="eq-select" id="eq-mdl-sup"><option value="">Selecione…</option>'+opcoes.map(function(s){ return '<option value="'+esc(s.nome)+'">'+esc(s.nome)+'</option>'; }).join('')+'</select></div>'
+      + '<div class="eq-field"><label for="eq-mdl-mot">Motivo'+(temEst ? '' : ' (opcional)')+'</label><textarea class="eq-textarea" id="eq-mdl-mot" rows="2" maxlength="300"></textarea></div>'
+      + (temEst ? '<label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;font-size:13.5px"><input type="checkbox" id="eq-mdl-conf"><span>Confirmo a transferência deste paciente para o novo supervisor.</span></label>' : '')
+      + mdlRodape(temEst ? 'Confirmar transferência' : 'Salvar supervisor') + '</form>';
+    mdlAbrir(c.supervisor ? 'Alterar supervisor responsável' : 'Definir supervisor responsável', html, function(){
+      const sup = document.getElementById('eq-mdl-sup').value;
+      const mot = document.getElementById('eq-mdl-mot').value.trim();
+      if(!sup){ mdlErro('Selecione o novo supervisor.'); return; }
+      if(temEst && !mot){ mdlErro('Informe o motivo da transferência.'); return; }
+      if(temEst && !document.getElementById('eq-mdl-conf').checked){ mdlErro('Confirme a transferência para continuar.'); return; }
+      mdlEnviar(window.apiTrocarSupervisor(id, {supervisor:sup, motivo:mot, confirmar_transferencia:temEst}), function(resp){
+        aposMudancaDeCaso(id, resp.caso);
+        mdlFechar();
+        msgEm('eq-aloc-msg', 'Supervisor de ' + resp.caso.paciente + ' alterado para ' + resp.caso.supervisor + '.' + (resp.estudante_liberado ? ' O paciente voltou para “Aguardando alocação”.' : ''));
+        carregarDadosAlocacao(true);
+      });
+    });
+  }
+
+  /* ----- Vínculos de supervisão ----- */
+  function renderVinculos(){
+    const corpo = document.getElementById('eq-vinc-body');
+    if(!corpo) return;
+    const V = window.PRONTUARIO_VINCULOS || {estudantes:[], sugestoes:[], inconsistencias:[]};
+    const sups = window.PRONTUARIO_SUPERVISORES || [];
+    corpo.innerHTML = V.estudantes.map(function(e){
+      const sug = (V.sugestoes || []).filter(function(s){ return s.ra === e.ra; })[0];
+      const opts = '<option value="">— sem vínculo —</option>' + sups.map(function(s){ return '<option value="'+esc(s.nome)+'"'+(s.nome === e.supervisor ? ' selected' : '')+'>'+esc(s.nome)+'</option>'; }).join('');
+      return '<tr><td>'+esc(e.nome)+'<span class="eq-aloc-sub">RA '+esc(e.ra)+'</span></td>'
+        + '<td>'+(e.tem_conta ? '<span class="dash-badge dash-badge-ok">Com conta</span>' : '<span class="dash-badge dash-badge-muted">Sem conta de acesso</span>')+'</td>'
+        + '<td><div class="eq-vinc-row"><select class="eq-select" data-vinc-sel="'+esc(e.ra)+'" aria-label="Supervisor de '+esc(e.nome)+'">'+opts+'</select><button type="button" class="eq-case-open" data-vinc-salvar="'+esc(e.ra)+'">Salvar</button></div>'
+        + (e.supervisor ? '<span class="eq-aloc-sub">Vínculo ativo desde '+esc(e.desde || '—')+'</span>' : '<span class="eq-aloc-sub">Sem vínculo ativo: não aparece nas alocações.</span>')
+        + (!e.supervisor && sug ? '<span class="eq-aloc-sub">Referência nos casos: '+esc(sug.supervisor)+' ('+sug.casos+(sug.casos===1?' caso':' casos')+') <button type="button" class="eq-case-open" data-vinc-sug="'+esc(e.ra)+'" data-sup="'+esc(sug.supervisor)+'">Usar como seleção</button></span>' : '')
+        + '</td></tr>';
+    }).join('');
+    const ul = document.getElementById('eq-vinc-incons');
+    if(ul){
+      const inc = V.inconsistencias || [];
+      ul.innerHTML = inc.length
+        ? '<li><b>Pontos para regularizar ('+inc.length+'):</b></li>' + inc.slice(0, 8).map(function(i){ return '<li>'+esc(i.paciente)+' — '+esc(i.mensagem)+(i.estudante ? ' ('+esc(i.estudante)+(i.supervisor ? ' / '+esc(i.supervisor) : '')+')' : '')+'</li>'; }).join('') + (inc.length > 8 ? '<li>e mais '+(inc.length-8)+'…</li>' : '')
+        : '<li>Nenhuma inconsistência entre casos e vínculos.</li>';
+    }
+  }
+  (function(){
+    const corpo = document.getElementById('eq-vinc-body');
+    if(!corpo) return;
+    corpo.addEventListener('click', function(e){
+      const sug = e.target.closest('[data-vinc-sug]');
+      if(sug){ const sel = corpo.querySelector('[data-vinc-sel="'+sug.dataset.vincSug+'"]'); if(sel) sel.value = sug.dataset.sup; return; }
+      const b = e.target.closest('[data-vinc-salvar]');
+      if(!b) return;
+      const ra = b.dataset.vincSalvar;
+      const sel = corpo.querySelector('[data-vinc-sel="'+ra+'"]');
+      b.disabled = true;
+      window.apiSalvarVinculo(ra, sel.value).then(function(){
+        msgEm('eq-vinc-msg', 'Vínculo salvo.');
+        return carregarDadosAlocacao(true);
+      }).catch(function(err){ msgEm('eq-vinc-msg', erroTexto(err)); }).then(function(){ b.disabled = false; });
+    });
+  })();
+
+  /* ----- Agenda principal: filtros, calendário com ações e formulário único ----- */
+  function agFiltros(){
+    const v = function(i){ const el = document.getElementById(i); return el ? el.value : ''; };
+    return {pac: normTxt(v('eq-agf-pac')), est: v('eq-agf-est'), sup: v('eq-agf-sup'), de: v('eq-agf-de'), ate: v('eq-agf-ate'), st: v('eq-agf-st')};
+  }
+  function agPassaFiltro(f, caso, ag, key){
+    if(f.pac && normTxt(caso.paciente).indexOf(f.pac) === -1) return false;
+    if(f.est && caso.estudante !== f.est) return false;
+    if(f.sup && caso.supervisor !== f.sup) return false;
+    if(f.de && key < f.de) return false;
+    if(f.ate && key > f.ate) return false;
+    if(f.st && ag.status !== f.st) return false;
+    return true;
+  }
+  function popularFiltrosAgenda(){
+    const est = document.getElementById('eq-agf-est'), sup = document.getElementById('eq-agf-sup');
+    if(!est || !sup) return;
+    const e = {}, s = {};
+    Object.keys(CASOS).forEach(function(id){ if(CASOS[id].estudante) e[CASOS[id].estudante] = 1; if(CASOS[id].supervisor) s[CASOS[id].supervisor] = 1; });
+    [[est, e], [sup, s]].forEach(function(par){
+      const atual = par[0].value;
+      par[0].innerHTML = '<option value="">Todos</option>' + Object.keys(par[1]).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); }).map(function(n){ return '<option value="'+esc(n)+'">'+esc(n)+'</option>'; }).join('');
+      par[0].value = par[1][atual] ? atual : '';
+    });
+  }
+  function agAcoesHtml(caseId, idx, status){
+    if(status !== 'Confirmada') return '';
+    const a = ' data-caso="'+esc(caseId)+'" data-idx="'+idx+'"';
+    return '<div class="eq-cal-appt-acoes"><button type="button" data-ag-acao="editar"'+a+'>Editar</button><button type="button" data-ag-acao="reagendar"'+a+'>Reagendar</button><button type="button" class="is-danger" data-ag-acao="cancelar"'+a+'>Cancelar</button></div>';
+  }
+  function agCasosElegiveis(){
+    return Object.keys(CASOS).filter(function(id){ return CASOS[id].status === 'Ativo' && CASOS[id].estudante; })
+      .sort(function(a,b){ return CASOS[a].paciente.localeCompare(CASOS[b].paciente,'pt-BR'); });
+  }
+  function abrirAgNovo(casoId){
+    const ids = agCasosElegiveis();
+    if(!ids.length){
+      mdlAbrir('Novo agendamento', '<p class="eq-mdl-aviso">Nenhum paciente está alocado a um estudante. Faça a alocação em “Alocação de Pacientes” antes de agendar.</p><div class="eq-mdl-btns"><button type="button" class="btn btn-outline" data-mdl-cancel>Fechar</button></div>', null);
+      return;
+    }
+    const fixo = casoId && ids.indexOf(casoId) !== -1;
+    const html = '<form id="eq-mdl-form" novalidate>'
+      + '<div class="eq-field"><label for="eq-ag-pac">Paciente</label><select class="eq-select" id="eq-ag-pac"'+(fixo ? ' disabled' : '')+'><option value="">Selecione o paciente…</option>'+ids.map(function(id){ return '<option value="'+esc(id)+'"'+(fixo && id === casoId ? ' selected' : '')+'>'+esc(CASOS[id].paciente)+'</option>'; }).join('')+'</select></div>'
+      + '<div class="eq-field-row"><div class="eq-field"><label>Estudante responsável</label><div class="eq-mdl-ro" id="eq-ag-est">—</div></div><div class="eq-field"><label>Supervisor responsável</label><div class="eq-mdl-ro" id="eq-ag-sup">—</div></div></div>'
+      + '<div class="eq-field-row"><div class="eq-field"><label for="eq-ag-d">Data</label><input type="date" class="eq-input" id="eq-ag-d" min="'+hojeIso()+'"></div><div class="eq-field"><label for="eq-ag-h">Horário</label><input type="time" class="eq-input" id="eq-ag-h"></div></div>'
+      + '<div class="eq-field"><label for="eq-ag-l">Local do atendimento</label><input type="text" class="eq-input" id="eq-ag-l" maxlength="200" placeholder="ex: Sala 3 — Serviço-Escola"></div>'
+      + mdlRodape('Agendar atendimento') + '</form>';
+    const preencher = function(){
+      const id = document.getElementById('eq-ag-pac').value, c = CASOS[id];
+      document.getElementById('eq-ag-est').textContent = c ? c.estudante : '—';
+      document.getElementById('eq-ag-sup').textContent = c ? (c.supervisor || '—') : '—';
+    };
+    mdlAbrir('Novo agendamento', html, function(){
+      const id = document.getElementById('eq-ag-pac').value;
+      const d = document.getElementById('eq-ag-d').value, h = document.getElementById('eq-ag-h').value, l = document.getElementById('eq-ag-l').value.trim();
+      if(!id){ mdlErro('Selecione o paciente.'); return; }
+      if(!d){ mdlErro('Informe a data do atendimento.'); return; }
+      if(d < hojeIso()){ mdlErro('Não é possível agendar em uma data que já passou.'); return; }
+      if(!h){ mdlErro('Informe o horário do atendimento.'); return; }
+      if(!l){ mdlErro('Informe o local do atendimento.'); return; }
+      mdlEnviar(window.apiAgCriar(id, {data:d, hora:h, local:l}), function(resp){
+        aposMudancaDeCaso(id, resp.caso); mdlFechar();
+        msgEm('eq-ag-msg', 'Atendimento de ' + resp.caso.paciente + ' agendado para ' + d.split('-').reverse().join('/') + ' às ' + h + '.');
+      });
+    });
+    document.getElementById('eq-ag-pac').addEventListener('change', preencher);
+    preencher();
+  }
+  function abrirAgAcao(caseId, idx, acao){
+    const c = CASOS[caseId]; const ag = c && (c.agendamentos || [])[idx];
+    if(!ag) return;
+    const resumo = '<p><b>'+esc(c.paciente)+'</b> · '+esc(ag.data)+' às '+esc(ag.hora)+' · '+esc(ag.local)+'</p>';
+    let corpo, titulo, rotulo;
+    if(acao === 'editar'){
+      titulo = 'Editar agendamento'; rotulo = 'Salvar alterações';
+      corpo = resumo + '<div class="eq-field"><label for="eq-ag-l">Local do atendimento</label><input type="text" class="eq-input" id="eq-ag-l" maxlength="200" value="'+esc(ag.local)+'"></div><p>Para mudar data ou horário, use “Reagendar”.</p>';
+    } else if(acao === 'reagendar'){
+      titulo = 'Reagendar atendimento'; rotulo = 'Confirmar novo horário';
+      corpo = resumo + '<div class="eq-field-row"><div class="eq-field"><label for="eq-ag-d">Nova data</label><input type="date" class="eq-input" id="eq-ag-d" min="'+hojeIso()+'" value="'+brParaIso(ag.data)+'"></div><div class="eq-field"><label for="eq-ag-h">Novo horário</label><input type="time" class="eq-input" id="eq-ag-h" value="'+horaParaInput(ag.hora)+'"></div></div>';
+    } else {
+      titulo = 'Cancelar atendimento'; rotulo = 'Confirmar cancelamento';
+      corpo = resumo + '<p class="eq-mdl-aviso">O atendimento será marcado como Cancelada e o horário volta a ficar livre. O registro permanece no histórico do paciente.</p><div class="eq-field"><label for="eq-ag-m">Motivo (opcional)</label><input type="text" class="eq-input" id="eq-ag-m" maxlength="300"></div>';
+    }
+    mdlAbrir(titulo, '<form id="eq-mdl-form" novalidate>'+corpo+mdlRodape(rotulo)+'</form>', function(){
+      let p = {acao: acao};
+      if(acao === 'editar'){ p.local = document.getElementById('eq-ag-l').value.trim(); if(!p.local){ mdlErro('Informe o local do atendimento.'); return; } }
+      if(acao === 'reagendar'){
+        p.data = document.getElementById('eq-ag-d').value; p.hora = document.getElementById('eq-ag-h').value;
+        if(!p.data || !p.hora){ mdlErro('Informe a nova data e o novo horário.'); return; }
+        if(p.data < hojeIso()){ mdlErro('Não é possível reagendar para uma data que já passou.'); return; }
+      }
+      if(acao === 'cancelar') p.motivo = document.getElementById('eq-ag-m').value.trim();
+      mdlEnviar(window.apiAgAcao(caseId, idx, p), function(resp){
+        aposMudancaDeCaso(caseId, resp.caso); mdlFechar();
+        msgEm('eq-ag-msg', acao === 'editar' ? 'Agendamento atualizado.' : (acao === 'reagendar' ? 'Atendimento reagendado.' : 'Atendimento cancelado.'));
+      });
+    });
+  }
+  (function(){
+    const novo = document.getElementById('eq-ag-novo');
+    if(novo) novo.addEventListener('click', function(){ abrirAgNovo(null); });
+    ['eq-agf-pac','eq-agf-est','eq-agf-sup','eq-agf-de','eq-agf-ate','eq-agf-st'].forEach(function(i){
+      const el = document.getElementById(i);
+      if(el) el.addEventListener(i === 'eq-agf-pac' ? 'input' : 'change', function(){ calSelectedKey = null; renderCalendar(); });
+    });
+    const limpar = document.getElementById('eq-agf-limpar');
+    if(limpar) limpar.addEventListener('click', function(){
+      ['eq-agf-pac','eq-agf-est','eq-agf-sup','eq-agf-de','eq-agf-ate','eq-agf-st'].forEach(function(i){ const el = document.getElementById(i); if(el) el.value = ''; });
+      calSelectedKey = null; renderCalendar();
+    });
+    const det = document.getElementById('eq-cal-detail');
+    if(det) det.addEventListener('click', function(e){
+      const b = e.target.closest('[data-ag-acao]'); if(!b) return;
+      abrirAgAcao(b.dataset.caso, +b.dataset.idx, b.dataset.agAcao);
+    });
+  })();
+
+  /* Aba Agenda do prontuário (técnico): histórico + próximos atendimentos; o formulário é o mesmo da Agenda principal. */
+  function renderAgendaTecnico(caso, panel){
+    const hoje = brParaIso(formatToday());
+    const prox = [], hist = [];
+    (caso.agendamentos || []).forEach(function(ag, idx){
+      const iso = brParaIso(ag.data);
+      (ag.status === 'Confirmada' && iso >= hoje ? prox : hist).push({ag:ag, idx:idx, iso:iso});
+    });
+    prox.sort(function(a,b){ return (a.iso+a.ag.hora).localeCompare(b.iso+b.ag.hora); });
+    hist.sort(function(a,b){ return (b.iso+b.ag.hora).localeCompare(a.iso+a.ag.hora); });
+    const item = function(x){
+      const a = x.ag, partes = String(a.data).split('/');
+      const cancel = a.status === 'Cancelada';
+      return '<div class="eq-agenda-item"><div class="eq-agenda-date"><b>'+esc(partes[0])+'</b><span>'+(MESES[parseInt(partes[1],10)-1] || '')+'</span></div>'
+        + '<div class="eq-agenda-info"><strong>'+esc(a.data)+' · '+esc(a.hora)+'</strong><small>'+esc(a.local)+'</small>'
+        + (cancel ? '<small class="eq-cal-appt-meta">Cancelado'+(a.cancelado_por ? ' por '+esc(a.cancelado_por) : '')+(a.motivo_cancelamento ? ' — '+esc(a.motivo_cancelamento) : '')+'</small>' : '')
+        + (a.reagendamentos && a.reagendamentos.length ? '<small class="eq-cal-appt-meta">Reagendado de '+esc(a.reagendamentos[a.reagendamentos.length-1].de)+'</small>' : '')
+        + agAcoesHtml(currentCaseId, x.idx, a.status) + '</div>'
+        + '<span class="dash-badge '+(a.status === 'Confirmada' ? 'dash-badge-ok' : 'dash-badge-muted')+'">'+esc(a.status)+'</span></div>';
+    };
+    let topo;
+    if(caso.status !== 'Ativo') topo = '<p class="eq-empty">Caso encerrado: reabra o caso para criar novos atendimentos.</p>';
+    else if(!caso.estudante) topo = '<p class="eq-empty">Este paciente ainda não foi alocado a um estudante. <button type="button" class="eq-case-open" data-ir-aloc>Ir para Alocação de Pacientes</button></p>';
+    else topo = '<button type="button" class="btn btn-primary eq-ag-novo-atalho" data-ag-novo-caso><span aria-hidden="true">+</span> Novo agendamento para este paciente</button>';
+    panel.innerHTML = '<div class="eq-agenda-list">'
+      + '<p class="eq-ag-grupo">Próximos atendimentos</p>' + (prox.length ? prox.map(item).join('') : '<p class="eq-empty">Nenhum atendimento futuro marcado.</p>')
+      + '<p class="eq-ag-grupo">Histórico de atendimentos</p>' + (hist.length ? hist.map(item).join('') : '<p class="eq-empty">Ainda não há atendimentos anteriores.</p>')
+      + '</div>' + topo;
+    if(!panel.dataset.agBound){
+      panel.dataset.agBound = '1';
+      panel.addEventListener('click', function(e){
+        if(currentRole !== 'tecnico') return;
+        const b = e.target.closest('[data-ag-acao]');
+        if(b){ abrirAgAcao(b.dataset.caso, +b.dataset.idx, b.dataset.agAcao); return; }
+        if(e.target.closest('[data-ag-novo-caso]')){ abrirAgNovo(currentCaseId); return; }
+        if(e.target.closest('[data-ir-aloc]')) setTecView('alocacao');
+      });
+    }
+  }
+
   /* RENDERIZAÇÃO DO DETALHE DO CASO */
   var ROTULOS_CORRECAO = {nome:'Nome', nascimento:'Data de nascimento', telefone:'Telefone', responsavel_nome:'Nome do responsável', responsavel_parentesco:'Vínculo do responsável', responsavel_telefone:'Telefone do responsável'};
   function avisoConferencia(caso){
@@ -5207,7 +5760,7 @@ route();
       '<div class="eq-resumo-grid">'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Paciente</span><span class="eq-resumo-card-value">'+esc(caso.paciente)+'</span></div>'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Status do caso</span><span class="eq-resumo-card-value">'+esc(caso.status)+'</span></div>'+
-        '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Estudante responsável</span><span class="eq-resumo-card-value">'+esc(caso.estudante)+'</span></div>'+
+        '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Estudante responsável</span><span class="eq-resumo-card-value">'+esc(caso.estudante||'Aguardando alocação')+'</span></div>'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Supervisão</span><span class="eq-resumo-card-value">'+esc(caso.supervisor)+'</span></div>'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Caso aberto em</span><span class="eq-resumo-card-value">'+esc(caso.abertura)+'</span></div>'+
         '<div class="eq-resumo-card"><span class="eq-resumo-card-label">Anamnese</span><span class="eq-resumo-card-value">'+(caso.anamnese? ('Registrada em '+esc(caso.anamnese.data)) : 'Ainda não registrada')+'</span></div>'+
@@ -5391,6 +5944,7 @@ route();
   function renderAgenda(caso, canSchedule){
     const panel = document.getElementById('eq-panel-agenda');
     if(!panel) return;
+    if(canSchedule && currentRole === 'tecnico'){ renderAgendaTecnico(caso, panel); return; }
     const listHtml = caso.agendamentos.length
       ? caso.agendamentos.map(function(a){
           const partes = a.data.split('/');
@@ -5461,12 +6015,12 @@ route();
     const caseBadge = document.getElementById('eq-case-badge');
     const exportMsg = document.getElementById('eq-case-export-msg');
     if(exportMsg){ exportMsg.hidden = true; exportMsg.textContent = ''; }
-    if(caseEyebrow) caseEyebrow.textContent = 'Caso vinculado a ' + caso.estudante;
+    if(caseEyebrow) caseEyebrow.textContent = caso.estudante ? 'Caso vinculado a ' + caso.estudante : 'Caso aguardando alocação';
     if(caseTitle) caseTitle.textContent = caso.paciente;
     if(caseSub){
       const cadSub = caso.cadastro || {};
       const idadeSub = idadeDe(cadSub.nascimento);
-      caseSub.textContent = (cadSub.id ? cadSub.id + ' · ' : '') + (idadeSub !== null ? textoIdade(idadeSub) + ' · ' : '') + 'Estudante: ' + caso.estudante + ' · Supervisão: ' + caso.supervisor;
+      caseSub.textContent = (cadSub.id ? cadSub.id + ' · ' : '') + (idadeSub !== null ? textoIdade(idadeSub) + ' · ' : '') + 'Estudante: ' + (caso.estudante || 'aguardando alocação') + ' · Supervisão: ' + (caso.supervisor || 'não definida');
     }
     if(caseBadge){
       caseBadge.textContent = caso.status;
@@ -5479,7 +6033,21 @@ route();
     renderDocumentos(caso, editable);
     renderAgenda(caso, currentRole==='tecnico');
     setActiveTab('resumo');
-    showCard('caseDetail');
+    if(currentRole === 'tecnico' && caseDetailEl && caseSlotEl){
+      /* O técnico abre o prontuário dentro do próprio painel (mesmo menu e mesma identidade visual). */
+      caseSlotEl.appendChild(caseDetailEl);
+      if(tecView !== 'caso') caseVoltaPara = tecView;
+      const bt = document.getElementById('eq-case-host-back-t');
+      if(bt) bt.textContent = 'Voltar ' + (ROTULOS_VISAO[caseVoltaPara] || 'à lista de pacientes');
+      tecView = 'caso';
+      applyTecView();
+      showCard('success');
+      const cardTec = tecCard();
+      if(cardTec) window.scrollTo({top: Math.max(0, cardTec.getBoundingClientRect().top + window.scrollY - 110)});
+    } else {
+      if(caseDetailEl && caseOrigemEl && caseDetailEl.parentNode !== caseOrigemEl) caseOrigemEl.appendChild(caseDetailEl);
+      showCard('caseDetail');
+    }
     if(currentRole === 'tecnico' && caso.confirmacao && caso.confirmacao.atualizacao_nao_vista && typeof window.apiCadastroVisto === 'function'){
       window.apiCadastroVisto(caseId).then(function(){
         caso.confirmacao.atualizacao_nao_vista = false;
@@ -5651,7 +6219,7 @@ route();
 
     const infoRows = [
       ['Paciente', caso.paciente],
-      ['Estudante responsável', caso.estudante],
+      ['Estudante responsável', caso.estudante || 'Aguardando alocação'],
       ['Supervisor', caso.supervisor],
       ['Status do caso', caso.status],
       ['Caso aberto em', caso.abertura]
