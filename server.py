@@ -329,25 +329,124 @@ ESTUDANTES_SEM_CONTA = {
 
 
 def _lista_estudantes():
-    """Cadastro de estudantes (nome + RA), em ordem alfabética pelo nome."""
-    estudantes = {}
-    for conta in CONTAS.values():
+    """Cadastro de estudantes, em ordem alfabética: os de demonstração escritos no
+    código (nome + RA) somados aos cadastrados pelo técnico na coleção "estudantes".
+    Um documento em "estudantes" com o mesmo RA de um estudante de demonstração só
+    sobrepõe telefone e situação (ativo/inativo)."""
+    base = {}
+    for email, conta in CONTAS.items():
         if conta.get("role") == "estudante" and conta.get("ra"):
-            estudantes[conta["nome"]] = conta["ra"]
+            base[conta["ra"]] = {"nome": conta["nome"], "ra": conta["ra"], "email": email, "origem": "demonstração"}
     for nome, ra in ESTUDANTES_SEM_CONTA.items():
-        estudantes.setdefault(nome, ra)
-    return [{"nome": nome, "ra": estudantes[nome]} for nome in sorted(estudantes, key=lambda n: n.casefold())]
+        base.setdefault(ra, {"nome": nome, "ra": ra, "email": "", "origem": "demonstração"})
+    for d in estudantes_col.find({}):
+        e = base.setdefault(d["_id"], {"nome": d.get("nome", ""), "ra": d["_id"], "email": d.get("email", ""), "origem": "cadastro"})
+        e["telefone"] = d.get("telefone", "")
+        e["ativo"] = d.get("ativo", True)
+    for e in base.values():
+        e.setdefault("telefone", "")
+        e.setdefault("ativo", True)
+    return sorted(base.values(), key=lambda e: e["nome"].casefold())
 
 
-def _lista_estudantes_com_disponibilidade():
-    """Cadastro de estudantes + a disponibilidade semanal que o técnico informou para cada um."""
-    lista = _lista_estudantes()
+def _ra_inativo(ra):
+    d = estudantes_col.find_one({"_id": ra}) if ra else None
+    return bool(d and d.get("ativo") is False)
+
+
+SITUACAO_CONTA = {"ativa": "ativada", "convite_pendente": "pendente de ativação", "desativada": "desativada"}
+
+
+def _lista_estudantes_com_disponibilidade(gestao=False):
+    """Estudantes + disponibilidade semanal. Para o técnico (gestao=True) inclui também
+    e-mail, telefone, vínculo, situação da conta e nº de pacientes ativos; o supervisor
+    continua vendo só nome, RA, situação e disponibilidade."""
     guardado = {d["_id"]: d for d in disp_estudantes_col.find({})}
-    for e in lista:
+    if gestao:
+        vinc = {d["_id"]: d for d in vinculos_col.find({})}
+        contas = {d["_id"]: d for d in contas_col.find({"role": "estudante"})}
+        ativos = {}
+        for c in casos_col.find({}):
+            if c.get("status") == "Ativo" and c.get("estudante"):
+                ativos[c["estudante"]] = ativos.get(c["estudante"], 0) + 1
+    out = []
+    for e in _lista_estudantes():
         d = guardado.get(e["ra"]) or {}
-        e["disponibilidade"] = d.get("disponibilidade") or []
-        e["disponibilidade_atualizada_em"] = d.get("atualizado_em_br", "")
-    return lista
+        item = {"nome": e["nome"], "ra": e["ra"], "ativo": e["ativo"],
+                "disponibilidade": d.get("disponibilidade") or [],
+                "disponibilidade_atualizada_em": d.get("atualizado_em_br", "")}
+        if gestao:
+            v = vinc.get(e["ra"]) or {}
+            conta = contas.get(e["email"]) if e["email"] else None
+            if conta:
+                sit = SITUACAO_CONTA.get(conta.get("status"), conta.get("status", ""))
+                expirado = bool(conta.get("status") == "convite_pendente" and (conta.get("convite") or {}).get("expira_em", 0) < time.time())
+            else:
+                sit, expirado = ("ativada" if e["email"] else "sem conta de acesso"), False
+            if not e["ativo"] and sit == "ativada":
+                sit = "desativada"
+            item.update(email=e["email"], telefone=e["telefone"], origem=e["origem"],
+                        supervisor=v.get("supervisor", "") if v.get("ativo") else "",
+                        situacao_conta=sit, convite_expirado=expirado,
+                        pacientes_ativos=ativos.get(e["nome"], 0))
+        out.append(item)
+    return out
+
+
+def _gravar_estudante(ra, campos):
+    """Grava campos do estudante (cria o documento se for a primeira vez, como nos
+    estudantes de demonstração, que só ganham registro quando algo é alterado)."""
+    if estudantes_col.update_one({"_id": ra}, {"$set": campos}).matched_count == 0:
+        estudantes_col.insert_one({"_id": ra, **campos})
+
+
+def _gravar_vinculo(ra, nome, sup, por):
+    """Define (ou encerra, com sup="") o vínculo ativo do estudante, preservando o histórico."""
+    doc = vinculos_col.find_one({"_id": ra})
+    atual = doc.get("supervisor", "") if doc and doc.get("ativo") else ""
+    if sup == atual:
+        return atual
+    hist = list((doc or {}).get("historico") or [])
+    agora = _agora_br()
+    if atual:
+        hist.append({"supervisor": atual, "de": doc.get("desde", ""), "ate": agora, "por": por})
+    novo = {"ra": ra, "estudante": nome, "supervisor": sup, "ativo": bool(sup), "desde": agora if sup else "", "historico": hist}
+    if vinculos_col.update_one({"_id": ra}, {"$set": novo}).matched_count == 0:
+        vinculos_col.insert_one({"_id": ra, **novo})
+    return atual
+
+
+def _validar_estudante(body, completo=True):
+    """Devolve (dados, erro). completo=False valida só os campos enviados (edição)."""
+    dados = {}
+    if completo or "nome" in body:
+        nome = " ".join(str(body.get("nome", "")).split())
+        if not 5 <= len(nome) <= 120 or " " not in nome:
+            return None, "informe o nome completo do estudante"
+        dados["nome"] = nome
+    if completo:
+        email = str(body.get("email", "")).strip().lower()
+        if not EMAIL_REGEX.match(email) or len(email) > 120:
+            return None, "informe um e-mail válido"
+        dados["email"] = email
+        ra = str(body.get("ra", "")).strip()
+        if not re.match(r"^\d{4,15}$", ra):
+            return None, "informe a matrícula/RA (somente números, de 4 a 15 dígitos)"
+        dados["ra"] = ra
+    if completo or "telefone" in body:
+        tel = str(body.get("telefone", "")).strip()
+        digitos = re.sub(r"\D", "", tel)
+        if tel and not 10 <= len(digitos) <= 11:
+            return None, "telefone inválido (use DDD + número)"
+        dados["telefone"] = tel
+    return dados, None
+
+
+def _resumo_estudante(ra):
+    return next((x for x in _lista_estudantes_com_disponibilidade(True) if x["ra"] == ra), None)
+
+
+NOTA_MAX = 2000
 
 
 # ---------------------------------------------------------------------------
@@ -395,13 +494,14 @@ def _estudante_por_ra(ra):
 def _painel_vinculos():
     """Estudantes com o vínculo ativo + referências a validar (sem alterar nada)."""
     com_conta = {c["nome"] for c in CONTAS.values() if c.get("role") == "estudante"}
+    com_conta |= {d["nome"] for d in contas_col.find({"role": "estudante"})}
     docs = {d["_id"]: d for d in vinculos_col.find({})}
     estudantes = []
     for e in _lista_estudantes():
         d = docs.get(e["ra"]) or {}
         ativo = bool(d.get("ativo"))
         estudantes.append({
-            "ra": e["ra"], "nome": e["nome"], "tem_conta": e["nome"] in com_conta,
+            "ra": e["ra"], "nome": e["nome"], "ativo": e.get("ativo", True), "tem_conta": e["nome"] in com_conta,
             "supervisor": d.get("supervisor", "") if ativo else "",
             "desde": d.get("desde", "") if ativo else "",
             "historico": d.get("historico") or [],
@@ -554,6 +654,9 @@ contas_col = db["contas"]
 historico_admin_col = db["historico_admin"]
 disp_estudantes_col = db["disponibilidade_estudantes"]
 vinculos_col = db["vinculos_supervisao"]  # fonte de verdade dos vínculos ativos supervisor <-> estudante
+estudantes_col = db["estudantes"]  # estudantes cadastrados pelo técnico (os de demonstração só ganham registro ao serem alterados)
+notas_col = db["notas_acompanhamento"]  # notas do técnico sobre evoluções (só acréscimo; nunca editadas nem apagadas)
+notificacoes_col = db["notificacoes"]  # avisos internos (sem dados clínicos)
 # Trilha de auditoria (achado da auditoria de segurança — item pendente que
 # havia sido esquecido no relatório anterior): registra quem fez o quê e
 # quando, numa coleção própria, consultável depois. Antes, o servidor só
@@ -847,7 +950,7 @@ def _link_convite(token, role=None):
 
 
 def _enviar_convite(email, nome, role, token):
-    funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else ("paciente" if role == "paciente" else "profissional"))
+    funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else ("paciente" if role == "paciente" else ("estudante" if role == "estudante" else "profissional")))
     assunto = "Prontuário Eletrônico — convite para criar sua senha de acesso"
     corpo = (
         "Olá, %s!\n\n"
@@ -1332,6 +1435,42 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(fila)
             return
 
+        m = re.match(r"^/api/casos/([^/]+)/notas$", path)
+        if m:
+            # Notas de acompanhamento de um caso: o técnico lê todas; o estudante, só as
+            # dos casos sob sua responsabilidade; supervisor e demais perfis não leem (nesta etapa).
+            sessao = self._exigir_papel({"tecnico", "estudante"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None or not _pode_acessar_caso(sessao, caso):
+                    _registrar_auditoria(sessao, "tentativa de ler notas de caso sem acesso", caso_id=case_id, resultado="negado")
+                    self._send_error_json(404 if caso is None else 403, "caso não encontrado" if caso is None else "sem permissão para este caso")
+                    return
+                notas = list(notas_col.find({"caso_id": case_id}).sort("criado_em", 1))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/casos/<id>/notas")
+                return
+            self._send_json([{"id": n["_id"], "evolucao": n["evolucao_idx"], "autor": n["autor"], "criado_em_br": n["criado_em_br"],
+                              "texto": n["texto"], "lida_em_br": n.get("lida_em_br", "")} for n in notas])
+            return
+
+        if path == "/api/notificacoes":
+            sessao = self._exigir_papel({"estudante"})
+            if sessao is None:
+                return
+            try:
+                docs = list(notificacoes_col.find({"destinatario": sessao["nome"]}).sort("criada_em", -1))[:50]
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/notificacoes")
+                return
+            # Sem nome de paciente nem conteúdo: só a referência ao registro.
+            self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d["caso_id"], "evolucao": d["evolucao_idx"],
+                              "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+            return
+
         if path in ("/api/supervisores", "/api/vinculos"):
             sessao = self._exigir_papel({"tecnico"})
             if sessao is None:
@@ -1351,7 +1490,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
             _registrar_auditoria(sessao, "listagem de estudantes")
             try:
-                self._send_json(_lista_estudantes_com_disponibilidade())
+                self._send_json(_lista_estudantes_com_disponibilidade(sessao["role"] == "tecnico"))
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/estudantes")
             return
@@ -1628,6 +1767,8 @@ class Handler(BaseHTTPRequestHandler):
             conta = CONTAS.get(email)
             if conta is not None:
                 senha_ok = conta["senha_hash"] == _hash_senha(senha)
+                if senha_ok and conta.get("role") == "estudante" and _ra_inativo(conta.get("ra")):
+                    senha_ok = False  # estudante desativado pelo técnico
             else:
                 # Não é conta de demonstração: procura nas contas gravadas no
                 # banco. Só entra quem está "ativa" e já criou a senha pelo
@@ -1941,6 +2082,117 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(inscricao_doc_to_json(doc), 201)
             return
 
+        if path == "/api/estudantes":
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            dados, erro = _validar_estudante(body)
+            if erro:
+                self._send_error_json(400, erro); return
+            situacao = str(body.get("situacao_inicial", "ativa"))
+            sup = str(body.get("supervisor", "")).strip()
+            if situacao not in ("ativa", "desativada"):
+                self._send_error_json(400, "situação inicial inválida"); return
+            token = None
+            with TRAVA_OPERACOES:
+                try:
+                    if sup not in {x["nome"] for x in _lista_supervisores_ativos()}:
+                        self._send_error_json(400, "selecione o supervisor responsável (um supervisor ativo)"); return
+                    existentes = _lista_estudantes()
+                    if dados["email"] in CONTAS or contas_col.find_one({"_id": dados["email"]}) or any(e["email"] == dados["email"] for e in existentes):
+                        self._send_error_json(409, "já existe uma conta com este e-mail"); return
+                    if any(e["ra"] == dados["ra"] for e in existentes):
+                        self._send_error_json(409, "já existe um estudante com esta matrícula/RA"); return
+                    if any(e["nome"].casefold() == dados["nome"].casefold() for e in existentes):
+                        self._send_error_json(409, "já existe um estudante com este nome: acrescente um sobrenome para diferenciá-los"); return
+                    agora = _agora_br()
+                    estudantes_col.insert_one({"_id": dados["ra"], "nome": dados["nome"], "email": dados["email"], "telefone": dados["telefone"],
+                                               "ativo": situacao == "ativa", "criado_em_br": agora, "criado_por": sessao["email"]})
+                    conta = {"_id": dados["email"], "nome": dados["nome"], "role": "estudante", "ra": dados["ra"], "salt": None, "senha_hash": None,
+                             "criado_em": time.time(), "criado_em_br": agora, "criado_por": sessao["email"]}
+                    if situacao == "ativa":
+                        token, convite = _novo_convite()
+                        conta.update(status="convite_pendente", convite=convite)
+                    else:
+                        conta.update(status="desativada", convite=None)
+                    contas_col.insert_one(conta)
+                    _gravar_vinculo(dados["ra"], dados["nome"], sup, sessao["nome"])
+                    resumo = _resumo_estudante(dados["ra"])
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/estudantes")
+                    return
+            convite_resp = _resposta_convite(_enviar_convite(dados["email"], dados["nome"], "estudante", token), token) if token else None
+            _registrar_auditoria(sessao, "estudante cadastrado", detalhe="%s (RA %s), supervisor %s" % (dados["nome"], dados["ra"], sup))
+            self._send_json({"estudante": resumo, "convite": convite_resp}, 201)
+            return
+
+        m = re.match(r"^/api/estudantes/([^/]+)/convite$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            ra = unquote(m.group(1))
+            try:
+                est = _estudante_por_ra(ra)
+                conta = contas_col.find_one({"_id": est["email"]}) if est and est["email"] else None
+                if conta is None:
+                    self._send_error_json(404, "este estudante não tem conta de acesso cadastrada"); return
+                if conta.get("status") != "convite_pendente":
+                    self._send_error_json(409, "o convite só pode ser reenviado enquanto a conta está pendente de ativação"); return
+                token, convite = _novo_convite()
+                contas_col.update_one({"_id": conta["_id"], "status": "convite_pendente"}, {"$set": {"convite": convite}})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/estudantes/<ra>/convite")
+                return
+            convite_resp = _resposta_convite(_enviar_convite(est["email"], est["nome"], "estudante", token), token)
+            _registrar_auditoria(sessao, "convite de estudante reenviado", detalhe="%s (RA %s)" % (est["nome"], ra))
+            self._send_json({"ok": True, "convite": convite_resp})
+            return
+
+        m = re.match(r"^/api/casos/([^/]+)/evolucoes/(\d+)/notas$", path)
+        if m:
+            # Nota de acompanhamento (só técnico). Registro adicional e separado: a evolução
+            # original não é tocada e a nota nunca é editada nem apagada.
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            case_id, idx = unquote(m.group(1)), int(m.group(2))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            texto = str(body.get("texto", "")).strip()
+            if not texto or len(texto) > NOTA_MAX:
+                self._send_error_json(400, "escreva a nota (até %d caracteres)" % NOTA_MAX); return
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None:
+                    self._send_error_json(404, "caso não encontrado"); return
+                if idx >= len(caso.get("evolucoes") or []):
+                    self._send_error_json(404, "evolução não encontrada"); return
+                agora_ts = time.time()
+                nota = {"_id": "nt-" + secrets.token_hex(6), "caso_id": case_id, "evolucao_idx": idx, "autor": sessao["nome"],
+                        "autor_email": sessao["email"], "criado_em": agora_ts, "criado_em_br": _agora_br(), "texto": texto,
+                        "destinatario": caso.get("estudante") or ""}
+                notas_col.insert_one(nota)
+                if nota["destinatario"]:
+                    notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": "nota_acompanhamento", "destinatario": nota["destinatario"],
+                                                 "caso_id": case_id, "evolucao_idx": idx, "nota_id": nota["_id"], "criada_em": agora_ts,
+                                                 "criada_em_br": nota["criado_em_br"], "lida": False})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/casos/<id>/evolucoes/<n>/notas")
+                return
+            _registrar_auditoria(sessao, "nota de acompanhamento adicionada", caso_id=case_id, detalhe="evolução %d" % (idx + 1))
+            self._send_json({"id": nota["_id"], "evolucao": idx, "autor": nota["autor"], "criado_em_br": nota["criado_em_br"],
+                             "texto": nota["texto"], "lida_em_br": "", "notificado": bool(nota["destinatario"])}, 201)
+            return
+
         m = re.match(r"^/api/casos/([^/]+)/agendamentos$", path)
         if m:
             # Novo agendamento (Agenda principal ou atalho no prontuário): só o técnico.
@@ -2252,6 +2504,78 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "disponibilidade": disp, "disponibilidade_atualizada_em": doc["atualizado_em_br"]})
             return
 
+        m = re.match(r"^/api/estudantes/([^/]+)$", path)
+        if m:
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            ra = unquote(m.group(1))
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            campos, erro = _validar_estudante({k: v for k, v in body.items() if k == "telefone"}, completo=False)
+            if erro:
+                self._send_error_json(400, erro); return
+            quer_ativo = body.get("ativo")
+            if quer_ativo is not None and not isinstance(quer_ativo, bool):
+                self._send_error_json(400, "o campo 'ativo' precisa ser verdadeiro ou falso"); return
+            token, aviso, mudou = None, "", False
+            with TRAVA_OPERACOES:
+                try:
+                    est = _estudante_por_ra(ra)
+                    if est is None:
+                        self._send_error_json(404, "estudante não encontrado"); return
+                    conta = contas_col.find_one({"_id": est["email"]}) if est["email"] else None
+                    if "telefone" in campos and campos["telefone"] != est["telefone"]:
+                        _gravar_estudante(ra, {"nome": est["nome"], "telefone": campos["telefone"]}); mudou = True
+                    if quer_ativo is not None and quer_ativo != est["ativo"]:
+                        _gravar_estudante(ra, {"nome": est["nome"], "ativo": quer_ativo}); mudou = True
+                        if not quer_ativo:
+                            if conta:
+                                contas_col.update_one({"_id": conta["_id"]}, {"$set": {"status": "desativada", "convite": None}})
+                            if est["email"]:
+                                _encerrar_sessoes(est["email"])
+                            n = sum(1 for c in casos_col.find({}) if c.get("status") == "Ativo" and c.get("estudante") == est["nome"])
+                            if n:
+                                aviso = "O estudante tem %d paciente(s) ativo(s). Avalie a redistribuição em Alocação de Pacientes: nada foi realocado automaticamente." % n
+                        elif conta:
+                            if conta.get("senha_hash"):
+                                contas_col.update_one({"_id": conta["_id"]}, {"$set": {"status": "ativa", "convite": None}})
+                            else:
+                                token, convite = _novo_convite()
+                                contas_col.update_one({"_id": conta["_id"]}, {"$set": {"status": "convite_pendente", "convite": convite}})
+                    resumo = _resumo_estudante(ra)
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "PUT /api/estudantes/<ra>")
+                    return
+            convite_resp = _resposta_convite(_enviar_convite(est["email"], est["nome"], "estudante", token), token) if token else None
+            if mudou:
+                _registrar_auditoria(sessao, "cadastro de estudante alterado", detalhe="%s (RA %s)%s" % (est["nome"], ra, "" if quer_ativo is None else (", reativado" if quer_ativo else ", desativado")))
+            self._send_json({"estudante": resumo, "aviso": aviso, "convite": convite_resp})
+            return
+
+        m = re.match(r"^/api/notificacoes/([^/]+)/lida$", path)
+        if m:
+            sessao = self._exigir_papel({"estudante"})
+            if sessao is None:
+                return
+            nid = unquote(m.group(1))
+            try:
+                d = notificacoes_col.find_one({"_id": nid})
+                if d is None or d.get("destinatario") != sessao["nome"]:
+                    self._send_error_json(404, "notificação não encontrada"); return
+                if not d.get("lida"):
+                    notificacoes_col.update_one({"_id": nid}, {"$set": {"lida": True, "lida_em_br": _agora_br()}})
+                    if d.get("nota_id"):
+                        notas_col.update_one({"_id": d["nota_id"]}, {"$set": {"lida_em_br": _agora_br()}})
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/notificacoes/<id>/lida")
+                return
+            self._send_json({"ok": True})
+            return
+
         m = re.match(r"^/api/vinculos/([^/]+)$", path)
         if m:
             sessao = self._exigir_papel({"tecnico"})
@@ -2316,6 +2640,8 @@ class Handler(BaseHTTPRequestHandler):
                     est = _estudante_por_ra(ra)
                     if est is None:
                         self._send_error_json(404, "estudante não encontrado"); return
+                    if not est.get("ativo", True):
+                        self._send_error_json(409, "o estudante está inativo e não pode receber pacientes"); return
                     v = vinculos_col.find_one({"_id": ra})
                     if not v or not v.get("ativo"):
                         self._send_error_json(409, "o estudante não tem vínculo ativo com supervisor"); return

@@ -608,6 +608,29 @@ footer{margin-top:120px}
 .eq-aloc-tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .eq-aloc-acoes{display:flex;gap:8px;flex-wrap:wrap}
 .eq-aloc-sub{display:block;font-size:12px;color:var(--muted)}
+.eq-tec-head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.eq-st-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.eq-st-conta{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.eq-mdl-b .eq-field label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px}
+.eq-mdl-b .eq-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.eq-mdl-b .eq-field-row{grid-template-columns:1fr}}
+.eq-mdl-chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--navy);margin:6px 0 12px}
+.eq-mdl-chk input{margin-top:3px;accent-color:var(--blue)}
+.eq-mdl-link{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--sky);color:var(--navy)}
+.eq-notas{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.eq-notas-t{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.eq-notas-lista{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
+.eq-nota{border-left:3px solid var(--blue);background:var(--sky);border-radius:0 12px 12px 0;padding:10px 14px}
+.eq-nota-meta{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.eq-nota-txt{margin:0;font-size:14px;line-height:1.55;color:var(--navy);white-space:pre-wrap;overflow-wrap:anywhere}
+.eq-nota-lida{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
+.eq-nota-form{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}
+.eq-nota-form label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px}
+.eq-nota-form textarea{width:100%;min-height:90px}
+.eq-nota-form .eq-nota-aviso{font-size:12px;color:var(--muted);margin:6px 0}
+.eq-nota-form .fld-err{display:block;min-height:0}
+.eq-nota-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.eq-evo-item.is-destaque{box-shadow:0 0 0 3px var(--blue)}
 .eq-aloc-sec{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
 .eq-aloc-sec h4{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--navy);margin-bottom:6px}
 .eq-aloc-sec>p{font-size:13.5px;color:var(--muted);margin-bottom:14px;max-width:70ch}
@@ -2519,13 +2542,19 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
         </div>
 
         <div class="dash-hist eq-tec-only" id="eq-tec-students-card" data-in="estudantes">
-          <div class="eq-tec-page-head">
-            <h3 class="eq-tec-title">Estudantes</h3>
-            <p>Consulte os estudantes vinculados à Clínica-Escola e acompanhe a distribuição dos pacientes.</p>
+          <div class="eq-tec-page-head eq-tec-head-row">
+            <div>
+              <h3 class="eq-tec-title">Estudantes</h3>
+              <p>Cadastre e acompanhe os estudantes da Clínica-Escola, com o supervisor responsável e a situação do acesso. Nenhum paciente é alocado automaticamente.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="eq-st-novo"><svg><use href="#i-plus"/></svg>Cadastrar estudante</button>
           </div>
+          <p class="eq-case-export-msg" id="eq-st-msg" role="status" hidden></p>
           <div class="eq-tec-controls">
-            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-tec-st-search">Buscar</label><input type="search" class="eq-input" id="eq-tec-st-search" placeholder="Nome ou RA" autocomplete="off"></div>
+            <div class="eq-tec-control eq-tec-control-grow"><label for="eq-tec-st-search">Buscar</label><input type="search" class="eq-input" id="eq-tec-st-search" placeholder="Nome, e-mail ou RA" autocomplete="off"></div>
             <div class="eq-tec-control"><label for="eq-tec-st-sup">Supervisor</label><select class="eq-select" id="eq-tec-st-sup"><option value="">Todos</option></select></div>
+            <div class="eq-tec-control"><label for="eq-tec-st-situ">Situação</label><select class="eq-select" id="eq-tec-st-situ"><option value="">Todas</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option></select></div>
+            <div class="eq-tec-control"><label for="eq-tec-st-conta">Conta de acesso</label><select class="eq-select" id="eq-tec-st-conta"><option value="">Todas</option><option value="ativada">Ativada</option><option value="pendente de ativação">Pendente de ativação</option><option value="desativada">Desativada</option><option value="sem conta de acesso">Sem conta de acesso</option></select></div>
             <div class="eq-tec-control"><label for="eq-tec-st-sort">Ordenar por</label><select class="eq-select" id="eq-tec-st-sort"><option value="az">Nome (A–Z)</option><option value="za">Nome (Z–A)</option><option value="mais">Mais pacientes</option></select></div>
           </div>
           <section class="eq-st-editor" id="eq-st-editor" hidden aria-labelledby="eq-st-editor-t">
@@ -2537,7 +2566,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </section>
           <table class="dash-table">
             <caption class="sr-only">Estudantes cadastrados, com RA, supervisor e quantidade de pacientes vinculados</caption>
-            <thead><tr><th scope="col">Estudante</th><th scope="col">RA</th><th scope="col">Supervisor</th><th scope="col">Pacientes</th><th scope="col">Disponibilidade semanal</th><th scope="col"><span class="sr-only">Ação</span></th></tr></thead>
+            <thead><tr><th scope="col">Estudante</th><th scope="col">RA</th><th scope="col">Supervisor</th><th scope="col">Situação</th><th scope="col">Pacientes</th><th scope="col">Disponibilidade semanal</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
             <tbody id="eq-tec-st-body"></tbody>
           </table>
           <p class="eq-pt-empty" id="eq-tec-st-empty" hidden>Nenhum estudante encontrado com esses critérios.</p>
@@ -2921,6 +2950,31 @@ window.apiSalvarDispEstudante = function(ra, lista){
 window.apiGetEstudantes = function(){
   return _apiFetch('/api/estudantes');
 };
+window.PRONTUARIO_ESTUDANTES_LISTA = [];
+window.__guardarEstudantes = function(lista){
+  const mapa = {}, dispMapa = {};
+  (lista || []).forEach(function(e){ if(e && e.nome){ mapa[e.nome] = e.ra; dispMapa[e.nome] = e.disponibilidade || []; } });
+  window.PRONTUARIO_ESTUDANTES_LISTA = lista || [];
+  window.PRONTUARIO_ESTUDANTES_RA = mapa;
+  window.PRONTUARIO_ESTUDANTES_DISP = dispMapa;
+};
+window.apiCadastrarEstudante = function(p){
+  return _apiFetch('/api/estudantes', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiAtualizarEstudante = function(ra, p){
+  return _apiFetch('/api/estudantes/' + encodeURIComponent(ra), {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+};
+window.apiReenviarConvite = function(ra){
+  return _apiFetch('/api/estudantes/' + encodeURIComponent(ra) + '/convite', {method:'POST', headers:{'Content-Type':'application/json'}, body: '{}'});
+};
+window.PRONTUARIO_NOTAS = {};
+window.PRONTUARIO_NOTIFS_EST = [];
+window.apiGetNotas = function(casoId){ return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/notas'); };
+window.apiCriarNota = function(casoId, idx, texto){
+  return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/evolucoes/' + idx + '/notas', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({texto: texto})});
+};
+window.apiGetNotificacoes = function(){ return _apiFetch('/api/notificacoes'); };
+window.apiNotifLida = function(id){ return _apiFetch('/api/notificacoes/' + encodeURIComponent(id) + '/lida', {method:'PUT', headers:{'Content-Type':'application/json'}, body: '{}'}); };
 window.apiGetSupervisores = function(){ return _apiFetch('/api/supervisores'); };
 window.apiGetVinculos = function(){ return _apiFetch('/api/vinculos'); };
 window.apiSalvarVinculo = function(ra, supervisor){
@@ -4250,6 +4304,18 @@ route();
   }
   function renderNotifs(){
     if(!notifBox || !notifList) return;
+    if(currentRole === 'estudante'){
+      /* O estudante só vê avisos de nota de acompanhamento — sem nome de paciente nem conteúdo. */
+      const n = (window.PRONTUARIO_NOTIFS_EST || []).filter(function(x){ return !x.lida; });
+      notifBox.hidden = false;
+      notifList.innerHTML = n.map(function(x){
+        return '<li><button type="button" class="eq-notif-item" data-notif-nota="'+esc(x.id)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>Nova nota de acompanhamento</b><small>O psicólogo técnico adicionou uma nota a uma evolução sob sua responsabilidade. '+esc(x.criada_em_br || '')+'</small></span></button></li>';
+      }).join('');
+      if(notifEmpty) notifEmpty.hidden = n.length > 0;
+      if(notifCount){ notifCount.hidden = n.length === 0; notifCount.textContent = n.length > 99 ? '99+' : String(n.length); }
+      if(notifBtn) notifBtn.setAttribute('aria-label', n.length ? ('Notificações: '+n.length+(n.length===1?' nova':' novas')) : 'Notificações: nenhuma nova');
+      return;
+    }
     if(currentRole !== 'tecnico'){ notifBox.hidden = true; fecharNotifs(); return; }
     const itens = [];
     (window.PRONTUARIO_SOLICITACOES || []).forEach(function(req){
@@ -4274,6 +4340,22 @@ route();
     if(notifBtn) notifBtn.setAttribute('aria-label', itens.length ? ('Notificações: '+itens.length+(itens.length===1?' pendência':' pendências')) : 'Notificações: nenhuma pendência');
     renderTecPend();
   }
+  function abrirNotaNotificada(id){
+    const n = (window.PRONTUARIO_NOTIFS_EST || []).filter(function(x){ return x.id === id; })[0];
+    if(!n) return;
+    if(!CASOS[n.caso_id]){ return; }
+    openCase(n.caso_id);
+    setActiveTab('evolucoes');
+    carregarNotas(n.caso_id).then(function(){
+      if(currentCaseId === n.caso_id) renderEvolucoes(CASOS[n.caso_id], canManageCase(CASOS[n.caso_id]));
+      const alvo = document.getElementById('eq-evo-' + n.evolucao);
+      if(alvo){ alvo.classList.add('is-destaque'); alvo.scrollIntoView({behavior:'smooth', block:'center'}); }
+    });
+    window.apiNotifLida(id).then(function(){
+      n.lida = true;
+      renderNotifs();
+    }).catch(function(){ /* continua não lida; tenta de novo no próximo clique */ });
+  }
   if(notifBtn && notifPanel){
     notifBtn.addEventListener('click', function(e){
       e.stopPropagation();
@@ -4283,6 +4365,8 @@ route();
     });
     notifPanel.addEventListener('click', function(e){
       e.stopPropagation();
+      const itemNota = e.target.closest('[data-notif-nota]');
+      if(itemNota){ fecharNotifs(); abrirNotaNotificada(itemNota.dataset.notifNota); return; }
       const itemCaso = e.target.closest('[data-notif-caso]');
       if(itemCaso){ fecharNotifs(); openCase(itemCaso.dataset.notifCaso); return; }
       const item = e.target.closest('[data-notif-alvo]');
@@ -4309,6 +4393,12 @@ route();
       renderRequests();
       renderNotifs();
     }).catch(function(err){ console.info('Notificações: não foi possível buscar pedidos novos agora.', err); });
+  }, 60000);
+
+  setInterval(function(){
+    const painel = document.getElementById('eq-success');
+    if(currentRole !== 'estudante' || !painel || painel.hidden || document.hidden) return;
+    window.apiGetNotificacoes().then(function(l){ window.PRONTUARIO_NOTIFS_EST = l || []; renderNotifs(); }).catch(function(){});
   }, 60000);
 
   /* ===== PAINEL TÉCNICO: barra lateral, visões, pendências, estudantes ===== */
@@ -4424,15 +4514,20 @@ route();
   }
   /* Página "Estudantes": junta o cadastro (nome + RA) com a distribuição de
      pacientes que já existe nos casos. Nada aqui é inventado. */
+  function contaDe(e){ return e.situacao_conta || 'sem conta de acesso'; }
   function renderTecStudents(){
     const corpo = document.getElementById('eq-tec-st-body');
     if(!corpo || !casesBody) return;
     const busca = document.getElementById('eq-tec-st-search');
     const selSup = document.getElementById('eq-tec-st-sup');
     const selOrd = document.getElementById('eq-tec-st-sort');
+    const selSitu = document.getElementById('eq-tec-st-situ');
+    const selConta = document.getElementById('eq-tec-st-conta');
     const vazio = document.getElementById('eq-tec-st-empty');
     const pager = document.getElementById('eq-tec-st-pager');
     const raDe = window.PRONTUARIO_ESTUDANTES_RA || {};
+    const cad = {};
+    (window.PRONTUARIO_ESTUDANTES_LISTA || []).forEach(function(x){ cad[x.nome] = x; });
     const mapa = {};
     Object.keys(raDe).forEach(function(n){ mapa[n] = {nome:n, sups:[], total:0, ativos:0}; });
     Array.from(casesBody.querySelectorAll('tr')).forEach(function(r){
@@ -4445,21 +4540,34 @@ route();
       e.total++;
       if(r.querySelector('.dash-badge-ok')) e.ativos++;
     });
+    Object.keys(mapa).forEach(function(n){
+      const c = cad[n];
+      mapa[n].cad = c || null;
+      mapa[n].vinculo = (c && c.supervisor) || '';
+    });
     let lista = Object.keys(mapa).map(function(n){ return mapa[n]; });
     if(selSup){
       const atual = selSup.value;
       const sups = [];
-      lista.forEach(function(e){ e.sups.forEach(function(sp){ if(sups.indexOf(sp) === -1) sups.push(sp); }); });
+      lista.forEach(function(e){
+        e.sups.concat(e.vinculo ? [e.vinculo] : []).forEach(function(sp){ if(sups.indexOf(sp) === -1) sups.push(sp); });
+      });
       sups.sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
       selSup.innerHTML = '<option value="">Todos</option>' + sups.map(function(sp){ return '<option value="'+esc(sp)+'">'+esc(sp)+'</option>'; }).join('');
       selSup.value = sups.indexOf(atual) !== -1 ? atual : '';
     }
     const termo = semAcento(busca ? busca.value : '');
     const supFiltro = selSup ? selSup.value : '';
+    const situFiltro = selSitu ? selSitu.value : '';
+    const contaFiltro = selConta ? selConta.value : '';
     lista = lista.filter(function(e){
-      if(supFiltro && e.sups.indexOf(supFiltro) === -1) return false;
+      const ativo = !e.cad || e.cad.ativo !== false;
+      if(supFiltro && e.vinculo !== supFiltro && e.sups.indexOf(supFiltro) === -1) return false;
+      if(situFiltro === 'ativo' && !ativo) return false;
+      if(situFiltro === 'inativo' && ativo) return false;
+      if(contaFiltro && (e.cad ? contaDe(e.cad) : 'sem conta de acesso') !== contaFiltro) return false;
       if(!termo) return true;
-      return semAcento(e.nome).indexOf(termo) !== -1 || String(raDe[e.nome] || '').indexOf(termo) !== -1;
+      return semAcento(e.nome).indexOf(termo) !== -1 || String(raDe[e.nome] || '').indexOf(termo) !== -1 || semAcento((e.cad && e.cad.email) || '').indexOf(termo) !== -1;
     });
     const ordem = selOrd ? selOrd.value : 'az';
     lista.sort(function(a,b){
@@ -4471,12 +4579,19 @@ route();
     if(tecStPage > paginas) tecStPage = paginas;
     const fatia = lista.slice((tecStPage-1)*TEC_ST_POR_PAGINA, tecStPage*TEC_ST_POR_PAGINA);
     corpo.innerHTML = fatia.map(function(e){
+      const c = e.cad;
+      const ativo = !c || c.ativo !== false;
       const pacientes = e.total ? (e.total + (e.total===1?' paciente':' pacientes') + ' · ' + e.ativos + (e.ativos===1?' ativo':' ativos')) : 'Nenhum paciente vinculado';
-      const acao = e.total ? '<button type="button" class="eq-case-open" data-ver-estudante="'+esc(e.nome)+'" aria-label="Ver casos de '+esc(e.nome)+'">Ver casos<svg><use href="#i-arrow"/></svg></button>' : '';
       const dispE = (window.PRONTUARIO_ESTUDANTES_DISP || {})[e.nome] || [];
       const dispCel = (dispE.length ? '<span class="eq-st-disp-txt">'+esc(dispTexto(dispE))+'</span>' : '<span class="eq-st-disp-vazia">Não informada</span>') +
         (raDe[e.nome] ? ' <button type="button" class="eq-case-open" data-editar-disp="'+esc(e.nome)+'" aria-label="Editar disponibilidade de '+esc(e.nome)+'">Editar</button>' : '');
-      return '<tr><td>'+esc(e.nome)+'</td><td>'+(raDe[e.nome] ? esc(raDe[e.nome]) : '—')+'</td><td>'+(e.sups.length ? esc(e.sups.join(', ')) : '—')+'</td><td>'+pacientes+'</td><td>'+dispCel+'</td><td>'+acao+'</td></tr>';
+      const sup = e.vinculo || (e.sups.length ? e.sups.join(', ') : '');
+      const conta = c ? contaDe(c) : 'sem conta de acesso';
+      const situ = '<span class="dash-badge '+(ativo ? 'dash-badge-ok' : 'dash-badge-muted')+'">'+(ativo ? 'Ativo' : 'Inativo')+'</span><span class="eq-st-conta">Conta: '+esc(conta)+'</span>';
+      let acoes = '';
+      if(e.total) acoes += '<button type="button" class="eq-case-open" data-ver-estudante="'+esc(e.nome)+'" aria-label="Ver casos de '+esc(e.nome)+'">Ver casos<svg><use href="#i-arrow"/></svg></button>';
+      if(c) acoes += '<button type="button" class="eq-case-open" data-gerenciar-est="'+esc(c.ra)+'" aria-label="Gerenciar '+esc(e.nome)+'">Gerenciar</button>';
+      return '<tr><td>'+esc(e.nome)+(c && c.email ? '<span class="eq-aloc-sub">'+esc(c.email)+'</span>' : '')+'</td><td>'+(raDe[e.nome] ? esc(raDe[e.nome]) : '—')+'</td><td>'+(sup ? esc(sup) : '—')+'</td><td>'+situ+'</td><td>'+pacientes+'</td><td>'+dispCel+'</td><td><div class="eq-st-acoes">'+acoes+'</div></td></tr>';
     }).join('');
     if(vazio) vazio.hidden = lista.length > 0;
     if(pager){
@@ -4545,7 +4660,7 @@ route();
         sideToggle.setAttribute('aria-expanded', abrir ? 'true' : 'false');
       });
     }
-    ['eq-tec-st-search','eq-tec-st-sup','eq-tec-st-sort'].forEach(function(id){
+    ['eq-tec-st-search','eq-tec-st-sup','eq-tec-st-sort','eq-tec-st-situ','eq-tec-st-conta'].forEach(function(id){
       const el = document.getElementById(id);
       if(el) el.addEventListener(id === 'eq-tec-st-search' ? 'input' : 'change', function(){ tecStPage = 1; renderTecStudents(); });
     });
@@ -5575,6 +5690,115 @@ route();
     });
   })();
 
+  /* ----- Cadastro e gestão de estudantes (técnico) ----- */
+  function recarregarEstudantes(){
+    return window.apiGetEstudantes().then(function(l){ window.__guardarEstudantes(l); renderTecStudents(); return carregarDadosAlocacao(true); });
+  }
+  function htmlConvite(conv, nome){
+    if(!conv) return '';
+    if(conv.email_enviado) return '<p>Um e-mail com o link de primeiro acesso foi enviado a '+esc(nome)+'. O estudante cria a própria senha — ela nunca aparece para você.</p>';
+    return '<p class="eq-mdl-aviso">O e-mail não foi enviado (serviço de e-mail indisponível ou não configurado). Entregue o link abaixo ao estudante por um canal seguro: é de uso único e vale por tempo limitado. Ele cria a própria senha no primeiro acesso.</p>'
+      + '<label class="sr-only" for="eq-mdl-link">Link de primeiro acesso</label><input type="text" class="eq-mdl-link" id="eq-mdl-link" readonly value="'+esc(conv.link || '')+'">'
+      + '<div class="eq-mdl-btns"><button type="button" class="btn btn-outline" id="eq-mdl-copiar">Copiar link</button></div>';
+  }
+  function mostrarConvite(titulo, intro, conv, nome){
+    mdlAbrir(titulo, '<p>'+esc(intro)+'</p>'+htmlConvite(conv, nome)+'<div class="eq-mdl-btns"><button type="button" class="btn btn-primary" data-mdl-cancel>Fechar</button></div>', null);
+    const cp = document.getElementById('eq-mdl-copiar');
+    if(cp) cp.addEventListener('click', function(){
+      const campo = document.getElementById('eq-mdl-link');
+      campo.select();
+      try{ navigator.clipboard.writeText(campo.value).then(function(){ cp.textContent = 'Link copiado'; }, function(){ cp.textContent = 'Selecione e copie o link'; }); }catch(e){ cp.textContent = 'Selecione e copie o link'; }
+    });
+  }
+  function optsSup(atual){
+    return '<option value="">Selecione o supervisor…</option>' + (window.PRONTUARIO_SUPERVISORES || []).map(function(sp){ return '<option value="'+esc(sp.nome)+'"'+(sp.nome === atual ? ' selected' : '')+'>'+esc(sp.nome)+'</option>'; }).join('');
+  }
+  function abrirCadastroEstudante(){
+    carregarDadosAlocacao(true).then(function(){
+      mdlAbrir('Cadastrar estudante',
+        '<form id="eq-mdl-form" novalidate><p>O estudante recebe um convite para criar a própria senha. O cadastro não aloca nenhum paciente.</p>'+
+        '<div class="eq-field"><label for="eq-ne-nome">Nome completo</label><input type="text" class="eq-input" id="eq-ne-nome" maxlength="120" autocomplete="off"></div>'+
+        '<div class="eq-field"><label for="eq-ne-email">E-mail</label><input type="email" class="eq-input" id="eq-ne-email" maxlength="120" autocomplete="off"></div>'+
+        '<div class="eq-field-row"><div class="eq-field"><label for="eq-ne-ra">Matrícula / RA</label><input type="text" class="eq-input" id="eq-ne-ra" inputmode="numeric" maxlength="15" autocomplete="off"></div>'+
+        '<div class="eq-field"><label for="eq-ne-tel">Telefone (opcional)</label><input type="tel" class="eq-input" id="eq-ne-tel" maxlength="20" autocomplete="off" placeholder="(11) 90000-0000"></div></div>'+
+        '<div class="eq-field"><label for="eq-ne-sup">Supervisor responsável</label><select class="eq-select" id="eq-ne-sup">'+optsSup('')+'</select></div>'+
+        '<div class="eq-field"><label for="eq-ne-situ">Situação inicial</label><select class="eq-select" id="eq-ne-situ"><option value="ativa">Ativo (envia o convite)</option><option value="desativada">Inativo (sem acesso por enquanto)</option></select></div>'+
+        mdlRodape('Cadastrar estudante')+'</form>',
+        function(){
+          const v = function(i){ return document.getElementById(i).value.trim(); };
+          const p = {nome: v('eq-ne-nome'), email: v('eq-ne-email'), ra: v('eq-ne-ra'), telefone: v('eq-ne-tel'), supervisor: document.getElementById('eq-ne-sup').value, situacao_inicial: document.getElementById('eq-ne-situ').value};
+          if(!p.nome || !p.email || !p.ra || !p.supervisor){ mdlErro('Preencha nome, e-mail, matrícula/RA e supervisor responsável.'); return; }
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)){ mdlErro('Informe um e-mail válido.'); return; }
+          if(!/^\d{4,15}$/.test(p.ra)){ mdlErro('A matrícula/RA deve ter apenas números (de 4 a 15 dígitos).'); return; }
+          mdlEnviar(window.apiCadastrarEstudante(p), function(resp){
+            const est = resp.estudante || {};
+            recarregarEstudantes().then(function(){
+              msgEm('eq-st-msg', 'Estudante cadastrado: ' + (est.nome || p.nome) + '. Nenhum paciente foi alocado.');
+            });
+            if(resp.convite) mostrarConvite('Estudante cadastrado', (est.nome || p.nome)+' foi cadastrado(a) e vinculado(a) a '+p.supervisor+'.', resp.convite, est.nome || p.nome);
+            else mdlFechar();
+          });
+        });
+    });
+  }
+  function abrirGestaoEstudante(ra){
+    const e = (window.PRONTUARIO_ESTUDANTES_LISTA || []).filter(function(x){ return x.ra === ra; })[0];
+    if(!e) return;
+    const pend = e.situacao_conta === 'pendente de ativação';
+    carregarDadosAlocacao(true).then(function(){
+      mdlAbrir('Gerenciar estudante',
+        '<form id="eq-mdl-form" novalidate><p class="eq-mdl-ro">'+esc(e.nome)+'</p><p>RA '+esc(e.ra)+(e.email ? ' · '+esc(e.email) : '')+' · Conta: '+esc(e.situacao_conta || 'sem conta')+(pend && e.convite_expirado ? ' (convite expirado)' : '')+'</p>'+
+        '<div class="eq-field"><label for="eq-ge-tel">Telefone</label><input type="tel" class="eq-input" id="eq-ge-tel" maxlength="20" value="'+esc(e.telefone || '')+'"></div>'+
+        '<div class="eq-field"><label for="eq-ge-sup">Supervisor responsável</label><select class="eq-select" id="eq-ge-sup">'+optsSup(e.supervisor || '')+'</select></div>'+
+        (e.supervisor ? '' : '<p class="eq-nota-aviso">Este estudante ainda não tem vínculo de supervisão ativo. Defina o supervisor para que ele possa receber pacientes.</p>')+
+        '<label class="eq-mdl-chk"><input type="checkbox" id="eq-ge-ativo"'+(e.ativo !== false ? ' checked' : '')+'><span>Estudante ativo (pode acessar o sistema e receber novos pacientes)</span></label>'+
+        '<p class="eq-mdl-aviso" id="eq-ge-aviso" hidden>Desativar não apaga histórico, casos nem vínculos. '+(e.pacientes_ativos ? 'Este estudante tem '+e.pacientes_ativos+' paciente(s) ativo(s): nenhum será realocado automaticamente — faça isso em Alocação de Pacientes.' : 'Ele não tem pacientes ativos.')+'</p>'+
+        (pend ? '<div class="eq-mdl-btns"><button type="button" class="btn btn-outline" id="eq-ge-reenviar">Reenviar convite</button></div>' : '')+
+        mdlRodape('Salvar alterações')+'</form>',
+        function(){
+          const tel = document.getElementById('eq-ge-tel').value.trim();
+          const sup = document.getElementById('eq-ge-sup').value;
+          const ativo = document.getElementById('eq-ge-ativo').checked;
+          if(!sup && e.supervisor){ mdlErro('Selecione o supervisor responsável: o vínculo atual não pode ficar vazio por aqui.'); return; }
+          const body = {};
+          if(tel !== (e.telefone || '')) body.telefone = tel;
+          if(ativo !== (e.ativo !== false)) body.ativo = ativo;
+          let aviso = '', conv = null;
+          const passos = function(){
+            let p = Promise.resolve();
+            if(Object.keys(body).length) p = p.then(function(){ return window.apiAtualizarEstudante(ra, body); }).then(function(r){ aviso = r.aviso || ''; conv = r.convite || null; });
+            if(sup && sup !== (e.supervisor || '')) p = p.then(function(){ return window.apiSalvarVinculo(ra, sup); });
+            return p;
+          };
+          mdlEnviar(passos(), function(){
+            recarregarEstudantes().then(function(){ msgEm('eq-st-msg', 'Cadastro de '+e.nome+' atualizado.'+(aviso ? ' '+aviso : '')); });
+            if(conv && !conv.email_enviado) mostrarConvite('Convite gerado', 'A conta de '+e.nome+' foi reativada com um novo convite.', conv, e.nome);
+            else mdlFechar();
+          });
+        });
+      const chk = document.getElementById('eq-ge-ativo');
+      const av = document.getElementById('eq-ge-aviso');
+      chk.addEventListener('change', function(){ av.hidden = chk.checked; });
+      const re = document.getElementById('eq-ge-reenviar');
+      if(re) re.addEventListener('click', function(){
+        re.disabled = true;
+        window.apiReenviarConvite(ra).then(function(r){
+          recarregarEstudantes();
+          mostrarConvite('Convite reenviado', 'Um novo convite foi gerado para '+e.nome+'. O link anterior deixou de valer.', r.convite, e.nome);
+        }).catch(function(err){ mdlErro(erroTexto(err)); re.disabled = false; });
+      });
+    });
+  }
+  (function(){
+    const btn = document.getElementById('eq-st-novo');
+    if(btn) btn.addEventListener('click', abrirCadastroEstudante);
+    const corpo = document.getElementById('eq-tec-st-body');
+    if(corpo) corpo.addEventListener('click', function(e){
+      const g = e.target.closest('[data-gerenciar-est]');
+      if(g) abrirGestaoEstudante(g.dataset.gerenciarEst);
+    });
+  })();
+
   /* ----- Agenda principal: filtros, calendário com ações e formulário único ----- */
   function agFiltros(){
     const v = function(i){ const el = document.getElementById(i); return el ? el.value : ''; };
@@ -5841,6 +6065,71 @@ route();
     });
   }
 
+  /* Notas de acompanhamento: o técnico escreve, o estudante responsável só lê. Ficam em
+     coleção separada: nunca alteram o texto da evolução e não podem ser editadas nem apagadas. */
+  function notasHtml(idx){
+    if(currentRole !== 'tecnico' && currentRole !== 'estudante') return '';
+    const todas = (window.PRONTUARIO_NOTAS || {})[currentCaseId] || [];
+    const notas = todas.filter(function(x){ return x.evolucao === idx; });
+    if(currentRole === 'estudante' && !notas.length) return '';
+    const lista = notas.map(function(x){
+      return '<li class="eq-nota"><span class="eq-nota-meta">Nota de '+esc(x.autor)+' · '+esc(x.criado_em_br)+'</span><p class="eq-nota-txt">'+esc(x.texto)+'</p>'+
+        (currentRole === 'tecnico' ? '<span class="eq-nota-lida">'+(x.lida_em_br ? 'Lida pelo estudante em '+esc(x.lida_em_br) : 'Ainda não lida pelo estudante')+'</span>' : '')+'</li>';
+    }).join('');
+    let form = '';
+    if(currentRole === 'tecnico'){
+      form = '<button type="button" class="eq-case-open" data-nota-nova="'+idx+'">Adicionar nota de acompanhamento</button>'+
+        '<form class="eq-nota-form" data-nota-form="'+idx+'" hidden novalidate>'+
+          '<label for="eq-nota-txt-'+idx+'">Nova nota de acompanhamento</label>'+
+          '<textarea class="eq-textarea" id="eq-nota-txt-'+idx+'" maxlength="2000" placeholder="Orientação ou observação para o estudante responsável…"></textarea>'+
+          '<p class="eq-nota-aviso">Depois de salva, a nota não pode ser editada nem removida. O estudante responsável será avisado.</p>'+
+          '<span class="fld-err auth-form-err" data-nota-err role="alert"></span>'+
+          '<div class="eq-nota-btns"><button type="submit" class="btn btn-primary">Salvar nota</button><button type="button" class="eq-case-open" data-nota-cancelar="'+idx+'">Cancelar</button></div>'+
+        '</form>';
+    }
+    return '<div class="eq-notas"><h5 class="eq-notas-t">Notas de acompanhamento'+(notas.length ? ' ('+notas.length+')' : '')+'</h5>'+
+      (notas.length ? '<ol class="eq-notas-lista">'+lista+'</ol>' : '<p class="eq-nota-aviso">Nenhuma nota nesta evolução.</p>')+form+'</div>';
+  }
+  function carregarNotas(casoId){
+    if(currentRole !== 'tecnico' && currentRole !== 'estudante') return Promise.resolve();
+    return window.apiGetNotas(casoId).then(function(l){ window.PRONTUARIO_NOTAS[casoId] = l || []; }).catch(function(){ /* sem notas disponíveis agora */ });
+  }
+  (function(){
+    const panel = document.getElementById('eq-panel-evolucoes');
+    if(!panel) return;
+    panel.addEventListener('click', function(e){
+      const novo = e.target.closest('[data-nota-nova]');
+      if(novo){
+        const f = panel.querySelector('[data-nota-form="'+novo.dataset.notaNova+'"]');
+        if(f){ f.hidden = false; novo.hidden = true; const t = f.querySelector('textarea'); if(t) t.focus(); }
+        return;
+      }
+      const canc = e.target.closest('[data-nota-cancelar]');
+      if(canc){
+        const f = canc.closest('form');
+        if(f){ f.hidden = true; f.reset(); const b = panel.querySelector('[data-nota-nova="'+canc.dataset.notaCancelar+'"]'); if(b) b.hidden = false; }
+      }
+    });
+    panel.addEventListener('submit', function(e){
+      const f = e.target.closest('[data-nota-form]');
+      if(!f) return;
+      e.preventDefault();
+      const idx = parseInt(f.dataset.notaForm, 10);
+      const txt = f.querySelector('textarea').value.trim();
+      const err = f.querySelector('[data-nota-err]');
+      if(!txt){ err.textContent = 'Escreva o texto da nota.'; return; }
+      if(txt.length > 2000){ err.textContent = 'A nota pode ter no máximo 2000 caracteres.'; return; }
+      err.textContent = '';
+      const casoId = currentCaseId;
+      const btn = f.querySelector('button[type=submit]');
+      btn.disabled = true;
+      window.apiCriarNota(casoId, idx, txt).then(function(){
+        return carregarNotas(casoId);
+      }).then(function(){
+        if(currentCaseId === casoId && CASOS[casoId]) renderEvolucoes(CASOS[casoId], canManageCase(CASOS[casoId]));
+      }).catch(function(er){ err.textContent = erroTexto(er); btn.disabled = false; });
+    });
+  })();
   function renderEvolucoes(caso, editable){
     const panel = document.getElementById('eq-panel-evolucoes');
     if(!panel) return;
@@ -5849,13 +6138,14 @@ route();
       ? caso.evolucoes.slice().reverse().map(function(ev, idxRev){
           const n = caso.evolucoes.length - idxRev;
           const tagsHtml = (ev.tags && ev.tags.length) ? ('<div class="eq-evo-item-tags">'+ev.tags.map(function(t){ return '<span>'+esc(t)+'</span>'; }).join('')+'</div>') : '';
-          return '<div class="eq-evo-item">'+
+          return '<div class="eq-evo-item" id="eq-evo-'+(n-1)+'" data-evo-idx="'+(n-1)+'">'+
             '<div class="eq-evo-item-head">'+
               '<span class="eq-evo-item-title">Evolução #'+n+' <span class="eq-evo-tag">'+esc(tipoLabel[ev.tipo]||ev.tipo)+'</span></span>'+
               '<span class="eq-evo-item-meta">'+esc(ev.autor)+' · '+esc(ev.papel)+' · '+esc(ev.data)+'</span>'+
             '</div>'+
             '<p class="eq-evo-item-body">'+esc(ev.conteudo)+'</p>'+
             tagsHtml+
+            notasHtml(n-1)+
           '</div>';
         }).join('')
       : '<p class="eq-empty">Nenhuma evolução registrada neste caso ainda.</p>';
@@ -6030,6 +6320,7 @@ route();
     renderResumo(caso);
     renderAnamnese(caso, editable);
     renderEvolucoes(caso, editable);
+    carregarNotas(caseId).then(function(){ if(currentCaseId === caseId) renderEvolucoes(caso, editable); });
     renderDocumentos(caso, editable);
     renderAgenda(caso, currentRole==='tecnico');
     setActiveTab('resumo');
@@ -6406,14 +6697,14 @@ route();
           window.showServerOfflineBanner();
         })
       ]).then(function(){
+        /* Notificações de notas de acompanhamento: só o estudante tem. */
+        if(sessao.role !== 'estudante') return;
+        return window.apiGetNotificacoes().then(function(l){ window.PRONTUARIO_NOTIFS_EST = l || []; }).catch(function(){ window.PRONTUARIO_NOTIFS_EST = []; });
+      }).then(function(){
         /* RA dos estudantes: só é pedido para técnico e supervisor (o servidor recusa os demais). */
         if(sessao.role !== 'tecnico' && sessao.role !== 'supervisor') return;
         return window.apiGetEstudantes().then(function(lista){
-          const mapa = {};
-          const dispMapa = {};
-          (lista || []).forEach(function(e){ if(e && e.nome){ mapa[e.nome] = e.ra; dispMapa[e.nome] = e.disponibilidade || []; } });
-          window.PRONTUARIO_ESTUDANTES_RA = mapa;
-          window.PRONTUARIO_ESTUDANTES_DISP = dispMapa;
+          window.__guardarEstudantes(lista);
         }).catch(function(err){
           console.warn('Não foi possível carregar o cadastro de estudantes:', err);
         });
