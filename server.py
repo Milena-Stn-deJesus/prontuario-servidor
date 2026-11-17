@@ -951,6 +951,28 @@ def _link_convite(token, role=None):
 
 def _enviar_convite(email, nome, role, token):
     funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else ("paciente" if role == "paciente" else ("estudante" if role == "estudante" else "profissional")))
+    if role == "estudante":
+        assunto = "Convite de acesso | Prontuário Eletrônico de Psicologia — FCMSCSP"
+        corpo = (
+            "Olá, %s!\n\n"
+            "Você foi cadastrado(a) na plataforma Prontuário Eletrônico de Psicologia, utilizada pela "
+            "Clínica-Escola de Psicologia da Faculdade de Ciências Médicas da Santa Casa de São Paulo (FCMSCSP).\n\n"
+            "Por meio da plataforma, você poderá consultar seus atendimentos agendados, acompanhar os pacientes "
+            "sob sua responsabilidade e realizar os registros clínicos necessários às atividades da Clínica-Escola.\n\n"
+            "Para ativar sua conta e criar sua senha de acesso, clique no link abaixo:\n\n"
+            "%s\n\n"
+            "Por segurança, este link é pessoal, de uso único e possui prazo de validade.\n\n"
+            "Após a ativação, você poderá acessar a plataforma utilizando seu e-mail e a senha cadastrada.\n\n"
+            "Importante: suas credenciais são individuais e não devem ser compartilhadas. As informações "
+            "disponíveis na plataforma são confidenciais e devem ser utilizadas exclusivamente para as "
+            "atividades acadêmicas e clínicas autorizadas.\n\n"
+            "Se você não reconhece este convite, entre em contato com a equipe responsável pela Clínica-Escola.\n\n"
+            "Atenciosamente,\n"
+            "Clínica-Escola de Psicologia\n"
+            "Faculdade de Ciências Médicas da Santa Casa de São Paulo — FCMSCSP\n\n"
+            "Esta é uma mensagem automática. Por favor, não responda a este e-mail."
+        ) % (nome or "estudante", _link_convite(token, role))
+        return _enviar_email(email, assunto, corpo)
     assunto = "Prontuário Eletrônico — convite para criar sua senha de acesso"
     corpo = (
         "Olá, %s!\n\n"
