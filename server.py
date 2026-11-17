@@ -951,6 +951,23 @@ def _link_convite(token, role=None):
 
 def _enviar_convite(email, nome, role, token):
     funcao = FUNCOES_PROFISSIONAIS.get(role) or (FUNCAO_ADMIN if role == "admin_ti" else ("paciente" if role == "paciente" else ("estudante" if role == "estudante" else "profissional")))
+    if role == "paciente":
+        assunto = "Ative seu acesso | Clínica-Escola de Psicologia — FCMSCSP"
+        corpo = (
+            "Olá, %s!\n\n"
+            "Seja bem-vindo(a) à Clínica-Escola de Psicologia da Faculdade de Ciências Médicas da Santa Casa "
+            "de São Paulo (FCMSCSP).\n\n"
+            "Seu cadastro foi realizado com sucesso!\n\n"
+            "Por meio da plataforma, você poderá consultar informações sobre seus atendimentos, acompanhar "
+            "seus agendamentos e acessar os serviços disponibilizados pela Clínica-Escola.\n\n"
+            "Para acessar nossa plataforma, clique no link abaixo e crie sua senha:\n\n"
+            "%s\n\n"
+            "Por segurança, este link é pessoal e possui prazo de validade.\n\n"
+            "Atenciosamente,\n"
+            "Clínica-Escola de Psicologia — FCMSCSP\n\n"
+            "Este é um e-mail automático. Por favor, não responda."
+        ) % (nome or "paciente", _link_convite(token, role))
+        return _enviar_email(email, assunto, corpo)
     if role == "estudante":
         assunto = "Convite de acesso | Prontuário Eletrônico de Psicologia — FCMSCSP"
         corpo = (
