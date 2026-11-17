@@ -31,6 +31,7 @@ O QUE ESSE ARQUIVO FAZ:
                                         só quando existe uma solicitação já liberada pela
                                         equipe (senão, 403 — a liberação é checada aqui,
                                         no servidor, não só escondendo o botão na tela)
+    POST /api/casos/<id>/agendamentos/<n>/comparecimento -> estudante registra presença/falta (PUT: técnico corrige, com justificativa)
     POST /api/casos/<id>/documentos          -> anexa documento (PDF/JPG/PNG/DOCX até 10 MB; arquivo real no GridFS)
     GET  /api/casos/<id>/documentos/<doc>/arquivo?modo=visualizar|baixar -> entrega o arquivo (auditado)
     GET  /api/casos/<id>/documentos/historico -> eventos dos documentos do caso (técnico, supervisor)
@@ -605,6 +606,97 @@ def _avisar_supervisor(nome, tipo, detalhe="", caso_id=""):
     notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "supervisor", "destinatario": nome,
                                  "caso_id": caso_id or "", "evolucao_idx": None, "detalhe": detalhe,
                                  "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+
+
+# ---------------------------------------------------------------------------
+# Comparecimento (presença/falta) — registrado no PRÓPRIO agendamento, para agenda e prontuário
+# compartilharem o mesmo dado. Nunca cria evolução, nunca encerra caso nem retira vaga.
+# ---------------------------------------------------------------------------
+COMP_SITUACOES = ("compareceu", "faltou")
+COMP_JUSTIFICATIVA_MIN, COMP_JUSTIFICATIVA_MAX = 5, 300
+COMP_MSG_FALTAS = {
+    2: "Paciente com duas faltas consecutivas. Recomenda-se entrar em contato para verificar a continuidade do acompanhamento. Uma nova falta consecutiva poderá resultar na perda da vaga.",
+    3: "Paciente atingiu três faltas consecutivas. Verificar a aplicação da regra institucional de perda da vaga.",
+}
+
+
+def _chave_ag(ag):
+    """((ano, mês, dia), (hora, minuto)) do agendamento, ou None se a data não for válida."""
+    d = _parse_data_br(ag.get("data"))
+    if not d:
+        return None
+    m = re.match(r"^(\d{1,2})[:h](\d{2})", str(ag.get("hora") or ""))
+    return (d, (int(m.group(1)), int(m.group(2))) if m else (0, 0))
+
+
+def _agora_chave():
+    t = time.gmtime(time.time() - 3 * 3600)  # horário de Brasília
+    return ((t.tm_year, t.tm_mon, t.tm_mday), (t.tm_hour, t.tm_min))
+
+
+def _ag_iniciou(ag):
+    k = _chave_ag(ag)
+    return k is not None and k <= _agora_chave()
+
+
+def _faltas_consecutivas(caso):
+    """Agendamentos que formam a sequência atual de faltas (do mais recente para trás). Só contam atendimentos
+    com comparecimento registrado: cancelados, futuros e pendentes são ignorados (não são falta); uma presença
+    interrompe a sequência."""
+    itens = []
+    for ag in (caso.get("agendamentos") or []):
+        if ag.get("status") == ST_AG_CANCELADA or not ag.get("comparecimento") or _chave_ag(ag) is None:
+            continue
+        itens.append((_chave_ag(ag), ag))
+    itens.sort(key=lambda x: x[0])
+    seq = []
+    for _, ag in reversed(itens):
+        if ag["comparecimento"].get("situacao") == "faltou":
+            seq.append(ag)
+        else:
+            break
+    return seq
+
+
+def _avaliar_faltas(caso):
+    """Gera (uma única vez por evento) o aviso de 2ª e de 3ª falta consecutiva ao técnico e ao supervisor do caso."""
+    seq = _faltas_consecutivas(caso)
+    n = len(seq)
+    if n not in (2, 3):
+        return 0
+    cid = caso["_id"]
+    tipo = "faltas_%d" % n
+    chave = "%d:%s %s" % (n, seq[-1].get("data"), seq[-1].get("hora"))  # identifica a sequência pela 1ª falta dela
+    base = {"tipo": tipo, "caso_id": cid, "evento": chave, "evolucao_idx": None, "detalhe": caso.get("paciente", ""),
+            "prioridade": "alta" if n == 3 else "normal", "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False}
+    if not notificacoes_col.find_one({"para": "tecnico", "tipo": tipo, "caso_id": cid, "evento": chave}):
+        notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "para": "tecnico", "destinatario": "", **base})
+    sup = (caso.get("supervisor") or "").strip()
+    if sup and not notificacoes_col.find_one({"para": "supervisor", "destinatario": sup, "tipo": tipo, "caso_id": cid, "evento": chave}):
+        notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "para": "supervisor", "destinatario": sup, **base})
+    return n
+
+
+def _avisar_documento_anexado(caso, meta, sessao):
+    """Documento novo no prontuário: avisa as outras duas pessoas do trio (aluno responsável, supervisor do caso,
+    psicólogo técnico) — nunca quem anexou. Falha de aviso não desfaz o envio."""
+    try:
+        papel = sessao["role"]
+        base = {"tipo": "documento_anexado", "caso_id": caso["_id"], "evolucao_idx": None, "documento_id": meta["_id"],
+                "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False}
+        resumo = "%s, anexado por %s" % (meta["tipo_doc"], meta["enviado_por_nome"])
+        est = (caso.get("estudante") or "").strip()
+        if papel != "estudante" and est:
+            notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "destinatario": est, "detalhe": resumo, **base})
+        sup = (caso.get("supervisor") or "").strip()
+        if papel != "supervisor" and sup:
+            notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "para": "supervisor", "destinatario": sup,
+                                         "detalhe": "%s (%s)" % (caso.get("paciente", ""), resumo), **base})
+        if papel != "tecnico":
+            notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "para": "tecnico", "destinatario": "",
+                                         "detalhe": "%s (%s)" % (caso.get("paciente", ""), resumo), **base})
+    except Exception as exc:
+        print("ERRO (aviso de documento): %s" % exc)
 
 
 def distribuicao_supervisor_ativa():
@@ -1691,6 +1783,66 @@ class Handler(BaseHTTPRequestHandler):
             return None
         return sessao
 
+    def _tratar_comparecimento(self, case_id, idx, corrigir):
+        """POST: o estudante responsável registra presença/falta (uma única vez por atendimento).
+        PUT: só o psicólogo técnico corrige, com justificativa; o valor anterior fica preservado. Não existe exclusão."""
+        sessao = self._exigir_papel({"tecnico"} if corrigir else {"estudante"})
+        if sessao is None:
+            return
+        try:
+            body = self._read_json_body()
+        except Exception:
+            self._send_error_json(400, "corpo da requisição não é um JSON válido"); return
+        situacao = body.get("situacao")
+        if situacao not in COMP_SITUACOES:
+            self._send_error_json(400, "informe se o paciente compareceu ou faltou"); return
+        justificativa = str(body.get("justificativa", "") or "").strip()
+        if corrigir and not (COMP_JUSTIFICATIVA_MIN <= len(justificativa) <= COMP_JUSTIFICATIVA_MAX):
+            self._send_error_json(400, "informe a justificativa da correção (de %d a %d caracteres)" % (COMP_JUSTIFICATIVA_MIN, COMP_JUSTIFICATIVA_MAX)); return
+        with TRAVA_OPERACOES:
+            try:
+                caso = casos_col.find_one({"_id": case_id})
+                if caso is None:
+                    self._send_error_json(404, "caso não encontrado"); return
+                if not corrigir and caso.get("estudante") != sessao["nome"]:
+                    _registrar_auditoria(sessao, "tentativa de registrar comparecimento de paciente de outro estudante", caso_id=case_id, resultado="negado")
+                    self._send_error_json(403, "só o estudante responsável pelo caso registra o comparecimento"); return
+                ags = list(caso.get("agendamentos") or [])
+                if idx >= len(ags):
+                    self._send_error_json(404, "agendamento não encontrado"); return
+                ag = dict(ags[idx])
+                if ag.get("status") == ST_AG_CANCELADA:
+                    self._send_error_json(409, "este atendimento foi cancelado"); return
+                if not _ag_iniciou(ag):
+                    self._send_error_json(409, "o comparecimento só pode ser registrado depois do início do horário agendado"); return
+                atual = ag.get("comparecimento")
+                agora, agora_br = time.time(), _agora_br()
+                if corrigir:
+                    if not atual:
+                        self._send_error_json(409, "este atendimento ainda não tem comparecimento registrado"); return
+                    if atual.get("situacao") == situacao:
+                        self._send_error_json(409, "o registro já está com essa situação"); return
+                    comp = dict(atual)
+                    comp.setdefault("correcoes", []).append({"de": atual.get("situacao"), "para": situacao, "justificativa": justificativa,
+                                                              "por": sessao["nome"], "por_email": sessao["email"], "quando": agora, "quando_br": agora_br})
+                    comp["situacao"] = situacao
+                else:
+                    if atual:
+                        self._send_error_json(409, "o comparecimento deste atendimento já foi registrado"); return
+                    comp = {"situacao": situacao, "por": sessao["nome"], "por_email": sessao["email"], "quando": agora, "quando_br": agora_br}
+                ag["comparecimento"] = comp
+                ags[idx] = ag
+                casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
+                novo = casos_col.find_one({"_id": case_id})
+                alerta = _avaliar_faltas(novo)
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "comparecimento")
+                return
+        _registrar_auditoria(sessao, "comparecimento corrigido" if corrigir else "comparecimento registrado", caso_id=case_id,
+                             detalhe="atendimento %s %s: %s%s" % (ag.get("data"), ag.get("hora"), ((atual or {}).get("situacao") + " -> ") if corrigir else "", situacao)
+                                     + ((" | justificativa: " + justificativa) if corrigir else ""))
+        self._send_json({"ok": True, "agendamento": ag, "alerta_faltas": alerta})
+
     # ---------- OPTIONS (pre-flight de CORS) ----------
     def do_OPTIONS(self):
         self.send_response(204)
@@ -1837,13 +1989,13 @@ class Handler(BaseHTTPRequestHandler):
                     docs = [d for d in notificacoes_col.find({"destinatario": sessao["nome"]}) if d.get("para") == "supervisor"]
                     docs.sort(key=lambda d: d.get("criada_em", 0), reverse=True)
                     self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d.get("caso_id", ""), "detalhe": d.get("detalhe", ""),
-                                      "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs[:50]])
+                                      "prioridade": d.get("prioridade", ""), "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs[:50]])
                     return
                 if sessao["role"] == "tecnico":
                     _avisos_convites_expirados()
                     docs = list(notificacoes_col.find({"para": "tecnico"}).sort("criada_em", -1))[:50]
-                    self._send_json([{"id": d["_id"], "tipo": d["tipo"], "detalhe": d.get("detalhe", ""),
-                                      "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+                    self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d.get("caso_id", ""), "detalhe": d.get("detalhe", ""),
+                                      "prioridade": d.get("prioridade", ""), "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
                     return
                 docs = [d for d in notificacoes_col.find({"destinatario": sessao["nome"]}).sort("criada_em", -1) if not d.get("para")][:50]
             except PyMongoError as exc:
@@ -2556,6 +2708,11 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "convite": convite_resp})
             return
 
+        m = re.match(r"^/api/casos/([^/]+)/agendamentos/(\d+)/comparecimento$", path)
+        if m:
+            self._tratar_comparecimento(unquote(m.group(1)), int(m.group(2)), False)
+            return
+
         m = re.match(r"^/api/casos/([^/]+)/documentos$", path)
         if m:
             sessao = self._exigir_papel(PAPEIS_CASOS)
@@ -2646,6 +2803,7 @@ class Handler(BaseHTTPRequestHandler):
                     return
             finally:
                 _UPLOADS_SIMULTANEOUS.release()
+            _avisar_documento_anexado(caso, meta, sessao)
             self._send_json(_doc_publico(meta), 201)
             return
 
@@ -3369,6 +3527,11 @@ class Handler(BaseHTTPRequestHandler):
                              "agendamentos_futuros": _futuros_ativos(novo) if liberou else 0})
             return
 
+        m = re.match(r"^/api/casos/([^/]+)/agendamentos/(\d+)/comparecimento$", path)
+        if m:
+            self._tratar_comparecimento(unquote(m.group(1)), int(m.group(2)), True)
+            return
+
         m = re.match(r"^/api/casos/([^/]+)/agendamentos/(\d+)$", path)
         if m:
             sessao = self._exigir_papel({"tecnico"})
@@ -3392,6 +3555,8 @@ class Handler(BaseHTTPRequestHandler):
                     ag = dict(ags[idx])
                     if ag.get("status") != "Confirmada":
                         self._send_error_json(409, "só atendimentos com status Confirmada podem ser alterados"); return
+                    if ag.get("comparecimento"):
+                        self._send_error_json(409, "este atendimento já tem comparecimento registrado e não pode mais ser alterado"); return
                     if acao == "cancelar":
                         ag.update(status=ST_AG_CANCELADA, cancelado_em=_agora_br(), cancelado_por=sessao["nome"],
                                   motivo_cancelamento=str(body.get("motivo", "")).strip()[:300])

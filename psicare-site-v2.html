@@ -448,6 +448,30 @@ footer{margin-top:120px}
 .eq-doc-meta{font-size:12px;color:var(--muted);margin-top:2px}
 .eq-upload-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
 .eq-doc-item{align-items:flex-start}
+.eq-comp{margin:0 0 22px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--cream,transparent)}
+.eq-comp-q{margin:0 0 8px;font-size:13.5px;font-weight:700;color:var(--navy)}
+.eq-comp-pend{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+.eq-comp-pend li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:13px;color:var(--ink)}
+.eq-comp-acoes{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.eq-comp-btn{all:unset;box-sizing:border-box;cursor:pointer;font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--blue);padding:5px 12px;border:1px solid var(--line);border-radius:99px;transition:background-color .15s,border-color .15s}
+.eq-comp-btn:hover,.eq-comp-btn:focus-visible{background:var(--sky);border-color:var(--blue)}
+.eq-comp-btn.is-ok{background:var(--navy);border-color:var(--navy);color:#fff}
+.eq-comp-btn.is-discreto{border-color:transparent;color:var(--muted);font-weight:600;text-decoration:underline;padding:5px 6px}
+.eq-comp-btn[disabled]{opacity:.55;cursor:default}
+.eq-comp-hist summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
+.eq-comp-lista{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto}
+.eq-comp-linha{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:13px;color:var(--ink)}
+.eq-comp-d{min-width:132px}
+.eq-comp-s{font-weight:700;color:var(--muted)}
+.eq-comp-s.is-ok{color:var(--blue)}
+.eq-comp-s.is-faltou{color:#9b2c2c}
+.eq-comp-p{color:var(--muted);font-size:12.5px}
+.eq-comp-corr{font-size:12px;color:var(--muted);margin:2px 0 0;font-style:italic}
+.eq-comp-form{display:flex;flex-direction:column;gap:8px;margin-top:8px;max-width:460px;font-size:12.5px;color:var(--muted)}
+.eq-comp-form label{display:flex;flex-direction:column;gap:4px}
+.eq-comp-form-acoes{display:flex;gap:8px;align-items:center}
+.eq-comp-erro{font-size:12.5px;color:#8a1f1f;margin:0}
+.eq-agenda-comp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:6px;font-size:12.5px}
 .eq-doc-tipo{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:99px;background:var(--sky);color:var(--navy);font-size:11px;font-weight:700;vertical-align:1px}
 .eq-doc-obs{font-size:12.5px;color:var(--ink);margin-top:6px;white-space:pre-wrap;word-break:break-word}
 .eq-doc-obs b{font-weight:700}
@@ -3247,6 +3271,16 @@ window.apiCriarExportacao = function(caseId){
     method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
   });
 };
+window.apiRegistrarComparecimento = function(caseId, idx, situacao){
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId) + '/agendamentos/' + idx + '/comparecimento', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({situacao: situacao})
+  });
+};
+window.apiCorrigirComparecimento = function(caseId, idx, situacao, justificativa){
+  return _apiFetch('/api/casos/' + encodeURIComponent(caseId) + '/agendamentos/' + idx + '/comparecimento', {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({situacao: situacao, justificativa: justificativa})
+  });
+};
 window.apiGetSolicitacoes = function(){
   return _apiFetch('/api/solicitacoes');
 };
@@ -4639,7 +4673,8 @@ route();
           novo_paciente: ['Novo paciente alocado', 'O psicólogo técnico alocou um novo paciente para você.'],
           novo_agendamento: ['Novo agendamento', 'Um atendimento foi agendado para ' + (x.detalhe || 'uma data próxima') + '.'],
           agendamento_alterado: ['Agendamento alterado', 'Um atendimento seu foi alterado: ' + (x.detalhe || 'confira a agenda') + '.'],
-          agendamento_cancelado: ['Agendamento cancelado', 'Um atendimento seu foi cancelado (' + (x.detalhe || 'confira a agenda') + ').']
+          agendamento_cancelado: ['Agendamento cancelado', 'Um atendimento seu foi cancelado (' + (x.detalhe || 'confira a agenda') + ').'],
+          documento_anexado: ['Novo documento anexado', 'Um documento foi anexado ao prontuário de um paciente seu (' + (x.detalhe || 'confira a aba Documentos') + ').']
         };
         const t = TXT[x.tipo] || ['Nova nota de acompanhamento', (x.papel === 'supervisor' ? 'Seu supervisor' : 'O psicólogo técnico') + ' adicionou uma nota a uma evolução sob sua responsabilidade.'];
         return '<li><button type="button" class="eq-notif-item" data-notif-nota="'+esc(x.id)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(t[0])+'</b><small>'+esc(t[1])+' '+esc(x.criada_em_br || '')+'</small></span></button></li>';
@@ -4664,8 +4699,11 @@ route();
         itens.push({caso:id, titulo:'Dados cadastrais atualizados — '+(c.paciente||'paciente'), detalhe:'Corrigidos pela paciente em '+((ult && ult.em_br) || cf.confirmado_em_br || '—')+' · Visualizar cadastro'});
       }
     });
-    const TXT_T = {conta_ativada: 'Conta ativada', convite_expirado: 'Convite expirado'};
-    const DET_T = {conta_ativada: 'concluiu o primeiro acesso e criou a senha.', convite_expirado: 'não ativou a conta a tempo. Reenvie o convite.'};
+    const TXT_T = {conta_ativada: 'Conta ativada', convite_expirado: 'Convite expirado', faltas_2: 'Duas faltas consecutivas', faltas_3: 'Três faltas consecutivas (prioridade alta)', documento_anexado: 'Novo documento anexado'};
+    const DET_T = {conta_ativada: 'concluiu o primeiro acesso e criou a senha.', convite_expirado: 'não ativou a conta a tempo. Reenvie o convite.',
+      faltas_2: 'Paciente com duas faltas consecutivas. Recomenda-se entrar em contato para verificar a continuidade do acompanhamento. Uma nova falta consecutiva poderá resultar na perda da vaga.',
+      faltas_3: 'Paciente atingiu três faltas consecutivas. Verificar a aplicação da regra institucional de perda da vaga.',
+      documento_anexado: 'foi anexado ao prontuário. Confira a aba Documentos.'};
     (window.PRONTUARIO_NOTIFS_TEC || []).forEach(function(x){
       if(!x.lida) itens.push({aviso:x.id, titulo:(TXT_T[x.tipo] || 'Aviso') + ' — ' + (x.detalhe || ''), detalhe:(DET_T[x.tipo] || '') + ' ' + (x.criada_em_br || '')});
     });
@@ -4691,7 +4729,7 @@ route();
         applyRole(currentRole, currentName);
         if(CASOS[n.caso_id]){
           openCase(n.caso_id);
-          if(n.tipo !== 'novo_paciente') setActiveTab('agenda');
+          if(n.tipo === 'documento_anexado') setActiveTab('documentos'); else if(n.tipo !== 'novo_paciente') setActiveTab('agenda');
         }
         marcar();
       }).catch(function(){ marcar(); });
@@ -4728,7 +4766,7 @@ route();
         fecharNotifs();
         if(n){
           window.apiNotifLida(id).then(function(){ n.lida = true; renderNotifs(); }).catch(function(){});
-          tecView = 'estudantes'; applyTecView();
+          if(n.caso_id && CASOS[n.caso_id]) openCase(n.caso_id); else { tecView = 'estudantes'; applyTecView(); }
         }
         return;
       }
@@ -6563,10 +6601,12 @@ route();
 
     panel.innerHTML =
       '<div class="eq-note"><svg><use href="#i-lock"/></svg>Evoluções são registros definitivos do prontuário: uma vez salvas, não podem ser editadas ou removidas. Para corrigir, registre uma nova evolução do tipo "Retificação".</div>'+
+      '<div id="eq-comp-box"></div>'+
       formHtml+
       listHeadHtml+
       '<div class="eq-evo-list">'+itemsHtml+'</div>';
 
+    renderCompBox(caso);
     if(editable){
       const evoForm = document.getElementById('eq-evo-form');
       evoForm.addEventListener('submit', function(e){
@@ -6585,6 +6625,107 @@ route();
       });
     }
   }
+
+  /* ----- Comparecimento (presença/falta) — vive no próprio agendamento; agenda e prontuário mostram o mesmo registro ----- */
+  let compHistAberto = false;
+  function agIniciou(a){
+    const p = String(a.data || '').split('/'), h = String(a.hora || '').match(/^(\d{1,2})[:h](\d{2})/);
+    if(p.length !== 3) return false;
+    return new Date(+p[2], +p[1]-1, +p[0], h ? +h[1] : 0, h ? +h[2] : 0).getTime() <= Date.now();
+  }
+  function agChave(a){
+    const p = String(a.data || '').split('/'), h = String(a.hora || '').match(/^(\d{1,2})[:h](\d{2})/);
+    return p.length === 3 ? new Date(+p[2], +p[1]-1, +p[0], h ? +h[1] : 0, h ? +h[2] : 0).getTime() : 0;
+  }
+  function compRotulo(a){
+    if(a.status === 'Cancelada') return 'Cancelado';
+    const c = a.comparecimento;
+    return c ? (c.situacao === 'faltou' ? 'Faltou' : 'Compareceu') : 'Pendente';
+  }
+  function compPodeRegistrar(caso, a){
+    return currentRole === 'estudante' && caso.estudante === currentName && a.status !== 'Cancelada' && !a.comparecimento && agIniciou(a);
+  }
+  function compAcoesHtml(i){
+    return '<span class="eq-comp-acoes" data-comp-box="'+i+'">'+
+      '<button type="button" class="eq-comp-btn" data-comp-ask="'+i+'" data-sit="compareceu">Compareceu</button>'+
+      '<button type="button" class="eq-comp-btn" data-comp-ask="'+i+'" data-sit="faltou">Faltou</button></span>';
+  }
+  function compAtualizar(caso){
+    renderCompBox(caso);
+    if(currentRole !== 'tecnico') renderAgenda(caso, false);
+  }
+  function renderCompBox(caso){
+    const box = document.getElementById('eq-comp-box');
+    if(!box) return;
+    const lista = (caso.agendamentos || []).map(function(a, i){ return {a:a, i:i}; }).sort(function(x, y){ return agChave(y.a) - agChave(x.a); });
+    if(!lista.length){ box.innerHTML = ''; return; }
+    const pend = lista.filter(function(x){ return compPodeRegistrar(caso, x.a); });
+    let html = '<section class="eq-comp" aria-label="Comparecimento dos atendimentos">';
+    if(pend.length){
+      html += '<p class="eq-comp-q">O paciente compareceu ao atendimento?</p><ul class="eq-comp-pend">'+
+        pend.map(function(x){ return '<li><span>'+esc(x.a.data)+' · '+esc(x.a.hora)+'</span>'+compAcoesHtml(x.i)+'</li>'; }).join('')+'</ul>';
+    }
+    html += '<details class="eq-comp-hist"'+(compHistAberto ? ' open' : '')+'><summary>Histórico de comparecimento</summary><ul class="eq-comp-lista">'+
+      lista.map(function(x){
+        const a = x.a, c = a.comparecimento, rot = compRotulo(a);
+        const cls = c ? (c.situacao === 'faltou' ? ' is-faltou' : ' is-ok') : '';
+        const corr = (c && c.correcoes && c.correcoes.length) ? c.correcoes[c.correcoes.length-1] : null;
+        return '<li><div class="eq-comp-linha"><span class="eq-comp-d">'+esc(a.data)+' · '+esc(a.hora)+'</span><span class="eq-comp-s'+cls+'">'+rot+'</span>'+
+          '<span class="eq-comp-p">'+(c ? esc(c.por) : '—')+'</span>'+
+          ((currentRole === 'tecnico' && c && a.status !== 'Cancelada') ? '<button type="button" class="eq-comp-btn is-discreto" data-comp-corr="'+x.i+'">Corrigir</button>' : '')+'</div>'+
+          (corr ? '<div class="eq-comp-corr">Corrigido de '+(corr.de === 'faltou' ? 'Faltou' : 'Compareceu')+' para '+(corr.para === 'faltou' ? 'Faltou' : 'Compareceu')+' por '+esc(corr.por)+' em '+esc(corr.quando_br)+' — '+esc(corr.justificativa)+'</div>' : '')+
+          '<div data-comp-corrbox="'+x.i+'"></div></li>';
+      }).join('')+'</ul></details></section>';
+    box.innerHTML = html;
+  }
+  document.addEventListener('toggle', function(e){ if(e.target && e.target.classList && e.target.classList.contains('eq-comp-hist')) compHistAberto = e.target.open; }, true);
+  document.addEventListener('click', function(e){
+    const caso = CASOS[currentCaseId];
+    if(!caso) return;
+    const ask = e.target.closest('[data-comp-ask]');
+    if(ask){
+      const i = ask.dataset.compAsk, sit = ask.dataset.sit, box = ask.closest('[data-comp-box]');
+      box.innerHTML = '<span>Registrar <b>'+(sit === 'faltou' ? 'falta' : 'presença')+'</b>?</span><button type="button" class="eq-comp-btn is-ok" data-comp-go="'+i+'" data-sit="'+sit+'">Confirmar</button><button type="button" class="eq-comp-btn is-discreto" data-comp-back>Voltar</button>';
+      return;
+    }
+    if(e.target.closest('[data-comp-back]')){ compAtualizar(caso); return; }
+    const go = e.target.closest('[data-comp-go]');
+    if(go){
+      const i = +go.dataset.compGo, box = go.closest('[data-comp-box]'), cid = currentCaseId;
+      go.disabled = true;
+      window.apiRegistrarComparecimento(cid, i, go.dataset.sit).then(function(r){
+        CASOS[cid].agendamentos[i] = r.agendamento;
+        if(currentCaseId === cid) compAtualizar(CASOS[cid]);
+      }).catch(function(err){
+        box.innerHTML = '<span class="eq-comp-erro">'+esc(erroTexto(err))+'</span><button type="button" class="eq-comp-btn is-discreto" data-comp-back>Voltar</button>';
+      });
+      return;
+    }
+    const corr = e.target.closest('[data-comp-corr]');
+    if(corr){
+      const i = +corr.dataset.compCorr, a = caso.agendamentos[i], nova = (a.comparecimento && a.comparecimento.situacao === 'faltou') ? 'compareceu' : 'faltou';
+      const alvo = document.querySelector('[data-comp-corrbox="'+i+'"]');
+      alvo.innerHTML = '<form class="eq-comp-form" data-comp-form="'+i+'" novalidate><label>Nova situação<select class="eq-select" name="sit"><option value="compareceu"'+(nova === 'compareceu' ? ' selected' : '')+'>Compareceu</option><option value="faltou"'+(nova === 'faltou' ? ' selected' : '')+'>Faltou</option></select></label>'+
+        '<label>Justificativa da correção (obrigatória)<input type="text" class="eq-input" name="just" maxlength="300" autocomplete="off"></label>'+
+        '<div class="eq-comp-form-acoes"><button type="submit" class="eq-comp-btn is-ok">Salvar correção</button><button type="button" class="eq-comp-btn is-discreto" data-comp-back>Cancelar</button></div><p class="eq-comp-erro" hidden></p></form>';
+      const f = alvo.querySelector('input'); if(f) f.focus();
+    }
+  });
+  document.addEventListener('submit', function(e){
+    const f = e.target.closest && e.target.closest('[data-comp-form]');
+    if(!f) return;
+    e.preventDefault();
+    const cid = currentCaseId, i = +f.dataset.compForm, err = f.querySelector('.eq-comp-erro');
+    const just = f.elements.just.value.trim();
+    if(just.length < 5){ err.textContent = 'Informe a justificativa da correção (mínimo de 5 caracteres).'; err.hidden = false; return; }
+    f.querySelector('button[type=submit]').disabled = true;
+    window.apiCorrigirComparecimento(cid, i, f.elements.sit.value, just).then(function(r){
+      CASOS[cid].agendamentos[i] = r.agendamento;
+      if(currentCaseId === cid) compAtualizar(CASOS[cid]);
+    }).catch(function(er){
+      err.textContent = erroTexto(er); err.hidden = false; f.querySelector('button[type=submit]').disabled = false;
+    });
+  });
 
   /* ----- Documentos anexados: arquivo real, tipo, observação, abertura, histórico, exclusão lógica ----- */
   let docCfg = {tipos:['Laudo','Teste','Encaminhamento','Documento do paciente','Documento complementar'], max_bytes:10485760, exclusao_habilitada:false};
@@ -6767,12 +6908,15 @@ route();
     if(!panel) return;
     if(canSchedule && currentRole === 'tecnico'){ renderAgendaTecnico(caso, panel); return; }
     const listHtml = caso.agendamentos.length
-      ? caso.agendamentos.map(function(a){
+      ? caso.agendamentos.map(function(a, ai){
           const partes = a.data.split('/');
           const mes = MESES[parseInt(partes[1],10)-1] || '';
+          const compLinha = a.comparecimento
+            ? '<div class="eq-agenda-comp"><b>'+compRotulo(a)+'</b> · registrado por '+esc(a.comparecimento.por)+'</div>'
+            : (compPodeRegistrar(caso, a) ? '<div class="eq-agenda-comp">O paciente compareceu? '+compAcoesHtml(ai)+'</div>' : '');
           return '<div class="eq-agenda-item">'+
             '<div class="eq-agenda-date"><b>'+esc(partes[0])+'</b><span>'+mes+'</span></div>'+
-            '<div class="eq-agenda-info"><strong>'+esc(a.data)+' · '+esc(a.hora)+'</strong><small>'+esc(a.local)+'</small></div>'+
+            '<div class="eq-agenda-info"><strong>'+esc(a.data)+' · '+esc(a.hora)+'</strong><small>'+esc(a.local)+'</small>'+compLinha+'</div>'+
             '<span class="dash-badge '+(a.status==='Concluída'||a.status==='Encerrado' ? 'dash-badge-muted' : 'dash-badge-ok')+'">'+esc(a.status)+'</span>'+
           '</div>';
         }).join('')
@@ -6905,6 +7049,7 @@ route();
       if(evo && !digitando('eq-panel-evolucoes')){ renderEvolucoes(novo, editable); carregarNotas(id).then(function(){ if(currentCaseId === id) renderEvolucoes(CASOS[id], canManageCase(CASOS[id])); }); }
       if(ana && !digitando('eq-panel-anamnese')) renderAnamnese(novo, editable);
       if(agd && !digitando('eq-panel-agenda')) renderAgenda(novo, currentRole === 'tecnico');
+      if(agd && !digitando('eq-comp-box')) renderCompBox(novo);
       renderResumo(novo);
       if(resto){ updateToggleStatusBtn(novo); }
       if(typeof syncCasesTable === 'function') try{ syncCasesTable(); }catch(e){}
@@ -7680,7 +7825,10 @@ route();
     paciente_alocado: ['Paciente alocado a estudante', function(d){ return 'Um caso sob a sua supervisão foi alocado a ' + (d || 'um estudante') + '.'; }],
     novo_agendamento: ['Novo agendamento', function(d){ return 'Atendimento agendado: ' + (d || 'confira a agenda') + '.'; }],
     agendamento_alterado: ['Agendamento alterado', function(d){ return 'Um atendimento foi alterado: ' + (d || 'confira a agenda') + '.'; }],
-    agendamento_cancelado: ['Agendamento cancelado', function(d){ return 'Um atendimento foi cancelado: ' + (d || 'confira a agenda') + '.'; }]
+    agendamento_cancelado: ['Agendamento cancelado', function(d){ return 'Um atendimento foi cancelado: ' + (d || 'confira a agenda') + '.'; }],
+    faltas_2: ['Duas faltas consecutivas', function(d){ return (d ? d + ': ' : '') + 'Paciente com duas faltas consecutivas. Recomenda-se entrar em contato para verificar a continuidade do acompanhamento. Uma nova falta consecutiva poderá resultar na perda da vaga.'; }],
+    documento_anexado: ['Novo documento anexado', function(d){ return (d || 'Um documento') + ' foi anexado ao prontuário de um caso sob a sua supervisão.'; }],
+    faltas_3: ['Três faltas consecutivas (prioridade alta)', function(d){ return (d ? d + ': ' : '') + 'Paciente atingiu três faltas consecutivas. Verificar a aplicação da regra institucional de perda da vaga.'; }]
   };
   function supEl(id){ return document.getElementById(id); }
   function supHoje(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
