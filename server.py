@@ -576,6 +576,40 @@ def _norm_hora(h):
     return str(h or "").replace(":", "h")
 
 
+def _avisar_estudante(caso, tipo, detalhe=""):
+    """Aviso interno ao estudante responsável (sem nome de paciente nem dados clínicos)."""
+    est = ((caso or {}).get("estudante") or "").strip()
+    if not est:
+        return
+    notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "destinatario": est,
+                                 "caso_id": caso["_id"], "evolucao_idx": None, "detalhe": detalhe,
+                                 "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+
+
+def _avisar_tecnico(tipo, detalhe):
+    """Aviso interno para o psicólogo técnico (sem dados clínicos)."""
+    notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "tecnico", "destinatario": "",
+                                 "caso_id": "", "evolucao_idx": None, "detalhe": detalhe,
+                                 "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+
+
+def _avisos_convites_expirados():
+    """Gera (uma única vez por convite) o aviso de convite vencido sem ativação."""
+    agora = time.time()
+    for d in contas_col.find({"status": "convite_pendente"}):
+        cv = d.get("convite") or {}
+        if cv.get("expira_em", agora + 1) < agora and not cv.get("aviso_expirado"):
+            with TRAVA_OPERACOES:
+                atual = contas_col.find_one({"_id": d["_id"]}) or {}
+                if atual.get("status") != "convite_pendente" or (atual.get("convite") or {}).get("aviso_expirado"):
+                    continue
+                cv2 = dict(atual.get("convite") or {}); cv2["aviso_expirado"] = True
+                contas_col.update_one({"_id": d["_id"], "status": "convite_pendente"}, {"$set": {"convite": cv2}})
+            if True:
+                funcao = FUNCOES_PROFISSIONAIS.get(d.get("role")) or (d.get("role") or "conta")
+                _avisar_tecnico("convite_expirado", "%s (%s)" % (d.get("nome") or d["_id"], funcao))
+
+
 def _conflito_agenda(data, hora, caso_id, estudante, ignorar=None):
     """Devolve a mensagem de conflito (mesmo paciente ou mesmo estudante no mesmo
     dia e horário) ou None. Não inventa duração nem intervalo: só coincidência exata."""
@@ -924,7 +958,7 @@ def _evento_inscricao(sessao, acao, detalhe=None):
 
 # ---------- Contas profissionais e Administração de TI ----------
 SITE_URL = os.environ.get("SITE_URL", "https://prontuario-servidor.onrender.com").rstrip("/")
-CONVITE_VALIDADE_SEGUNDOS = 72 * 60 * 60  # 72 horas
+CONVITE_VALIDADE_SEGUNDOS = int(os.environ.get("CONVITE_VALIDADE_SEGUNDOS", 72 * 60 * 60))  # 72 horas (a variável existe para testes)
 FUNCOES_PROFISSIONAIS = {"tecnico": "Psicólogo técnico", "supervisor": "Supervisor"}
 INSTITUICAO = "Faculdade de Ciências Médicas da Santa Casa de São Paulo"
 FUNCAO_ADMIN = "Administradora de TI / Desenvolvedora da Plataforma"
@@ -1530,17 +1564,23 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/notificacoes":
-            sessao = self._exigir_papel({"estudante"})
+            sessao = self._exigir_papel({"estudante", "tecnico"})
             if sessao is None:
                 return
             try:
+                if sessao["role"] == "tecnico":
+                    _avisos_convites_expirados()
+                    docs = list(notificacoes_col.find({"para": "tecnico"}).sort("criada_em", -1))[:50]
+                    self._send_json([{"id": d["_id"], "tipo": d["tipo"], "detalhe": d.get("detalhe", ""),
+                                      "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+                    return
                 docs = list(notificacoes_col.find({"destinatario": sessao["nome"]}).sort("criada_em", -1))[:50]
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/notificacoes")
                 return
             # Sem nome de paciente nem conteúdo: só a referência ao registro.
-            self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d["caso_id"], "evolucao": d["evolucao_idx"],
-                              "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+            self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d["caso_id"], "evolucao": d.get("evolucao_idx"),
+                              "detalhe": d.get("detalhe", ""), "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
             return
 
         if path in ("/api/supervisores", "/api/vinculos"):
@@ -2057,6 +2097,12 @@ class Handler(BaseHTTPRequestHandler):
             except PyMongoError as exc:
                 self._erro_servidor(exc, "POST /api/ativar-conta")
                 return
+            try:
+                funcao_a = FUNCOES_PROFISSIONAIS.get(doc.get("role")) or doc.get("role") or "conta"
+                if doc.get("role") != "admin_ti":
+                    _avisar_tecnico("conta_ativada", "%s (%s)" % (doc.get("nome") or doc["_id"], funcao_a))
+            except PyMongoError:
+                pass
             if doc.get("role") != "paciente":
                 # O histórico administrativo não recebe nada de pacientes.
                 _registrar_historico_admin({"email": doc["_id"], "nome": doc.get("nome", "")}, "Primeiro acesso concluído (senha criada)", doc["_id"])
@@ -2304,6 +2350,7 @@ class Handler(BaseHTTPRequestHandler):
                                 "criado_por": sessao["nome"], "criado_em": _agora_br()})
                     casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
                     novo = casos_col.find_one({"_id": case_id})
+                    _avisar_estudante(caso, "novo_agendamento", "%s às %s" % (data, hora))
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "POST /api/casos/<id>/agendamentos")
                     return
@@ -2630,13 +2677,14 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/notificacoes/([^/]+)/lida$", path)
         if m:
-            sessao = self._exigir_papel({"estudante"})
+            sessao = self._exigir_papel({"estudante", "tecnico"})
             if sessao is None:
                 return
             nid = unquote(m.group(1))
             try:
                 d = notificacoes_col.find_one({"_id": nid})
-                if d is None or d.get("destinatario") != sessao["nome"]:
+                dono = (d is not None) and ((d.get("para") == "tecnico") if sessao["role"] == "tecnico" else (d.get("para") != "tecnico" and d.get("destinatario") == sessao["nome"]))
+                if not dono:
                     self._send_error_json(404, "notificação não encontrada"); return
                 if not d.get("lida"):
                     notificacoes_col.update_one({"_id": nid}, {"$set": {"lida": True, "lida_em_br": _agora_br()}})
@@ -2730,6 +2778,11 @@ class Handler(BaseHTTPRequestHandler):
                                  "por": sessao["nome"], "motivo": motivo})
                     casos_col.update_one({"_id": case_id}, {"$set": {"estudante": est["nome"], "alocacao": ALOC_ALOCADO, "historico_vinculos": hist}})
                     novo = casos_col.find_one({"_id": case_id})
+                    # Aviso ao estudante que passa a ser responsável (sem nome de paciente nem dados clínicos).
+                    _agora_ts = time.time()
+                    notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": "novo_paciente", "destinatario": est["nome"],
+                                                 "caso_id": case_id, "evolucao_idx": None, "criada_em": _agora_ts,
+                                                 "criada_em_br": _agora_br(), "lida": False})
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/casos/<id>/alocacao")
                     return
@@ -2841,6 +2894,8 @@ class Handler(BaseHTTPRequestHandler):
                     ags[idx] = ag
                     casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
                     novo = casos_col.find_one({"_id": case_id})
+                    _avisar_estudante(caso, {"editar": "agendamento_alterado", "reagendar": "agendamento_alterado", "cancelar": "agendamento_cancelado"}[acao],
+                                      "%s às %s" % (ag.get("data"), ag.get("hora")))
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/casos/<id>/agendamentos/<n>")
                     return

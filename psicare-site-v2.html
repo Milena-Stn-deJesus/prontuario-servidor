@@ -2969,6 +2969,7 @@ window.apiReenviarConvite = function(ra){
 };
 window.PRONTUARIO_NOTAS = {};
 window.PRONTUARIO_NOTIFS_EST = [];
+window.PRONTUARIO_NOTIFS_TEC = [];
 window.apiGetNotas = function(casoId){ return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/notas'); };
 window.apiCriarNota = function(casoId, idx, texto){
   return _apiFetch('/api/casos/' + encodeURIComponent(casoId) + '/evolucoes/' + idx + '/notas', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({texto: texto})});
@@ -4309,7 +4310,14 @@ route();
       const n = (window.PRONTUARIO_NOTIFS_EST || []).filter(function(x){ return !x.lida; });
       notifBox.hidden = false;
       notifList.innerHTML = n.map(function(x){
-        return '<li><button type="button" class="eq-notif-item" data-notif-nota="'+esc(x.id)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>Nova nota de acompanhamento</b><small>O psicólogo técnico adicionou uma nota a uma evolução sob sua responsabilidade. '+esc(x.criada_em_br || '')+'</small></span></button></li>';
+        const TXT = {
+          novo_paciente: ['Novo paciente alocado', 'O psicólogo técnico alocou um novo paciente para você.'],
+          novo_agendamento: ['Novo agendamento', 'Um atendimento foi agendado para ' + (x.detalhe || 'uma data próxima') + '.'],
+          agendamento_alterado: ['Agendamento alterado', 'Um atendimento seu foi alterado: ' + (x.detalhe || 'confira a agenda') + '.'],
+          agendamento_cancelado: ['Agendamento cancelado', 'Um atendimento seu foi cancelado (' + (x.detalhe || 'confira a agenda') + ').']
+        };
+        const t = TXT[x.tipo] || ['Nova nota de acompanhamento', 'O psicólogo técnico adicionou uma nota a uma evolução sob sua responsabilidade.'];
+        return '<li><button type="button" class="eq-notif-item" data-notif-nota="'+esc(x.id)+'"><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(t[0])+'</b><small>'+esc(t[1])+' '+esc(x.criada_em_br || '')+'</small></span></button></li>';
       }).join('');
       if(notifEmpty) notifEmpty.hidden = n.length > 0;
       if(notifCount){ notifCount.hidden = n.length === 0; notifCount.textContent = n.length > 99 ? '99+' : String(n.length); }
@@ -4331,9 +4339,14 @@ route();
         itens.push({caso:id, titulo:'Dados cadastrais atualizados — '+(c.paciente||'paciente'), detalhe:'Corrigidos pela paciente em '+((ult && ult.em_br) || cf.confirmado_em_br || '—')+' · Visualizar cadastro'});
       }
     });
+    const TXT_T = {conta_ativada: 'Conta ativada', convite_expirado: 'Convite expirado'};
+    const DET_T = {conta_ativada: 'concluiu o primeiro acesso e criou a senha.', convite_expirado: 'não ativou a conta a tempo. Reenvie o convite.'};
+    (window.PRONTUARIO_NOTIFS_TEC || []).forEach(function(x){
+      if(!x.lida) itens.push({aviso:x.id, titulo:(TXT_T[x.tipo] || 'Aviso') + ' — ' + (x.detalhe || ''), detalhe:(DET_T[x.tipo] || '') + ' ' + (x.criada_em_br || '')});
+    });
     notifBox.hidden = false;
     notifList.innerHTML = itens.map(function(it){
-      return '<li><button type="button" class="eq-notif-item" '+(it.caso ? 'data-notif-caso="'+esc(it.caso)+'"' : 'data-notif-alvo="'+esc(it.alvo)+'"')+'><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(it.titulo)+'</b><small>'+esc(it.detalhe)+'</small></span></button></li>';
+      return '<li><button type="button" class="eq-notif-item" '+(it.aviso ? 'data-notif-tec="'+esc(it.aviso)+'"' : it.caso ? 'data-notif-caso="'+esc(it.caso)+'"' : 'data-notif-alvo="'+esc(it.alvo)+'"')+'><span class="eq-notif-dot" aria-hidden="true"></span><span><b>'+esc(it.titulo)+'</b><small>'+esc(it.detalhe)+'</small></span></button></li>';
     }).join('');
     if(notifEmpty) notifEmpty.hidden = itens.length > 0;
     if(notifCount){ notifCount.hidden = itens.length === 0; notifCount.textContent = itens.length > 99 ? '99+' : String(itens.length); }
@@ -4343,6 +4356,22 @@ route();
   function abrirNotaNotificada(id){
     const n = (window.PRONTUARIO_NOTIFS_EST || []).filter(function(x){ return x.id === id; })[0];
     if(!n) return;
+    const marcar = function(){
+      window.apiNotifLida(id).then(function(){ n.lida = true; renderNotifs(); }).catch(function(){ /* continua não lida */ });
+    };
+    if(n.tipo !== 'nota_acompanhamento'){
+      /* O paciente acabou de ser alocado: recarrega os casos do estudante antes de abrir. */
+      window.apiGetCasos().then(function(data){
+        CASOS = data;
+        applyRole(currentRole, currentName);
+        if(CASOS[n.caso_id]){
+          openCase(n.caso_id);
+          if(n.tipo !== 'novo_paciente') setActiveTab('agenda');
+        }
+        marcar();
+      }).catch(function(){ marcar(); });
+      return;
+    }
     if(!CASOS[n.caso_id]){ return; }
     openCase(n.caso_id);
     setActiveTab('evolucoes');
@@ -4351,15 +4380,15 @@ route();
       const alvo = document.getElementById('eq-evo-' + n.evolucao);
       if(alvo){ alvo.classList.add('is-destaque'); alvo.scrollIntoView({behavior:'smooth', block:'center'}); }
     });
-    window.apiNotifLida(id).then(function(){
-      n.lida = true;
-      renderNotifs();
-    }).catch(function(){ /* continua não lida; tenta de novo no próximo clique */ });
+    marcar();
   }
   if(notifBtn && notifPanel){
     notifBtn.addEventListener('click', function(e){
       e.stopPropagation();
       const abrir = notifPanel.hidden;
+      if(abrir && currentRole === 'estudante'){
+        window.apiGetNotificacoes().then(function(l){ window.PRONTUARIO_NOTIFS_EST = l || []; renderNotifs(); }).catch(function(){});
+      }
       notifPanel.hidden = !abrir;
       notifBtn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
     });
@@ -4367,6 +4396,17 @@ route();
       e.stopPropagation();
       const itemNota = e.target.closest('[data-notif-nota]');
       if(itemNota){ fecharNotifs(); abrirNotaNotificada(itemNota.dataset.notifNota); return; }
+      const itemTec = e.target.closest('[data-notif-tec]');
+      if(itemTec){
+        const id = itemTec.dataset.notifTec;
+        const n = (window.PRONTUARIO_NOTIFS_TEC || []).filter(function(x){ return x.id === id; })[0];
+        fecharNotifs();
+        if(n){
+          window.apiNotifLida(id).then(function(){ n.lida = true; renderNotifs(); }).catch(function(){});
+          tecView = 'estudantes'; applyTecView();
+        }
+        return;
+      }
       const itemCaso = e.target.closest('[data-notif-caso]');
       if(itemCaso){ fecharNotifs(); openCase(itemCaso.dataset.notifCaso); return; }
       const item = e.target.closest('[data-notif-alvo]');
@@ -4384,6 +4424,7 @@ route();
   setInterval(function(){
     const painel = document.getElementById('eq-success');
     if(currentRole !== 'tecnico' || !painel || painel.hidden || document.hidden) return;
+    window.apiGetNotificacoes().then(function(l){ window.PRONTUARIO_NOTIFS_TEC = l || []; }).catch(function(){});
     Promise.all([window.apiGetSolicitacoes(), window.apiGetReagendamentos()]).then(function(res){
       window.PRONTUARIO_SOLICITACOES.length = 0;
       res[0].forEach(function(item){ window.PRONTUARIO_SOLICITACOES.push(item); });
@@ -6699,6 +6740,9 @@ route();
         })
       ]).then(function(){
         /* Notificações de notas de acompanhamento: só o estudante tem. */
+        if(sessao.role === 'tecnico'){
+          return window.apiGetNotificacoes().then(function(l){ window.PRONTUARIO_NOTIFS_TEC = l || []; }).catch(function(){ window.PRONTUARIO_NOTIFS_TEC = []; });
+        }
         if(sessao.role !== 'estudante') return;
         return window.apiGetNotificacoes().then(function(l){ window.PRONTUARIO_NOTIFS_EST = l || []; }).catch(function(){ window.PRONTUARIO_NOTIFS_EST = []; });
       }).then(function(){
