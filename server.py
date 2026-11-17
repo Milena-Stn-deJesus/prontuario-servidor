@@ -586,6 +586,46 @@ def _avisar_estudante(caso, tipo, detalhe=""):
                                  "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
 
 
+def _avisar_supervisor(nome, tipo, detalhe="", caso_id=""):
+    """Aviso interno ao supervisor (pelo nome da conta). Nunca leva nome de paciente nem conteúdo clínico."""
+    nome = (nome or "").strip()
+    if not nome:
+        return
+    notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "supervisor", "destinatario": nome,
+                                 "caso_id": caso_id or "", "evolucao_idx": None, "detalhe": detalhe,
+                                 "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+
+
+def distribuicao_supervisor_ativa():
+    """Distribuição de pacientes pelo supervisor: desligada, até a aprovação institucional.
+    Só liga com DISTRIBUICAO_SUPERVISOR=1 no ambiente."""
+    return os.environ.get("DISTRIBUICAO_SUPERVISOR", "").strip().lower() in ("1", "true", "sim", "on")
+
+
+def _painel_do_supervisor(nome):
+    """Dados do painel do supervisor logado: só os estudantes vinculados a ELE e os casos desses estudantes."""
+    meus = [e for e in _painel_vinculos()["estudantes"] if e["supervisor"] == nome]
+    nomes = {e["nome"] for e in meus}
+    casos_por_est = {n: [] for n in nomes}
+    for c in casos_col.find({}):
+        est = (c.get("estudante") or "").strip()
+        if est in casos_por_est and (c.get("supervisor") or "").strip() == nome:
+            casos_por_est[est].append(c)
+    out = []
+    for e in meus:
+        lista = casos_por_est.get(e["nome"], [])
+        out.append({"ra": e["ra"], "nome": e["nome"], "ativo": e["ativo"], "desde": e["desde"],
+                    "casos": [{"id": c["_id"], "paciente": c.get("paciente", ""), "status": c.get("status", ""),
+                               "atendimentos": len(c.get("agendamentos") or [])} for c in lista],
+                    "casos_ativos": sum(1 for c in lista if c.get("status") == "Ativo"),
+                    "casos_encerrados": sum(1 for c in lista if c.get("status") == "Encerrado")})
+    return {"supervisor": nome, "estudantes": out, "distribuicao_ativa": distribuicao_supervisor_ativa()}
+
+
+def _avisar_supervisor_do_caso(caso, tipo, detalhe=""):
+    _avisar_supervisor((caso or {}).get("supervisor"), tipo, detalhe, (caso or {}).get("_id", ""))
+
+
 def _avisar_tecnico(tipo, detalhe):
     """Aviso interno para o psicólogo técnico (sem dados clínicos)."""
     notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "tecnico", "destinatario": "",
@@ -1564,23 +1604,39 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/notificacoes":
-            sessao = self._exigir_papel({"estudante", "tecnico"})
+            sessao = self._exigir_papel({"estudante", "tecnico", "supervisor"})
             if sessao is None:
                 return
             try:
+                if sessao["role"] == "supervisor":
+                    docs = [d for d in notificacoes_col.find({"destinatario": sessao["nome"]}) if d.get("para") == "supervisor"]
+                    docs.sort(key=lambda d: d.get("criada_em", 0), reverse=True)
+                    self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d.get("caso_id", ""), "detalhe": d.get("detalhe", ""),
+                                      "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs[:50]])
+                    return
                 if sessao["role"] == "tecnico":
                     _avisos_convites_expirados()
                     docs = list(notificacoes_col.find({"para": "tecnico"}).sort("criada_em", -1))[:50]
                     self._send_json([{"id": d["_id"], "tipo": d["tipo"], "detalhe": d.get("detalhe", ""),
                                       "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
                     return
-                docs = list(notificacoes_col.find({"destinatario": sessao["nome"]}).sort("criada_em", -1))[:50]
+                docs = [d for d in notificacoes_col.find({"destinatario": sessao["nome"]}).sort("criada_em", -1) if not d.get("para")][:50]
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/notificacoes")
                 return
             # Sem nome de paciente nem conteúdo: só a referência ao registro.
             self._send_json([{"id": d["_id"], "tipo": d["tipo"], "caso_id": d["caso_id"], "evolucao": d.get("evolucao_idx"),
                               "detalhe": d.get("detalhe", ""), "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+            return
+
+        if path == "/api/supervisor/painel":
+            sessao = self._exigir_papel({"supervisor"})
+            if sessao is None:
+                return
+            try:
+                self._send_json(_painel_do_supervisor(sessao["nome"]))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/supervisor/painel")
             return
 
         if path in ("/api/supervisores", "/api/vinculos"):
@@ -2351,6 +2407,7 @@ class Handler(BaseHTTPRequestHandler):
                     casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
                     novo = casos_col.find_one({"_id": case_id})
                     _avisar_estudante(caso, "novo_agendamento", "%s às %s" % (data, hora))
+                    _avisar_supervisor_do_caso(caso, "novo_agendamento", "%s às %s · %s" % (data, hora, caso.get("estudante", "")))
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "POST /api/casos/<id>/agendamentos")
                     return
@@ -2476,6 +2533,10 @@ class Handler(BaseHTTPRequestHandler):
                 except PyMongoError as exc:
                     print("ERRO: não foi possível vincular a inscrição %s ao caso: %s" % (inscricao_id, exc))
             sessao_login = self._sessao_atual()
+            try:
+                _avisar_supervisor_do_caso(caso, "novo_paciente", "Novo caso sob sua supervisão")
+            except PyMongoError:
+                pass
             _registrar_auditoria(sessao_login, "criação de caso", caso_id=caso["_id"])
             resposta = {"id": caso["_id"], "caso": caso_doc_to_json(caso)}
             if email_acesso:
@@ -2677,13 +2738,20 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/notificacoes/([^/]+)/lida$", path)
         if m:
-            sessao = self._exigir_papel({"estudante", "tecnico"})
+            sessao = self._exigir_papel({"estudante", "tecnico", "supervisor"})
             if sessao is None:
                 return
             nid = unquote(m.group(1))
             try:
                 d = notificacoes_col.find_one({"_id": nid})
-                dono = (d is not None) and ((d.get("para") == "tecnico") if sessao["role"] == "tecnico" else (d.get("para") != "tecnico" and d.get("destinatario") == sessao["nome"]))
+                if d is None:
+                    dono = False
+                elif sessao["role"] == "tecnico":
+                    dono = d.get("para") == "tecnico"
+                elif sessao["role"] == "supervisor":
+                    dono = d.get("para") == "supervisor" and d.get("destinatario") == sessao["nome"]
+                else:
+                    dono = not d.get("para") and d.get("destinatario") == sessao["nome"]
                 if not dono:
                     self._send_error_json(404, "notificação não encontrada"); return
                 if not d.get("lida"):
@@ -2730,8 +2798,69 @@ class Handler(BaseHTTPRequestHandler):
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/vinculos/<ra>")
                     return
+            if sup:
+                try:
+                    _avisar_supervisor(sup, "novo_estudante", est["nome"])
+                except PyMongoError:
+                    pass
             _registrar_auditoria(sessao, "vínculo de supervisão alterado", detalhe="%s: %s -> %s" % (est["nome"], atual or "(sem vínculo)", sup or "(encerrado)"))
             self._send_json({"ok": True, "vinculo": novo})
+            return
+
+        m = re.match(r"^/api/supervisor/casos/([^/]+)/distribuicao$", path)
+        if m:
+            # Preparado, mas DESLIGADO por padrão: depende de aprovação institucional.
+            sessao = self._exigir_papel({"supervisor"})
+            if sessao is None:
+                return
+            case_id = unquote(m.group(1))
+            if not distribuicao_supervisor_ativa():
+                _registrar_auditoria(sessao, "tentativa de distribuição de paciente (recurso desativado)", caso_id=case_id, resultado="negado")
+                self._send_error_json(403, "a distribuição de pacientes pelo supervisor ainda não foi habilitada pela instituição")
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            ra = str(body.get("ra", "")).strip()
+            motivo = str(body.get("motivo", "")).strip()[:300]
+            with TRAVA_OPERACOES:
+                try:
+                    caso = casos_col.find_one({"_id": case_id})
+                    if caso is None:
+                        self._send_error_json(404, "caso não encontrado"); return
+                    if (caso.get("supervisor") or "").strip() != sessao["nome"]:
+                        _registrar_auditoria(sessao, "tentativa de distribuir paciente de outro supervisor", caso_id=case_id, resultado="negado")
+                        self._send_error_json(403, "só é possível distribuir pacientes sob a sua responsabilidade"); return
+                    if caso.get("status") != "Ativo":
+                        self._send_error_json(409, "o caso está encerrado"); return
+                    est = _estudante_por_ra(ra)
+                    if est is None:
+                        self._send_error_json(404, "estudante não encontrado"); return
+                    v = vinculos_col.find_one({"_id": ra})
+                    if not est.get("ativo", True) or not v or not v.get("ativo") or v.get("supervisor") != sessao["nome"]:
+                        _registrar_auditoria(sessao, "tentativa de distribuir a estudante fora da equipe", caso_id=case_id, resultado="negado")
+                        self._send_error_json(403, "o estudante precisa estar ativo e vinculado à sua supervisão"); return
+                    anterior = (caso.get("estudante") or "").strip()
+                    if anterior == est["nome"]:
+                        self._send_error_json(409, "este estudante já é o responsável pelo caso"); return
+                    if anterior and not motivo:
+                        self._send_error_json(409, "informe o motivo da redistribuição"); return
+                    hist = list(caso.get("historico_vinculos") or [])
+                    hist.append({"tipo": "redistribuição pelo supervisor" if anterior else "distribuição pelo supervisor",
+                                 "estudante_de": anterior, "estudante_para": est["nome"], "supervisor": sessao["nome"],
+                                 "quando": _agora_br(), "por": sessao["nome"], "motivo": motivo})
+                    # Não cria nem mexe em agendamentos; não altera vínculos administrativos.
+                    casos_col.update_one({"_id": case_id}, {"$set": {"estudante": est["nome"], "alocacao": ALOC_ALOCADO, "historico_vinculos": hist}})
+                    novo = casos_col.find_one({"_id": case_id})
+                    _avisar_estudante(novo, "novo_paciente", "")
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "PUT /api/supervisor/casos/<id>/distribuicao")
+                    return
+            _registrar_auditoria(sessao, "paciente distribuído pelo supervisor", caso_id=case_id,
+                                 detalhe="%s -> %s" % (anterior or "(ninguém)", est["nome"]))
+            self._send_json({"ok": True, "caso": caso_doc_to_json(novo), "agendamentos_futuros": _futuros_ativos(novo) if anterior else 0})
             return
 
         m = re.match(r"^/api/casos/([^/]+)/alocacao$", path)
@@ -2783,6 +2912,7 @@ class Handler(BaseHTTPRequestHandler):
                     notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": "novo_paciente", "destinatario": est["nome"],
                                                  "caso_id": case_id, "evolucao_idx": None, "criada_em": _agora_ts,
                                                  "criada_em_br": _agora_br(), "lida": False})
+                    _avisar_supervisor(sup, "paciente_alocado", est["nome"], case_id)
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/casos/<id>/alocacao")
                     return
@@ -2837,6 +2967,7 @@ class Handler(BaseHTTPRequestHandler):
                     mudanca["historico_vinculos"] = hist
                     casos_col.update_one({"_id": case_id}, {"$set": mudanca})
                     novo = casos_col.find_one({"_id": case_id})
+                    _avisar_supervisor(novo_sup, "novo_paciente", "Caso transferido para a sua supervisão", case_id)
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/casos/<id>/supervisor")
                     return
@@ -2896,6 +3027,8 @@ class Handler(BaseHTTPRequestHandler):
                     novo = casos_col.find_one({"_id": case_id})
                     _avisar_estudante(caso, {"editar": "agendamento_alterado", "reagendar": "agendamento_alterado", "cancelar": "agendamento_cancelado"}[acao],
                                       "%s às %s" % (ag.get("data"), ag.get("hora")))
+                    _avisar_supervisor_do_caso(caso, {"editar": "agendamento_alterado", "reagendar": "agendamento_alterado", "cancelar": "agendamento_cancelado"}[acao],
+                                               "%s às %s · %s" % (ag.get("data"), ag.get("hora"), caso.get("estudante", "")))
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/casos/<id>/agendamentos/<n>")
                     return

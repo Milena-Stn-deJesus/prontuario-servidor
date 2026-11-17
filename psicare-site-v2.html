@@ -1341,6 +1341,157 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 .eq-compat-l li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;flex-wrap:wrap}
 .eq-compat-l li+li{border-top:1px solid var(--line)}
 .eq-compat-ok{color:#1f6b3a;font-size:.88rem}.eq-compat-oc{color:#8a5a00;font-size:.85rem}.eq-compat-sem{opacity:.65;font-size:.88rem}
+
+/* ===== PAINEL DO SUPERVISOR — isolado (prefixo .sup-); não afeta técnico, estudante nem paciente ===== */
+.sup-app{--sp-bg:#f5f1e7;--sp-card:#fffefb;--sp-green:#13372a;--sp-green2:#1e4c3b;--sp-sage:#8fb3a2;--sp-sage-l:#e6efe9;--sp-line:#e4ddc9;--sp-gold:#b8a064;--sp-ink:#1f2d26;--sp-muted:#5d6e65;
+  display:grid;grid-template-columns:236px minmax(0,1fr);background:var(--sp-bg);border:1px solid var(--sp-line);border-radius:22px;overflow:hidden;min-height:640px;box-shadow:0 18px 50px -28px rgba(19,55,42,.35);font-family:var(--sans);color:var(--sp-ink);text-align:left}
+.sup-app[hidden]{display:none}
+.sup-app *{box-sizing:border-box}
+.sup-side{background:var(--sp-green);color:#e9efe9;display:flex;flex-direction:column;padding:26px 14px 18px}
+.sup-side-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 10px 22px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:16px}
+.sup-brand b{display:block;font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:.04em;color:#fff}
+.sup-brand small{display:block;font-size:11.5px;line-height:1.35;color:#a9c0b4;margin-top:4px}
+.sup-menu-toggle{display:none;background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:7px 14px;font:600 13px var(--sans);cursor:pointer}
+.sup-nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.sup-link{all:unset;box-sizing:border-box;position:relative;display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;font:500 14px var(--sans);color:#cfdcd4;cursor:pointer;transition:background .18s,color .18s}
+.sup-link svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none}
+.sup-link:hover{background:rgba(255,255,255,.07);color:#fff}
+.sup-link:focus-visible,.sup-logout:focus-visible,.sup-btn:focus-visible,.sup-kpi:focus-visible,.sup-bell:focus-visible{outline:2px solid var(--sp-gold);outline-offset:2px}
+.sup-link.is-active{background:rgba(255,255,255,.1);color:#fff;font-weight:600}
+.sup-link.is-active::before{content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--sp-gold)}
+.sup-count{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--sp-gold);color:#241d0a;font:700 11.5px/20px var(--sans);text-align:center}
+.sup-side-foot{padding:14px 10px 0;border-top:1px solid rgba(255,255,255,.12)}
+.sup-logout{color:#cfdcd4;font:500 13.5px var(--sans);text-decoration:none}
+.sup-logout:hover{color:#fff;text-decoration:underline}
+.sup-main{min-width:0;padding:28px 32px 36px}
+.sup-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.sup-eyebrow{display:block;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--sp-green2);margin-bottom:8px}
+.sup-head h2{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3vw,34px);color:var(--sp-green);margin:0 0 6px;line-height:1.12}
+.sup-sub{font-size:14px;color:var(--sp-muted);margin:0;max-width:56ch}
+.sup-head-r{display:flex;align-items:center;gap:12px}
+.sup-bell{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--sp-line);background:var(--sp-card);color:var(--sp-green);display:grid;place-items:center;cursor:pointer}
+.sup-bell svg{width:19px;height:19px}
+.sup-bell:hover{border-color:var(--sp-sage)}
+.sup-bell-count{position:absolute;top:-4px;right:-4px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--sp-gold);color:#241d0a;font:700 11px/19px var(--sans);text-align:center}
+.sup-avatar{width:42px;height:42px;border-radius:50%;background:var(--sp-green);color:#f3ecd7;display:grid;place-items:center;font:600 14px var(--sans);letter-spacing:.04em}
+.sup-app .sup-view{padding:0!important;margin:0;min-height:0!important}
+.sup-view[hidden]{display:none!important}
+.sup-title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 16px}
+.sup-h3{font-family:var(--serif);font-weight:500;font-size:20px;color:var(--sp-green);margin:0}
+.sup-h3 small{font:500 13px var(--sans);color:var(--sp-muted);margin-left:8px}
+.sup-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.sup-kpi{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:var(--sp-card);border:1px solid var(--sp-line);border-radius:16px;transition:border-color .18s,transform .18s}
+.sup-kpi:hover{border-color:var(--sp-sage);transform:translateY(-1px)}
+.sup-kpi b{font-family:var(--serif);font-weight:600;font-size:32px;line-height:1;color:var(--sp-green)}
+.sup-kpi span{font-size:13px;color:var(--sp-muted)}
+.sup-kpi i{display:block;width:26px;height:2px;background:var(--sp-gold);margin-bottom:10px;border-radius:2px}
+.sup-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+.sup-col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sup-card{background:var(--sp-card);border:1px solid var(--sp-line);border-radius:16px;padding:18px 20px;min-width:0}
+.sup-card .sup-title-row{margin-bottom:12px}
+.sup-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sup-li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--sp-line)}
+.sup-li:first-child{border-top:0}
+.sup-li-main{min-width:0;display:flex;flex-direction:column;gap:2px}
+.sup-li-main b{font:600 14px var(--sans);color:var(--sp-ink);overflow-wrap:anywhere}
+.sup-li-main small{font-size:12.5px;color:var(--sp-muted);overflow-wrap:anywhere}
+.sup-when{flex:none;text-align:right;font:600 13px var(--sans);color:var(--sp-green)}
+.sup-when small{display:block;font-weight:500;color:var(--sp-muted);font-size:12px}
+.sup-chip{display:inline-flex;align-items:center;font:600 11.5px var(--sans);padding:4px 10px;border-radius:999px;white-space:nowrap;background:var(--sp-sage-l);color:var(--sp-green2)}
+.sup-chip.muted{background:#ece9df;color:#6b6a5d}
+.sup-chip.warn{background:#f6edd3;color:#7a5f17}
+.sup-chip.bad{background:#f8e5e1;color:#9b3a2c}
+.sup-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--sp-sage);color:var(--sp-green);font:600 13px var(--sans);background:transparent;transition:background .18s,color .18s;text-align:center;white-space:nowrap}
+.sup-btn:hover{background:var(--sp-green);color:#fff;border-color:var(--sp-green)}
+.sup-btn.solid{background:var(--sp-green);color:#fff;border-color:var(--sp-green)}
+.sup-btn.solid:hover{background:var(--sp-green2)}
+.sup-btn[disabled]{opacity:.5;cursor:default}
+.sup-btn svg{width:15px;height:15px;stroke:currentColor;fill:none}
+.sup-link-btn{all:unset;cursor:pointer;color:var(--sp-green2);font:600 13px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.sup-link-btn:focus-visible{outline:2px solid var(--sp-gold);outline-offset:2px}
+.sup-empty{padding:18px 4px;font-size:14px;color:var(--sp-muted);text-align:center}
+.sup-state{padding:34px 12px;text-align:center;color:var(--sp-muted);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.sup-state.err{color:#9b3a2c}
+.sup-stu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.sup-stu{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:center;padding:14px 16px;background:var(--sp-card);border:1px solid var(--sp-line);border-radius:14px;transition:border-color .18s}
+.sup-stu:hover{border-color:var(--sp-sage)}
+.sup-stu:focus-visible{outline:2px solid var(--sp-gold);outline-offset:2px}
+.sup-stu .sup-ini{width:40px;height:40px;border-radius:50%;background:var(--sp-sage-l);color:var(--sp-green);display:grid;place-items:center;font:700 13px var(--sans);flex:none}
+.sup-stu b{display:block;font:600 14px var(--sans);color:var(--sp-ink);overflow-wrap:anywhere}
+.sup-stu small{font-size:12.5px;color:var(--sp-muted)}
+.sup-tabs{display:flex;gap:6px;border-bottom:1.5px solid var(--sp-line);margin-bottom:16px;flex-wrap:wrap}
+.sup-tab{all:unset;cursor:pointer;padding:10px 16px;font:600 14px var(--sans);color:var(--sp-muted);border-bottom:2px solid transparent;margin-bottom:-1.5px}
+.sup-tab.is-active{color:var(--sp-green);border-bottom-color:var(--sp-gold)}
+.sup-tab:focus-visible{outline:2px solid var(--sp-gold);outline-offset:-2px}
+.sup-tab small{font-weight:600;color:var(--sp-muted);margin-left:4px}
+.sup-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sup-input,.sup-select{font:400 14px var(--sans);color:var(--sp-ink);background:var(--sp-card);border:1.5px solid var(--sp-line);border-radius:10px;padding:9px 12px;min-width:0;max-width:100%}
+.sup-input{flex:1 1 220px}
+.sup-input:focus,.sup-select:focus{outline:2px solid var(--sp-sage);border-color:var(--sp-sage)}
+.sup-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.sup-table th{text-align:left;font:600 11.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--sp-muted);padding:10px 10px;border-bottom:1.5px solid var(--sp-line)}
+.sup-table td{padding:12px 10px;border-bottom:1px solid var(--sp-line);vertical-align:middle;overflow-wrap:anywhere}
+.sup-table tr:last-child td{border-bottom:0}
+.sup-table td b{font-weight:600}
+.sup-note{font-size:12.5px;color:var(--sp-muted);background:#efeadb;border-radius:12px;padding:10px 14px;margin:0 0 14px;line-height:1.5}
+.sup-back{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font:500 14px var(--sans);color:var(--sp-muted);margin:0 0 16px}
+.sup-back svg{width:16px;height:16px;transform:rotate(180deg);stroke:currentColor;fill:none}
+.sup-back:hover{color:var(--sp-green)}
+.sup-back:focus-visible{outline:2px solid var(--sp-gold);outline-offset:2px}
+.sup-det-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.sup-det-head .sup-ini{width:54px;height:54px;border-radius:50%;background:var(--sp-green);color:#f3ecd7;display:grid;place-items:center;font:600 17px var(--sans)}
+.sup-det-head h3{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--sp-green);margin:0}
+.sup-det-head p{margin:2px 0 0;font-size:13px;color:var(--sp-muted)}
+.sup-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.sup-mini div{background:var(--sp-card);border:1px solid var(--sp-line);border-radius:14px;padding:12px 14px}
+.sup-mini b{display:block;font-family:var(--serif);font-size:24px;color:var(--sp-green);font-weight:600}
+.sup-mini span{font-size:12.5px;color:var(--sp-muted)}
+.sup-cal-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sup-cal-bar h3{font-family:var(--serif);font-weight:500;font-size:21px;color:var(--sp-green);margin:0}
+.sup-cal-nav{display:flex;gap:6px}
+.sup-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.sup-cal-dow{font:600 11.5px var(--sans);text-align:center;color:var(--sp-muted);padding:6px 0;letter-spacing:.06em;text-transform:uppercase}
+.sup-day{all:unset;box-sizing:border-box;cursor:pointer;aspect-ratio:1/0.82;min-height:44px;border-radius:10px;border:1px solid var(--sp-line);background:var(--sp-card);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:6px 8px;font:500 13px var(--sans);color:var(--sp-ink);transition:border-color .15s}
+.sup-day:hover{border-color:var(--sp-sage)}
+.sup-day:focus-visible{outline:2px solid var(--sp-gold);outline-offset:1px}
+.sup-day.out{opacity:.4}
+.sup-day.today{border-color:var(--sp-gold);box-shadow:inset 0 0 0 1px var(--sp-gold)}
+.sup-day.sel{background:var(--sp-green);color:#fff;border-color:var(--sp-green)}
+.sup-day em{font-style:normal;font:600 10.5px var(--sans);background:var(--sp-sage-l);color:var(--sp-green2);border-radius:999px;padding:1px 7px}
+.sup-day.sel em{background:rgba(255,255,255,.2);color:#fff}
+.sup-cal-wrap{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+.sup-chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--sp-ink)}
+.sup-chk input{accent-color:var(--sp-green2)}
+.sup-nt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--sp-line);padding:14px 4px;font-family:var(--sans);cursor:pointer;color:inherit}
+.sup-nt:first-child{border-top:0}
+.sup-nt:hover{background:#faf7ee}
+.sup-nt .dot{width:9px;height:9px;border-radius:50%;background:var(--sp-gold);margin-top:6px;flex:none}
+.sup-nt.lida .dot{background:#d8d3c2}
+.sup-nt b{display:block;font:600 14px var(--sans);color:var(--sp-ink)}
+.sup-nt small{display:block;font-size:13px;color:var(--sp-muted);margin-top:2px}
+.sup-nt.lida b{font-weight:500}
+.sup-case-slot .eq-detail{padding:0;border:0;box-shadow:none;background:transparent;max-width:none;width:100%}
+@media (max-width:1100px){.sup-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sup-grid,.sup-cal-wrap{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){
+  .sup-app{grid-template-columns:minmax(0,1fr);border-radius:18px}
+  .sup-side{padding:14px 16px}
+  .sup-side-top{padding:0;border:0;margin:0;align-items:center}
+  .sup-menu-toggle{display:inline-block}
+  .sup-nav,.sup-side-foot{display:none}
+  .sup-side.is-open .sup-nav{display:flex;margin-top:14px}
+  .sup-side.is-open .sup-side-foot{display:block;margin-top:10px}
+  .sup-link.is-active::before{left:-16px}
+  .sup-main{padding:22px 16px 28px}
+}
+@media (max-width:1060px){
+  .sup-table thead{display:none}
+  .sup-table,.sup-table tbody,.sup-table tr,.sup-table td{display:block;width:100%}
+  .sup-table tr{border:1px solid var(--sp-line);border-radius:14px;padding:6px 14px;margin-bottom:12px;background:var(--sp-card)}
+  .sup-table td{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--sp-line);padding:9px 0;text-align:right}
+  .sup-table td:last-child{border-bottom:0}
+  .sup-table td::before{content:attr(data-l);font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--sp-muted);text-align:left;flex:none}
+}
+@media (max-width:520px){.sup-kpis{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.sup-kpi{padding:13px 14px}.sup-kpi b{font-size:26px}.sup-day{padding:4px 5px;font-size:12px}.sup-day em{padding:0 5px}}
 </style>
 </head>
 <body>
@@ -2768,6 +2919,48 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
 
     </div>
+
+      <!-- PAINEL DO SUPERVISOR — contêiner isolado (só aparece para o perfil supervisor) -->
+      <div class="sup-app" id="sup-app" hidden>
+        <aside class="sup-side" id="sup-side">
+          <div class="sup-side-top">
+            <div class="sup-brand"><b>FCMSCSP</b><small>Prontuário Eletrônico de Psicologia</small></div>
+            <button type="button" class="sup-menu-toggle" id="sup-menu-toggle" aria-expanded="false" aria-controls="sup-nav">Menu</button>
+          </div>
+          <nav class="sup-nav" id="sup-nav" aria-label="Navegação do painel do supervisor">
+            <button type="button" class="sup-link" data-sup-view="painel"><svg aria-hidden="true"><use href="#i-chart"/></svg>Visão geral</button>
+            <button type="button" class="sup-link" data-sup-view="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg>Meus estudantes</button>
+            <button type="button" class="sup-link" data-sup-view="casos"><svg aria-hidden="true"><use href="#i-user"/></svg>Casos clínicos</button>
+            <button type="button" class="sup-link" data-sup-view="agenda"><svg aria-hidden="true"><use href="#i-cal"/></svg>Agenda</button>
+            <button type="button" class="sup-link" data-sup-view="supervisoes"><svg aria-hidden="true"><use href="#i-file"/></svg>Supervisões</button>
+            <button type="button" class="sup-link" data-sup-view="notificacoes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Notificações<span class="sup-count" id="sup-nav-count" hidden>0</span></button>
+          </nav>
+          <div class="sup-side-foot"><a href="#" class="sup-logout">Sair</a></div>
+        </aside>
+        <div class="sup-main">
+          <header class="sup-head">
+            <div>
+              <span class="sup-eyebrow">Painel do supervisor</span>
+              <h2 id="sup-greeting">Olá!</h2>
+              <p class="sup-sub">Acompanhamento clínico e acadêmico dos estudantes sob a sua supervisão.</p>
+            </div>
+            <div class="sup-head-r">
+              <button type="button" class="sup-bell" id="sup-bell" aria-label="Notificações: nenhuma nova"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="sup-bell-count" id="sup-bell-count" hidden>0</span></button>
+              <span class="sup-avatar" id="sup-avatar" aria-hidden="true"></span>
+            </div>
+          </header>
+          <section class="sup-view" id="sup-v-painel" aria-live="polite"></section>
+          <section class="sup-view" id="sup-v-estudantes" hidden></section>
+          <section class="sup-view" id="sup-v-casos" hidden></section>
+          <section class="sup-view" id="sup-v-agenda" hidden></section>
+          <section class="sup-view" id="sup-v-supervisoes" hidden></section>
+          <section class="sup-view" id="sup-v-notificacoes" hidden></section>
+          <section class="sup-view" id="sup-v-caso" hidden>
+            <button type="button" class="sup-back" id="sup-case-back"><svg aria-hidden="true"><use href="#i-arrow"/></svg><span id="sup-case-back-t">Voltar</span></button>
+            <div class="sup-case-slot" id="sup-case-slot"></div>
+          </section>
+        </div>
+      </div>
   </div>
 </section>
 
@@ -2978,6 +3171,10 @@ window.apiGetNotificacoes = function(){ return _apiFetch('/api/notificacoes'); }
 window.apiNotifLida = function(id){ return _apiFetch('/api/notificacoes/' + encodeURIComponent(id) + '/lida', {method:'PUT', headers:{'Content-Type':'application/json'}, body: '{}'}); };
 window.apiGetSupervisores = function(){ return _apiFetch('/api/supervisores'); };
 window.apiGetVinculos = function(){ return _apiFetch('/api/vinculos'); };
+window.apiGetPainelSupervisor = function(){ return _apiFetch('/api/supervisor/painel'); };
+window.apiDistribuirCaso = function(casoId, ra, motivo){
+  return _apiFetch('/api/supervisor/casos/' + encodeURIComponent(casoId) + '/distribuicao', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ra: ra, motivo: motivo || ''})});
+};
 window.apiSalvarVinculo = function(ra, supervisor){
   return _apiFetch('/api/vinculos/' + encodeURIComponent(ra), {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({supervisor: supervisor})});
 };
@@ -4737,6 +4934,7 @@ route();
   }
 
   function applyRole(role, displayName){
+    if(role !== 'supervisor') supSair();
     currentRole = role;
     currentName = displayName;
     casesStudentSel = '';
@@ -4800,6 +4998,7 @@ route();
       if(ptFilter) ptFilter.value = 'todos';
       renderPatients();
     }
+    if(role === 'supervisor') supEntrar();
   }
 
   /* SOLICITAÇÕES DE PRONTUÁRIO — fila técnico-exclusiva alimentada pelo pedido do paciente */
@@ -6366,7 +6565,9 @@ route();
     renderDocumentos(caso, editable);
     renderAgenda(caso, currentRole==='tecnico');
     setActiveTab('resumo');
-    if(currentRole === 'tecnico' && caseDetailEl && caseSlotEl){
+    if(currentRole === 'supervisor' && supMostrarCaso()){
+      /* O supervisor abre o prontuário dentro do próprio painel (contêiner isolado #sup-app). */
+    } else if(currentRole === 'tecnico' && caseDetailEl && caseSlotEl){
       /* O técnico abre o prontuário dentro do próprio painel (mesmo menu e mesma identidade visual). */
       caseSlotEl.appendChild(caseDetailEl);
       if(tecView !== 'caso') caseVoltaPara = tecView;
@@ -7114,7 +7315,548 @@ route();
   window.addEventListener('hashchange', checarAtivacao);
   checarAtivacao();
 
+
+  /* =====================================================================
+     PAINEL DO SUPERVISOR — módulo isolado (#sup-app). Só é exibido para o perfil
+     supervisor; reaproveita CASOS, o prontuário (openCase) e a API existentes.
+     Não altera nenhuma regra de permissão: só apresenta e navega.
+     ===================================================================== */
+  var supView = 'painel', supVoltaPara = 'painel', supCasosTab = 'meus', supBusca = '', supFiltroSit = 'todos', supFiltroEst = '';
+  var supEstSel = '', supAgEst = '', supAgTodos = false, supSvEst = '', supSvBusca = '';
+  var supCalY = 0, supCalM = 0, supCalSel = null;
+  var supPainel = null, supPainelEstado = 'idle', supNotifs = [], supTimer = null, supCasosEm = 0;
+  var SUP_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var SUP_VIEWS = ['painel','estudantes','casos','agenda','supervisoes','notificacoes','caso'];
+  var SUP_ROTULO_VOLTA = {painel:'Voltar à visão geral', estudantes:'Voltar aos estudantes', casos:'Voltar aos casos clínicos', agenda:'Voltar à agenda', supervisoes:'Voltar às supervisões', notificacoes:'Voltar às notificações'};
+  var SUP_NOTIF = {
+    novo_estudante: ['Novo estudante vinculado', function(d){ return (d || 'Um estudante') + ' passou a integrar a sua supervisão.'; }],
+    novo_paciente: ['Novo paciente atribuído', function(d){ return d || 'Um caso foi atribuído à sua supervisão.'; }],
+    paciente_alocado: ['Paciente alocado a estudante', function(d){ return 'Um caso sob a sua supervisão foi alocado a ' + (d || 'um estudante') + '.'; }],
+    novo_agendamento: ['Novo agendamento', function(d){ return 'Atendimento agendado: ' + (d || 'confira a agenda') + '.'; }],
+    agendamento_alterado: ['Agendamento alterado', function(d){ return 'Um atendimento foi alterado: ' + (d || 'confira a agenda') + '.'; }],
+    agendamento_cancelado: ['Agendamento cancelado', function(d){ return 'Um atendimento foi cancelado: ' + (d || 'confira a agenda') + '.'; }]
+  };
+  function supEl(id){ return document.getElementById(id); }
+  function supHoje(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function supData(br){ const p = String(br || '').split('/'); if(p.length !== 3) return null; const d = new Date(+p[2], +p[1]-1, +p[0]); return isNaN(d.getTime()) ? null : d; }
+  function supDt(br){
+    const m = String(br || '').match(/(\d{2})\/(\d{2})\/(\d{4})(?:\D+(\d{1,2})\D(\d{2}))?/);
+    return m ? new Date(+m[3], +m[2]-1, +m[1], +(m[4] || 0), +(m[5] || 0)).getTime() : 0;
+  }
+  function supDataCurta(d){ return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'); }
+  function supIni(n){ return initials(String(n || '').replace(/^(Dra?\.|Prof\.?a?)\s+/i, '')); }
+  function supMeusIds(){ return Object.keys(CASOS).filter(function(id){ return (CASOS[id].supervisor || '') === currentName; }); }
+  function supSituacao(c){ return c.status === 'Encerrado' ? 'Encerrado' : (c.estudante ? 'Em acompanhamento' : 'Aguardando alocação'); }
+  function supChipSit(c){
+    const s = supSituacao(c);
+    return '<span class="sup-chip'+(s === 'Encerrado' ? ' muted' : s === 'Aguardando alocação' ? ' warn' : '')+'">'+esc(s)+'</span>';
+  }
+  function supAgsDe(id){
+    const c = CASOS[id]; const out = [];
+    (c.agendamentos || []).forEach(function(a, idx){
+      const d = supData(a.data); if(!d) return;
+      out.push({data:d, dataBr:a.data, hora:a.hora || '', local:a.local || '', status:a.status || '', idx:idx, id:id, paciente:c.paciente, estudante:c.estudante || '', criado:a.criado_em || ''});
+    });
+    return out;
+  }
+  function supInfo(id){
+    const hoje = supHoje().getTime();
+    let ult = null, prox = null;
+    supAgsDe(id).forEach(function(a){
+      if(a.status === 'Cancelada') return;
+      const t = a.data.getTime();
+      if(t < hoje){ if(!ult || t > ult.data.getTime() || (t === ult.data.getTime() && a.hora > ult.hora)) ult = a; }
+      else if(!prox || t < prox.data.getTime() || (t === prox.data.getTime() && a.hora < prox.hora)) prox = a;
+    });
+    return {ultimo:ult, proximo:prox};
+  }
+  function supTxtAg(a){ return a ? (a.dataBr + (a.hora ? ' · ' + a.hora : '')) : '—'; }
+  function supProximos(ids){
+    const out = [];
+    ids.forEach(function(id){
+      if(CASOS[id].status !== 'Ativo') return;
+      const hoje = supHoje().getTime();
+      supAgsDe(id).forEach(function(a){ if(a.status !== 'Cancelada' && a.data.getTime() >= hoje) out.push(a); });
+    });
+    out.sort(function(a,b){ return (a.data - b.data) || a.hora.localeCompare(b.hora); });
+    return out;
+  }
+  function supEstudantes(){ return (supPainel && supPainel.estudantes) || []; }
+  function supEstPorNome(n){ return supEstudantes().filter(function(e){ return e.nome === n; })[0] || null; }
+
+  /* ---------- Estados de carregamento / erro ---------- */
+  function supEstado(contexto){
+    if(supPainelEstado === 'carregando' || supPainelEstado === 'idle') return '<div class="sup-state" role="status">Carregando '+contexto+'…</div>';
+    if(supPainelEstado === 'erro') return '<div class="sup-state err" role="alert"><span>Não foi possível carregar '+contexto+'. Verifique a conexão e tente novamente.</span><button type="button" class="sup-btn" data-sup-retry>Tentar novamente</button></div>';
+    return '';
+  }
+
+  /* ---------- Visão geral ---------- */
+  function supRenderPainel(){
+    const box = supEl('sup-v-painel'); if(!box) return;
+    const ids = supMeusIds();
+    const ativos = ids.filter(function(id){ return CASOS[id].status === 'Ativo'; });
+    const enc = ids.filter(function(id){ return CASOS[id].status === 'Encerrado'; });
+    const prox = supProximos(ids);
+    const nEst = supPainelEstado === 'ok' ? String(supEstudantes().length) : '—';
+    let h = '<div class="sup-kpis">'+
+      '<button type="button" class="sup-kpi" data-sup-view="estudantes"><i></i><b>'+nEst+'</b><span>Estudantes supervisionados</span></button>'+
+      '<button type="button" class="sup-kpi" data-sup-view="casos" data-sup-sit="acompanhamento"><i></i><b>'+ativos.length+'</b><span>Casos ativos</span></button>'+
+      '<button type="button" class="sup-kpi" data-sup-view="casos" data-sup-sit="encerrado"><i></i><b>'+enc.length+'</b><span>Casos encerrados</span></button>'+
+      '<button type="button" class="sup-kpi" data-sup-view="agenda"><i></i><b>'+prox.length+'</b><span>Próximos atendimentos</span></button>'+
+    '</div><div class="sup-grid"><div class="sup-col">';
+    /* próximos atendimentos */
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">Próximos atendimentos</h3><button type="button" class="sup-link-btn" data-sup-view="agenda">Ver agenda</button></div>';
+    if(!prox.length) h += '<p class="sup-empty">Nenhum atendimento agendado nos seus casos.</p>';
+    else h += '<ul class="sup-list">' + prox.slice(0,6).map(function(a){
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(a.paciente)+'</b><small>'+esc(a.estudante || 'Sem estudante')+' · '+esc(a.status || '—')+'</small></div><div class="sup-when">'+esc(a.dataBr)+'<small>'+esc(a.hora)+'</small></div></li>';
+    }).join('') + '</ul>';
+    h += '</div>';
+    /* casos que pedem atenção */
+    const limite = Date.now() - 30*24*3600*1000;
+    const atencao = [];
+    ativos.forEach(function(id){
+      const c = CASOS[id]; const motivos = [];
+      if(!c.estudante) motivos.push('aguardando alocação de estudante');
+      else {
+        if(!supProximos([id]).length) motivos.push('sem atendimento agendado');
+        const ultSv = (c.evolucoes || []).filter(function(e){ return e.tipo === 'supervisao'; }).map(function(e){ return supDt(e.data); }).sort(function(a,b){ return b-a; })[0] || 0;
+        if(ultSv < limite) motivos.push(ultSv ? 'sem supervisão registrada há mais de 30 dias' : 'nenhuma supervisão registrada');
+      }
+      if(motivos.length) atencao.push({id:id, motivos:motivos});
+    });
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">Casos que pedem acompanhamento</h3></div>';
+    if(!atencao.length) h += '<p class="sup-empty">Nenhum caso pendente de acompanhamento.</p>';
+    else h += '<ul class="sup-list">' + atencao.slice(0,6).map(function(x){
+      const c = CASOS[x.id];
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(c.paciente)+'</b><small>'+esc(c.estudante || 'Sem estudante')+' · '+esc(x.motivos.join('; '))+'</small></div><button type="button" class="sup-btn" data-sup-open="'+esc(x.id)+'">Abrir</button></li>';
+    }).join('') + '</ul>' + (atencao.length > 6 ? '<p class="sup-empty">e mais '+(atencao.length-6)+' caso(s)</p>' : '');
+    h += '</div></div><div class="sup-col">';
+    /* estudantes */
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">Meus estudantes</h3><button type="button" class="sup-link-btn" data-sup-view="estudantes">Ver todos</button></div>';
+    if(supPainelEstado !== 'ok') h += supEstado('os estudantes');
+    else if(!supEstudantes().length) h += '<p class="sup-empty">Nenhum estudante vinculado à sua supervisão.</p>';
+    else h += '<ul class="sup-list">' + supEstudantes().slice(0,4).map(function(e){
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(e.nome)+'</b><small>'+e.casos_ativos+' caso(s) ativo(s)</small></div><button type="button" class="sup-btn" data-sup-est="'+esc(e.ra)+'">Ver casos</button></li>';
+    }).join('') + '</ul>';
+    h += '</div>';
+    /* atividade recente */
+    const rot = {atendimento:'Evolução de atendimento registrada', supervisao:'Registro de supervisão', contato:'Registro de contato', retificacao:'Retificação registrada'};
+    const ev = [];
+    ids.forEach(function(id){
+      const c = CASOS[id];
+      (c.evolucoes || []).forEach(function(e, n){ ev.push({t:supDt(e.data), id:id, titulo:rot[e.tipo] || 'Registro clínico', meta:(e.autor || '') + ' · ' + (e.data || ''), tab:'evolucoes'}); });
+      supAgsDe(id).forEach(function(a){ if(a.criado) ev.push({t:supDt(a.criado), id:id, titulo:'Atendimento agendado para '+a.dataBr, meta:(a.estudante || 'Sem estudante') + ' · ' + a.criado, tab:'agenda'}); });
+    });
+    ev.sort(function(a,b){ return b.t - a.t; });
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">Atividade clínica recente</h3></div>';
+    if(!ev.length) h += '<p class="sup-empty">Nenhuma atividade registrada nos seus casos.</p>';
+    else h += '<ul class="sup-list">' + ev.slice(0,6).map(function(x){
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(x.titulo)+'</b><small>'+esc(CASOS[x.id].paciente)+' · '+esc(x.meta)+'</small></div><button type="button" class="sup-btn" data-sup-open="'+esc(x.id)+'" data-sup-tab-open="'+x.tab+'">Abrir</button></li>';
+    }).join('') + '</ul>';
+    h += '</div></div></div>';
+    box.innerHTML = h;
+  }
+
+  /* ---------- Meus estudantes ---------- */
+  function supRenderEstudantes(){
+    const box = supEl('sup-v-estudantes'); if(!box) return;
+    if(supPainelEstado !== 'ok'){ box.innerHTML = '<div class="sup-title-row"><h3 class="sup-h3">Meus estudantes</h3></div>' + supEstado('os estudantes'); return; }
+    const sel = supEstudantes().filter(function(e){ return e.ra === supEstSel; })[0];
+    if(!sel){
+      let h = '<div class="sup-title-row"><h3 class="sup-h3">Meus estudantes<small>'+supEstudantes().length+'</small></h3></div>'+
+        '<p class="sup-note">Cadastro, credenciais, permissões e vínculos de supervisão são geridos pelo psicólogo técnico.</p>';
+      if(!supEstudantes().length) h += '<div class="sup-card"><p class="sup-empty">Nenhum estudante está vinculado à sua supervisão no momento.</p></div>';
+      else h += '<div class="sup-stu-grid">' + supEstudantes().map(function(e){
+        return '<button type="button" class="sup-stu" data-sup-est="'+esc(e.ra)+'"><span class="sup-ini">'+esc(supIni(e.nome))+'</span><span><b>'+esc(e.nome)+'</b><small>'+e.casos_ativos+' ativo(s) · '+e.casos_encerrados+' encerrado(s)'+(e.ativo === false ? ' · conta inativa' : '')+'</small></span></button>';
+      }).join('') + '</div>';
+      box.innerHTML = h; return;
+    }
+    const ids = (sel.casos || []).map(function(c){ return c.id; }).filter(function(id){ return CASOS[id]; });
+    let nAt = 0, nFut = 0; const hoje = supHoje().getTime();
+    ids.forEach(function(id){ supAgsDe(id).forEach(function(a){ if(a.status === 'Cancelada') return; if(a.data.getTime() < hoje) nAt++; else nFut++; }); });
+    let h = '<button type="button" class="sup-back" data-sup-est-back><svg aria-hidden="true"><use href="#i-arrow"/></svg>Voltar aos estudantes</button>'+
+      '<div class="sup-det-head"><span class="sup-ini">'+esc(supIni(sel.nome))+'</span><div><h3>'+esc(sel.nome)+'</h3><p>RA '+esc(sel.ra)+(sel.desde ? ' · na sua supervisão desde '+esc(sel.desde.split(' ')[0]) : '')+(sel.ativo === false ? ' · conta inativa' : '')+'</p></div></div>'+
+      '<div class="sup-mini"><div><b>'+sel.casos_ativos+'</b><span>Casos ativos</span></div><div><b>'+sel.casos_encerrados+'</b><span>Casos encerrados</span></div><div><b>'+nAt+'</b><span>Atendimentos já ocorridos</span></div><div><b>'+nFut+'</b><span>Atendimentos agendados</span></div></div>';
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">Pacientes do estudante</h3></div>';
+    if(!ids.length) h += '<p class="sup-empty">Este estudante ainda não tem pacientes sob a sua supervisão.</p>';
+    else h += supTabelaCasos(ids, true);
+    h += '</div>';
+    const ev = [];
+    ids.forEach(function(id){ (CASOS[id].evolucoes || []).forEach(function(e){ ev.push({t:supDt(e.data), id:id, tipo:e.tipo, autor:e.autor, data:e.data}); }); });
+    ev.sort(function(a,b){ return b.t - a.t; });
+    const tl = {atendimento:'Atendimento', supervisao:'Supervisão', contato:'Contato', retificacao:'Retificação'};
+    h += '<div class="sup-card" style="margin-top:16px"><div class="sup-title-row"><h3 class="sup-h3">Registros clínicos recentes</h3></div>';
+    if(!ev.length) h += '<p class="sup-empty">Nenhum registro clínico produzido ainda.</p>';
+    else h += '<ul class="sup-list">' + ev.slice(0,8).map(function(x){
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(tl[x.tipo] || x.tipo)+' · '+esc(CASOS[x.id].paciente)+'</b><small>'+esc(x.autor || '')+' · '+esc(x.data || '')+'</small></div><button type="button" class="sup-btn" data-sup-open="'+esc(x.id)+'" data-sup-tab-open="evolucoes">Consultar</button></li>';
+    }).join('') + '</ul>';
+    h += '</div>';
+    box.innerHTML = h;
+  }
+
+  /* ---------- Tabela de casos (usada em Casos clínicos e no detalhe do estudante) ---------- */
+  function supTabelaCasos(ids, semEstudante){
+    let h = '<table class="sup-table"><thead><tr><th>Paciente</th>'+(semEstudante ? '' : '<th>Estudante</th><th>Supervisor</th>')+'<th>Situação</th><th>Último atendimento</th><th>Próximo atendimento</th><th>Ação</th></tr></thead><tbody>';
+    ids.forEach(function(id){
+      const c = CASOS[id]; const inf = supInfo(id);
+      const dist = (supPainel && supPainel.distribuicao_ativa && c.status === 'Ativo' && (c.supervisor || '') === currentName)
+        ? ' <button type="button" class="sup-btn" data-sup-dist="'+esc(id)+'">Distribuir</button>' : '';
+      h += '<tr><td data-l="Paciente"><b>'+esc(c.paciente)+'</b></td>'+
+        (semEstudante ? '' : '<td data-l="Estudante">'+esc(c.estudante || '—')+'</td><td data-l="Supervisor">'+esc(c.supervisor || '—')+'</td>')+
+        '<td data-l="Situação">'+supChipSit(c)+'</td><td data-l="Último atendimento">'+esc(supTxtAg(inf.ultimo))+'</td><td data-l="Próximo atendimento">'+esc(supTxtAg(inf.proximo))+'</td>'+
+        '<td data-l="Ação"><button type="button" class="sup-btn" data-sup-open="'+esc(id)+'">Prontuário</button>'+dist+'</td></tr>';
+    });
+    return h + '</tbody></table>';
+  }
+
+  /* ---------- Casos clínicos ---------- */
+  function supIdsAba(){
+    return Object.keys(CASOS).filter(function(id){ return supCasosTab === 'todos' || (CASOS[id].supervisor || '') === currentName; });
+  }
+  function supRenderCasos(){
+    const box = supEl('sup-v-casos'); if(!box) return;
+    const meus = supMeusIds().length, todos = Object.keys(CASOS).length;
+    const nomes = {}; supIdsAba().forEach(function(id){ if(CASOS[id].estudante) nomes[CASOS[id].estudante] = 1; });
+    box.innerHTML = '<div class="sup-title-row"><h3 class="sup-h3">Casos clínicos</h3></div>'+
+      '<div class="sup-tabs" role="tablist"><button type="button" role="tab" class="sup-tab'+(supCasosTab === 'meus' ? ' is-active' : '')+'" aria-selected="'+(supCasosTab === 'meus')+'" data-sup-tab="meus">Meus casos<small>'+meus+'</small></button>'+
+      '<button type="button" role="tab" class="sup-tab'+(supCasosTab === 'todos' ? ' is-active' : '')+'" aria-selected="'+(supCasosTab === 'todos')+'" data-sup-tab="todos">Todos os casos<small>'+todos+'</small></button></div>'+
+      (supCasosTab === 'todos' ? '<p class="sup-note">Visão geral do serviço, conforme as permissões atuais do sistema. Casos de outros supervisores aparecem com o respectivo supervisor responsável.</p>' : '')+
+      '<div class="sup-tools"><label class="sr-only" for="sup-busca">Buscar paciente ou estudante</label><input type="search" class="sup-input" id="sup-busca" placeholder="Buscar por paciente ou estudante" value="'+esc(supBusca)+'" autocomplete="off">'+
+      '<label class="sr-only" for="sup-f-sit">Situação</label><select class="sup-select" id="sup-f-sit">'+
+        [['todos','Todas as situações'],['acompanhamento','Em acompanhamento'],['aguardando','Aguardando alocação'],['encerrado','Encerrados']].map(function(o){ return '<option value="'+o[0]+'"'+(supFiltroSit === o[0] ? ' selected' : '')+'>'+o[1]+'</option>'; }).join('')+'</select>'+
+      '<label class="sr-only" for="sup-f-est">Estudante</label><select class="sup-select" id="sup-f-est"><option value="">Todos os estudantes</option>'+
+        Object.keys(nomes).sort().map(function(n){ return '<option value="'+esc(n)+'"'+(supFiltroEst === n ? ' selected' : '')+'>'+esc(n)+'</option>'; }).join('')+'</select></div>'+
+      '<div class="sup-card" id="sup-casos-lista"></div>';
+    supListaCasos();
+  }
+  function supListaCasos(){
+    const box = supEl('sup-casos-lista'); if(!box) return;
+    const q = normTxt(supBusca);
+    const ids = supIdsAba().filter(function(id){
+      const c = CASOS[id];
+      if(supFiltroEst && c.estudante !== supFiltroEst) return false;
+      const s = supSituacao(c);
+      if(supFiltroSit === 'acompanhamento' && s !== 'Em acompanhamento') return false;
+      if(supFiltroSit === 'aguardando' && s !== 'Aguardando alocação') return false;
+      if(supFiltroSit === 'encerrado' && s !== 'Encerrado') return false;
+      return !q || normTxt(c.paciente).indexOf(q) >= 0 || normTxt(c.estudante).indexOf(q) >= 0;
+    }).sort(function(a,b){ return String(CASOS[a].paciente).localeCompare(String(CASOS[b].paciente), 'pt-BR'); });
+    box.innerHTML = ids.length ? supTabelaCasos(ids, false) : '<p class="sup-empty">'+(Object.keys(CASOS).length ? 'Nenhum caso encontrado com estes filtros.' : 'Nenhum caso disponível no momento.')+'</p>';
+  }
+
+  /* ---------- Agenda (somente leitura) ---------- */
+  function supAgendaItens(){
+    const porDia = {};
+    Object.keys(CASOS).forEach(function(id){
+      const c = CASOS[id];
+      if(!supAgTodos && (c.supervisor || '') !== currentName) return;
+      if(supAgEst && c.estudante !== supAgEst) return;
+      supAgsDe(id).forEach(function(a){
+        const k = a.data.getFullYear()+'-'+String(a.data.getMonth()+1).padStart(2,'0')+'-'+String(a.data.getDate()).padStart(2,'0');
+        (porDia[k] = porDia[k] || []).push(a);
+      });
+    });
+    Object.keys(porDia).forEach(function(k){ porDia[k].sort(function(a,b){ return a.hora.localeCompare(b.hora); }); });
+    return porDia;
+  }
+  function supRenderAgenda(){
+    const box = supEl('sup-v-agenda'); if(!box) return;
+    const porDia = supAgendaItens();
+    const hojeD = supHoje();
+    const key = function(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); };
+    const nomes = {}; supEstudantes().forEach(function(e){ nomes[e.nome] = 1; });
+    if(supAgTodos) Object.keys(CASOS).forEach(function(id){ if(CASOS[id].estudante) nomes[CASOS[id].estudante] = 1; });
+    const primeiro = new Date(supCalY, supCalM, 1), offset = primeiro.getDay(), dias = new Date(supCalY, supCalM+1, 0).getDate(), antes = new Date(supCalY, supCalM, 0).getDate();
+    const cel = [];
+    for(let i=0;i<offset;i++) cel.push({d:antes-offset+1+i, fora:true});
+    for(let d=1; d<=dias; d++) cel.push({d:d, fora:false});
+    while(cel.length % 7 !== 0) cel.push({d:cel.length-offset-dias+1, fora:true});
+    const mesPref = supCalY+'-'+String(supCalM+1).padStart(2,'0');
+    if(supCalSel === null || supCalSel.indexOf(mesPref) !== 0){
+      const hk = key(hojeD.getFullYear(), hojeD.getMonth(), hojeD.getDate());
+      supCalSel = (hk.indexOf(mesPref) === 0 && porDia[hk]) ? hk : (Object.keys(porDia).filter(function(k){ return k.indexOf(mesPref) === 0; }).sort()[0] || null);
+    }
+    let h = '<div class="sup-title-row"><h3 class="sup-h3">Agenda</h3><span class="sup-chip muted">Somente leitura</span></div>'+
+      '<div class="sup-tools"><label class="sr-only" for="sup-ag-est">Filtrar por estudante</label><select class="sup-select" id="sup-ag-est"><option value="">Todos os estudantes</option>'+
+      Object.keys(nomes).sort().map(function(n){ return '<option value="'+esc(n)+'"'+(supAgEst === n ? ' selected' : '')+'>'+esc(n)+'</option>'; }).join('')+'</select>'+
+      '<label class="sup-chk"><input type="checkbox" id="sup-ag-todos"'+(supAgTodos ? ' checked' : '')+'>Incluir atendimentos de todo o serviço</label></div>'+
+      '<div class="sup-cal-wrap"><div class="sup-card"><div class="sup-cal-bar"><h3>'+SUP_MESES[supCalM]+' de '+supCalY+'</h3><div class="sup-cal-nav"><button type="button" class="sup-btn" data-sup-cal="-1" aria-label="Mês anterior">‹</button><button type="button" class="sup-btn" data-sup-cal="0">Hoje</button><button type="button" class="sup-btn" data-sup-cal="1" aria-label="Próximo mês">›</button></div></div>'+
+      '<div class="sup-cal-grid">'+['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(function(n){ return '<div class="sup-cal-dow">'+n+'</div>'; }).join('')+
+      cel.map(function(c){
+        if(c.fora) return '<div class="sup-day out" aria-hidden="true"><span>'+c.d+'</span></div>';
+        const k = key(supCalY, supCalM, c.d), n = (porDia[k] || []).length;
+        const ehHoje = (k === key(hojeD.getFullYear(), hojeD.getMonth(), hojeD.getDate()));
+        return '<button type="button" class="sup-day'+(ehHoje ? ' today' : '')+(k === supCalSel ? ' sel' : '')+'" data-sup-day="'+k+'" aria-label="Dia '+c.d+(n ? ', '+n+' atendimento(s)' : ', sem atendimentos')+'" aria-pressed="'+(k === supCalSel)+'"><span>'+c.d+'</span>'+(n ? '<em>'+n+'</em>' : '<span></span>')+'</button>';
+      }).join('')+'</div></div>';
+    h += '<div class="sup-card"><div class="sup-title-row"><h3 class="sup-h3">'+(supCalSel ? supCalSel.split('-').reverse().join('/') : 'Detalhes')+'</h3></div>';
+    const itens = supCalSel ? (porDia[supCalSel] || []) : [];
+    if(!itens.length) h += '<p class="sup-empty">'+(supCalSel ? 'Nenhum atendimento neste dia.' : 'Nenhum atendimento neste mês.')+'</p>';
+    else h += '<ul class="sup-list">' + itens.map(function(a){
+      const cancel = a.status === 'Cancelada';
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(a.hora)+' · '+esc(a.paciente)+'</b><small>'+esc(a.estudante || 'Sem estudante')+(a.local ? ' · '+esc(a.local) : '')+'</small><span class="sup-chip'+(cancel ? ' bad' : '')+'" style="align-self:flex-start;margin-top:4px">'+esc(a.status || '—')+'</span></div><button type="button" class="sup-btn" data-sup-open="'+esc(a.id)+'" data-sup-tab-open="agenda">Abrir caso</button></li>';
+    }).join('') + '</ul>';
+    box.innerHTML = h + '</div></div>';
+  }
+
+  /* ---------- Supervisões ---------- */
+  function supRenderSupervisoes(){
+    const box = supEl('sup-v-supervisoes'); if(!box) return;
+    const ids = supMeusIds();
+    const nomes = {}; ids.forEach(function(id){ if(CASOS[id].estudante) nomes[CASOS[id].estudante] = 1; });
+    box.innerHTML = '<div class="sup-title-row"><h3 class="sup-h3">Supervisões</h3><button type="button" class="sup-btn solid" data-sup-registrar>Registrar supervisão</button></div>'+
+      '<p class="sup-note">Os registros ficam no prontuário do caso, com autor, data e horário. Evoluções finalizadas não podem ser editadas nem excluídas; correções são feitas por retificação.</p>'+
+      '<div class="sup-tools"><label class="sr-only" for="sup-sv-busca">Buscar paciente</label><input type="search" class="sup-input" id="sup-sv-busca" placeholder="Buscar por paciente" value="'+esc(supSvBusca)+'" autocomplete="off">'+
+      '<label class="sr-only" for="sup-sv-est">Estudante</label><select class="sup-select" id="sup-sv-est"><option value="">Todos os estudantes</option>'+
+      Object.keys(nomes).sort().map(function(n){ return '<option value="'+esc(n)+'"'+(supSvEst === n ? ' selected' : '')+'>'+esc(n)+'</option>'; }).join('')+'</select></div>'+
+      '<div class="sup-card" id="sup-sv-lista"></div>';
+    supListaSupervisoes();
+  }
+  function supListaSupervisoes(){
+    const box = supEl('sup-sv-lista'); if(!box) return;
+    const q = normTxt(supSvBusca); const itens = [];
+    supMeusIds().forEach(function(id){
+      const c = CASOS[id];
+      if(supSvEst && c.estudante !== supSvEst) return;
+      if(q && normTxt(c.paciente).indexOf(q) < 0) return;
+      (c.evolucoes || []).forEach(function(e, n){ if(e.tipo === 'supervisao') itens.push({id:id, n:n, t:supDt(e.data), autor:e.autor, data:e.data}); });
+    });
+    itens.sort(function(a,b){ return b.t - a.t; });
+    box.innerHTML = itens.length ? '<ul class="sup-list">' + itens.map(function(x){
+      const c = CASOS[x.id];
+      return '<li class="sup-li"><div class="sup-li-main"><b>'+esc(c.paciente)+' · Evolução #'+(x.n+1)+'</b><small>Estudante: '+esc(c.estudante || '—')+' · Registrada por '+esc(x.autor || '—')+' em '+esc(x.data || '—')+'</small></div><button type="button" class="sup-btn" data-sup-open="'+esc(x.id)+'" data-sup-tab-open="evolucoes" data-sup-evo="'+x.n+'">Consultar</button></li>';
+    }).join('') + '</ul>' : '<p class="sup-empty">Nenhum registro de supervisão encontrado.</p>';
+  }
+  function supRegistrarSupervisao(){
+    const ids = supMeusIds().filter(function(id){ return CASOS[id].status === 'Ativo'; });
+    if(!ids.length){ mdlAbrir('Registrar supervisão', '<form id="eq-mdl-form" novalidate><p>Você não tem casos ativos sob a sua supervisão.</p><div class="eq-mdl-btns"><button type="button" class="btn btn-primary" data-mdl-cancel>Fechar</button></div></form>', null); return; }
+    mdlAbrir('Registrar supervisão',
+      '<form id="eq-mdl-form" novalidate><p>Escolha o caso. O registro é feito no prontuário, como evolução do tipo Supervisão.</p>'+
+      '<div class="eq-field"><label for="sup-rg-caso">Caso</label><select class="eq-select" id="sup-rg-caso">'+ids.map(function(id){ return '<option value="'+esc(id)+'">'+esc(CASOS[id].paciente)+(CASOS[id].estudante ? ' — '+esc(CASOS[id].estudante) : '')+'</option>'; }).join('')+'</select></div>'+
+      mdlRodape('Abrir prontuário')+'</form>',
+      function(){ const id = document.getElementById('sup-rg-caso').value; mdlFechar(); supAbrirCaso(id, 'evolucoes', {tipo:'supervisao'}); });
+  }
+
+  /* ---------- Notificações ---------- */
+  function supNaoLidas(){ return supNotifs.filter(function(n){ return !n.lida; }); }
+  function supRenderNotificacoes(){
+    const box = supEl('sup-v-notificacoes'); if(!box) return;
+    const nl = supNaoLidas().length;
+    box.innerHTML = '<div class="sup-title-row"><h3 class="sup-h3">Notificações'+(nl ? '<small>'+nl+' nova(s)</small>' : '')+'</h3>'+(nl ? '<button type="button" class="sup-btn" data-sup-readall>Marcar todas como lidas</button>' : '')+'</div>'+
+      '<div class="sup-card">'+(supNotifs.length ? supNotifs.map(function(n){
+        const t = SUP_NOTIF[n.tipo] || ['Aviso', function(d){ return d || ''; }];
+        return '<button type="button" class="sup-nt'+(n.lida ? ' lida' : '')+'" data-sup-notif="'+esc(n.id)+'"><span class="dot"></span><span><b>'+esc(t[0])+'</b><small>'+esc(t[1](n.detalhe))+' · '+esc(n.criada_em_br || '')+'</small></span></button>';
+      }).join('') : '<p class="sup-empty">Nenhuma notificação por enquanto.</p>')+'</div>';
+  }
+  function supRenderContadores(){
+    const nl = supNaoLidas().length;
+    const bc = supEl('sup-bell-count'), nc = supEl('sup-nav-count'), bell = supEl('sup-bell');
+    [bc, nc].forEach(function(el){ if(el){ el.hidden = nl === 0; el.textContent = nl > 99 ? '99+' : String(nl); } });
+    if(bell) bell.setAttribute('aria-label', nl ? 'Notificações: '+nl+(nl === 1 ? ' nova' : ' novas') : 'Notificações: nenhuma nova');
+  }
+  function supCarregarNotifs(silencioso){
+    if(typeof window.apiGetNotificacoes !== 'function') return Promise.resolve();
+    return window.apiGetNotificacoes().then(function(l){
+      const antes = {}; supNotifs.forEach(function(n){ antes[n.id] = 1; });
+      const novas = (l || []).some(function(n){ return !antes[n.id]; });
+      supNotifs = l || [];
+      supRenderContadores();
+      if(supView === 'notificacoes') supRenderNotificacoes();
+      if(silencioso && novas && supView !== 'caso') supRecarregarCasos(true);
+    }).catch(function(){ /* mantém a lista anterior */ });
+  }
+  function supMarcarLida(id){
+    const n = supNotifs.filter(function(x){ return x.id === id; })[0];
+    if(!n || n.lida) return Promise.resolve();
+    return window.apiNotifLida(id).then(function(){ n.lida = true; supRenderContadores(); }).catch(function(){});
+  }
+
+  /* ---------- Dados ---------- */
+  function supCarregarPainel(){
+    supPainelEstado = 'carregando';
+    return window.apiGetPainelSupervisor().then(function(d){ supPainel = d; supPainelEstado = 'ok'; })
+      .catch(function(err){ console.warn('Painel do supervisor:', err); supPainelEstado = 'erro'; })
+      .then(function(){ if(supView !== 'caso') supRenderView(); });
+  }
+  function supRecarregarCasos(forcar){
+    if(!forcar && Date.now() - supCasosEm < 20000) return Promise.resolve();
+    supCasosEm = Date.now();
+    return window.apiGetCasos().then(function(d){ CASOS = d; return supCarregarPainelSilencioso(); })
+      .catch(function(){ /* mantém os dados atuais */ })
+      .then(function(){ if(currentRole === 'supervisor' && supView !== 'caso') supRenderView(); });
+  }
+  function supCarregarPainelSilencioso(){
+    return window.apiGetPainelSupervisor().then(function(d){ supPainel = d; supPainelEstado = 'ok'; }).catch(function(){});
+  }
+
+  /* ---------- Navegação ---------- */
+  function supRenderView(){
+    const fn = {painel:supRenderPainel, estudantes:supRenderEstudantes, casos:supRenderCasos, agenda:supRenderAgenda, supervisoes:supRenderSupervisoes, notificacoes:supRenderNotificacoes}[supView];
+    if(fn) fn();
+    supRenderContadores();
+  }
+  function supAplicarView(){
+    SUP_VIEWS.forEach(function(v){ const el = supEl('sup-v-'+v); if(el) el.hidden = (v !== supView); });
+    const ativo = supView === 'caso' ? supVoltaPara : supView;
+    document.querySelectorAll('#sup-nav .sup-link').forEach(function(b){
+      const on = b.dataset.supView === ativo;
+      b.classList.toggle('is-active', on);
+      if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    const side = supEl('sup-side'), tg = supEl('sup-menu-toggle');
+    if(side) side.classList.remove('is-open');
+    if(tg) tg.setAttribute('aria-expanded', 'false');
+  }
+  function supIr(v){
+    supView = v;
+    if(v === 'estudantes' && !arguments[1]) supEstSel = '';
+    supAplicarView();
+    supRenderView();
+    if(v === 'casos' || v === 'agenda' || v === 'painel') supRecarregarCasos(false);
+    const app = supEl('sup-app');
+    if(app) window.scrollTo({top: Math.max(0, app.getBoundingClientRect().top + window.scrollY - 110)});
+  }
+  /* Chamado por openCase(): leva o prontuário existente para dentro do painel do supervisor. */
+  function supMostrarCaso(){
+    const app = supEl('sup-app'), slot = supEl('sup-case-slot');
+    if(!app || app.hidden || !slot || !caseDetailEl) return false;
+    slot.appendChild(caseDetailEl);
+    if(supView !== 'caso') supVoltaPara = supView;
+    const t = supEl('sup-case-back-t'); if(t) t.textContent = SUP_ROTULO_VOLTA[supVoltaPara] || 'Voltar';
+    supView = 'caso';
+    supAplicarView();
+    showCard('success');
+    window.scrollTo({top: Math.max(0, app.getBoundingClientRect().top + window.scrollY - 110)});
+    return true;
+  }
+  function supAbrirCaso(id, tab, opcoes){
+    if(!CASOS[id]) return;
+    openCase(id);
+    if(tab) setActiveTab(tab);
+    if(opcoes && opcoes.tipo){
+      const aplicar = function(){
+        if(currentCaseId !== id) return;
+        const sel = document.getElementById('eq-evo-tipo'); if(sel) sel.value = opcoes.tipo;
+        const ta = document.getElementById('eq-evo-conteudo'); if(ta) ta.focus();
+      };
+      aplicar();
+      /* o prontuário redesenha as evoluções quando as notas chegam: reaplica o tipo depois disso */
+      carregarNotas(id).then(function(){ window.setTimeout(aplicar, 0); });
+    }
+    if(opcoes && opcoes.evo !== undefined){
+      carregarNotas(id).then(function(){
+        if(currentCaseId !== id) return;
+        renderEvolucoes(CASOS[id], canManageCase(CASOS[id]));
+        const alvo = document.getElementById('eq-evo-' + opcoes.evo);
+        if(alvo){ alvo.classList.add('is-destaque'); alvo.scrollIntoView({behavior:'smooth', block:'center'}); }
+      });
+    }
+  }
+  function supEntrar(){
+    const app = supEl('sup-app'); if(!app) return;
+    const wrap = document.querySelector('#eq-success .auth-wrap'); if(wrap) wrap.hidden = true;
+    app.hidden = false;
+    const hoje = new Date(); supCalY = hoje.getFullYear(); supCalM = hoje.getMonth(); supCalSel = null;
+    supCasosTab = 'meus'; supBusca = ''; supFiltroSit = 'todos'; supFiltroEst = ''; supEstSel = ''; supAgEst = ''; supAgTodos = false; supSvEst = ''; supSvBusca = '';
+    supView = 'painel'; supVoltaPara = 'painel'; supNotifs = []; supPainel = null; supPainelEstado = 'carregando'; supCasosEm = Date.now();
+    const g = supEl('sup-greeting'); if(g) g.textContent = 'Olá, ' + currentName + '!';
+    const av = supEl('sup-avatar'); if(av) av.textContent = supIni(currentName);
+    supAplicarView(); supRenderView();
+    supCarregarPainel(); supCarregarNotifs(false);
+    if(supTimer) clearInterval(supTimer);
+    supTimer = setInterval(function(){ if(currentRole === 'supervisor' && !document.hidden){ supCarregarNotifs(true); } }, 60000);
+  }
+  function supSair(){
+    const app = supEl('sup-app'); if(!app) return;
+    app.hidden = true;
+    const wrap = document.querySelector('#eq-success .auth-wrap'); if(wrap) wrap.hidden = false;
+    if(supTimer){ clearInterval(supTimer); supTimer = null; }
+    supPainel = null; supNotifs = []; supPainelEstado = 'idle';
+  }
+  function supDistribuir(id){
+    const c = CASOS[id]; if(!c || !supPainel) return;
+    const outros = supEstudantes().filter(function(e){ return e.ativo !== false && e.nome !== c.estudante; });
+    if(!outros.length){ mdlAbrir('Distribuir paciente', '<form id="eq-mdl-form" novalidate><p>Não há outro estudante ativo na sua equipe.</p><div class="eq-mdl-btns"><button type="button" class="btn btn-primary" data-mdl-cancel>Fechar</button></div></form>', null); return; }
+    mdlAbrir('Distribuir paciente',
+      '<form id="eq-mdl-form" novalidate><p class="eq-mdl-ro">'+esc(c.paciente)+'</p><p>Apenas estudantes da sua equipe. Nenhum agendamento é criado ou alterado.</p>'+
+      '<div class="eq-field"><label for="sup-ds-est">Estudante</label><select class="eq-select" id="sup-ds-est">'+outros.map(function(e){ return '<option value="'+esc(e.ra)+'">'+esc(e.nome)+'</option>'; }).join('')+'</select></div>'+
+      (c.estudante ? '<div class="eq-field"><label for="sup-ds-motivo">Motivo da redistribuição</label><textarea class="eq-textarea" id="sup-ds-motivo" maxlength="300"></textarea></div>' : '')+
+      mdlRodape('Distribuir')+'</form>',
+      function(){
+        const mot = document.getElementById('sup-ds-motivo');
+        mdlEnviar(window.apiDistribuirCaso(id, document.getElementById('sup-ds-est').value, mot ? mot.value.trim() : ''), function(){
+          mdlFechar();
+          supRecarregarCasos(true);
+        });
+      });
+  }
+
+  /* ---------- Eventos ---------- */
+  (function(){
+    const app = supEl('sup-app'); if(!app) return;
+    app.addEventListener('click', function(e){
+      const t = e.target;
+      let el = t.closest('[data-sup-open]');
+      if(el){ supAbrirCaso(el.dataset.supOpen, el.dataset.supTabOpen || '', el.dataset.supEvo !== undefined ? {evo:+el.dataset.supEvo} : null); return; }
+      el = t.closest('[data-sup-view]');
+      if(el){ if(el.dataset.supSit){ supFiltroSit = el.dataset.supSit; supCasosTab = 'meus'; } else if(el.dataset.supView === 'casos'){ supFiltroSit = 'todos'; supFiltroEst = ''; supBusca = ''; } supIr(el.dataset.supView); return; }
+      el = t.closest('[data-sup-est]'); if(el){ supEstSel = el.dataset.supEst; supIr('estudantes', true); return; }
+      if(t.closest('[data-sup-est-back]')){ supEstSel = ''; supRenderEstudantes(); return; }
+      el = t.closest('[data-sup-tab]'); if(el){ supCasosTab = el.dataset.supTab; supFiltroEst = ''; supRenderCasos(); return; }
+      if(t.closest('[data-sup-retry]')){ supCarregarPainel(); supRenderView(); return; }
+      el = t.closest('[data-sup-cal]');
+      if(el){
+        const d = +el.dataset.supCal;
+        if(d === 0){ const h = new Date(); supCalY = h.getFullYear(); supCalM = h.getMonth(); }
+        else { supCalM += d; if(supCalM < 0){ supCalM = 11; supCalY--; } if(supCalM > 11){ supCalM = 0; supCalY++; } }
+        supCalSel = null; supRenderAgenda(); return;
+      }
+      el = t.closest('[data-sup-day]'); if(el){ supCalSel = el.dataset.supDay; supRenderAgenda(); return; }
+      if(t.closest('[data-sup-registrar]')){ supRegistrarSupervisao(); return; }
+      el = t.closest('[data-sup-dist]'); if(el){ supDistribuir(el.dataset.supDist); return; }
+      el = t.closest('[data-sup-notif]');
+      if(el){
+        const n = supNotifs.filter(function(x){ return x.id === el.dataset.supNotif; })[0];
+        if(!n) return;
+        supMarcarLida(n.id).then(function(){
+          if(n.caso_id && CASOS[n.caso_id]) supAbrirCaso(n.caso_id, n.tipo.indexOf('agendamento') === 0 ? 'agenda' : '');
+          else if(n.tipo === 'novo_estudante') supIr('estudantes');
+          else supRenderNotificacoes();
+        });
+        return;
+      }
+      if(t.closest('[data-sup-readall]')){
+        const pend = supNaoLidas();
+        pend.reduce(function(p, n){ return p.then(function(){ return supMarcarLida(n.id); }); }, Promise.resolve()).then(supRenderNotificacoes);
+        return;
+      }
+      if(t.closest('#sup-bell')){ supIr('notificacoes'); return; }
+      if(t.closest('#sup-menu-toggle')){
+        const side = supEl('sup-side'), tg = supEl('sup-menu-toggle');
+        const abrir = !side.classList.contains('is-open');
+        side.classList.toggle('is-open', abrir); tg.setAttribute('aria-expanded', abrir ? 'true' : 'false'); return;
+      }
+      if(t.closest('#sup-case-back')){
+        const alvo = supVoltaPara || 'painel';
+        supView = alvo; supAplicarView(); supRenderView(); return;
+      }
+    });
+    app.addEventListener('input', function(e){
+      if(e.target.id === 'sup-busca'){ supBusca = e.target.value; supListaCasos(); }
+      else if(e.target.id === 'sup-sv-busca'){ supSvBusca = e.target.value; supListaSupervisoes(); }
+    });
+    app.addEventListener('change', function(e){
+      const id = e.target.id;
+      if(id === 'sup-f-sit'){ supFiltroSit = e.target.value; supListaCasos(); }
+      else if(id === 'sup-f-est'){ supFiltroEst = e.target.value; supListaCasos(); }
+      else if(id === 'sup-ag-est'){ supAgEst = e.target.value; supCalSel = null; supRenderAgenda(); }
+      else if(id === 'sup-ag-todos'){ supAgTodos = e.target.checked; if(!supAgTodos) supAgEst = ''; supCalSel = null; supRenderAgenda(); }
+      else if(id === 'sup-sv-est'){ supSvEst = e.target.value; supListaSupervisoes(); }
+    });
+  })();
+
   function resetEquipeSession(){
+    supSair();
     admLimpar();
     if(typeof window.apiLogout === 'function') window.apiLogout();
     showCard('login');
