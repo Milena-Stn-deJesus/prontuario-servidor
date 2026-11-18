@@ -979,6 +979,15 @@ footer{margin-top:120px}
 .eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-acoes{margin-top:10px}
 @media (max-width:900px){.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-body{grid-template-columns:1fr;gap:18px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-right{padding-left:0;border-left:0;padding-top:16px;border-top:1px solid var(--line)}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day{height:42px}}
 @media (max-width:520px){.eq-tec[data-view="agenda"] #eq-cal-card{padding:18px 14px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-day{height:40px;font-size:13px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-count{top:2px;right:3px}.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag{grid-template-columns:1fr}}
+/* Cartão estreito: hora e "Ver caso" na primeira linha, nome e detalhes abaixo, em largura total (evita o botão sobre o nome) */
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-lista{container-type:inline-size}
+.eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-info{min-width:0}
+@container (max-width:459px){
+  .eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"t b" "i i";align-items:center}
+  .eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-time{grid-area:t;justify-self:start}
+  .eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-open{grid-area:b;justify-self:end}
+  .eq-tec[data-view="agenda"] #eq-cal-card .eq-cal-appt-ag .eq-cal-appt-info{grid-area:i}
+}
 
 /* Cabeçalho — subtítulo do estudante */
 .eq-dash-sub{margin-top:8px;font-size:14px;color:var(--muted);line-height:1.5;max-width:420px}
@@ -1060,6 +1069,82 @@ footer{margin-top:120px}
 .dash-help-head p{font-size:13.5px;color:var(--muted);line-height:1.5}
 .dash-help .btn{align-self:flex-start}
 @media (max-width:560px){.auth-card{padding:32px 24px}}
+
+/* ===== REFINAMENTO — HOME DO ESTUDANTE (escopo: .auth-dash.eq-est) ===== */
+.auth-dash.eq-est{padding:40px 44px 44px}
+.eq-est .dash-head{align-items:flex-start;margin-bottom:26px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.eq-est .dash-head .eyebrow{color:var(--blue)}
+.eq-est .dash-head h2{margin-top:8px;font-size:clamp(28px,3vw,36px);line-height:1.12}
+.eq-est .eq-dash-sub{margin-top:8px;max-width:60ch;font-size:14.5px;line-height:1.55}
+.eq-est .eq-head-actions{gap:14px;padding-top:4px}
+.eq-est .eq-notif-btn{width:40px;height:40px;border-width:1px}
+
+/* Agenda */
+.eq-est .eq-cal-card{background:var(--bg);border:0;border-radius:20px;padding:26px 30px 28px;margin-bottom:34px}
+.eq-est .eq-cal-topline{margin-bottom:18px}
+.eq-est .eq-cal-head{margin-bottom:14px}
+.eq-est .eq-cal-head h3{font-family:var(--serif);font-weight:600;font-size:17px}
+.eq-est .eq-cal-nav-btn{width:28px;height:28px;background:#fff}
+.eq-est .eq-cal-today-btn{width:auto;padding:0 12px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.eq-est .eq-cal-weekdays span{font-size:10.5px}
+.eq-est .eq-cal-day{height:34px;font-size:12.5px}
+.eq-est .eq-cal-day:hover{background:#fff}
+.eq-est .eq-cal-day.is-outside{color:#cfdcd5}
+.eq-est .eq-cal-detail-heading{margin-bottom:6px}
+.eq-est .eq-cal-detail-label{font-family:var(--serif);font-size:19px;font-weight:600;margin-bottom:12px}
+.eq-est .eq-cal-appt{display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:4px 14px;padding:14px 4px;border-bottom:1px solid #dfe9e4}
+.eq-est .eq-cal-appt:last-child{border-bottom:0}
+.eq-est .eq-cal-appt-time{font-size:14px}
+.eq-est .eq-cal-appt-info{min-width:0;gap:3px}
+.eq-est .eq-cal-appt-info strong{font-size:14.5px}
+.eq-est .eq-cal-appt-info span{font-size:12.5px;line-height:1.5}
+.eq-est .eq-cal-appt.is-next{background:#fff;border-bottom-color:transparent;border-radius:14px;padding:14px 16px;margin:0 -12px 6px;box-shadow:inset 3px 0 0 var(--blue)}
+.eq-est .eq-cal-next-tag{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2f7a59}
+.eq-est .eq-cal-appt-open{background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px #b9d3c8;padding:7px 14px;font-size:12px}
+.eq-est .eq-cal-appt-open:hover{background:var(--navy);color:#fff;box-shadow:inset 0 0 0 1.5px var(--navy)}
+.eq-est .eq-cal-appt-open:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.eq-est .eq-cal-compchip{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:#eef1f0;color:#4f5f58;white-space:nowrap}
+.eq-est .eq-cal-compchip.is-ok{background:#e4f3ec;color:#25704c}
+.eq-est .eq-cal-compchip.is-faltou{background:#f7e8e5;color:#8f2f25}
+.eq-est .eq-cal-empty{padding:8px 0}
+
+/* Pacientes acompanhados */
+.eq-est .eq-pt-card{border:0;border-radius:0;padding:0;margin-top:0}
+.eq-est .eq-pt-head{margin-bottom:8px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.eq-est .eq-pt-head-title svg{display:none}
+.eq-est .eq-pt-head-title h3{font-family:var(--serif);font-weight:600;font-size:22px}
+.eq-est .eq-pt-search-box,.eq-est .eq-pt-filter{background:#fff;height:38px}
+.eq-est .eq-pt-list{gap:0}
+.eq-est .eq-pt-row{padding:16px 6px;border-radius:0;border-bottom:1px solid var(--line);gap:18px;flex-wrap:nowrap}
+.eq-est .eq-pt-row:last-child{border-bottom:0}
+.eq-est .eq-pt-row:hover{background:var(--bg)}
+.eq-est .eq-pt-row-main{flex:1;min-width:0}
+.eq-est .eq-pt-row-info strong{font-size:15px;color:var(--navy)}
+.eq-est .eq-pt-row-info span{font-size:12.5px}
+.eq-est .eq-pt-row-end{gap:22px;flex:none}
+.eq-est .eq-pt-row .dash-badge{background:none;padding:0;min-width:92px;gap:8px;font-size:12.5px;font-weight:600}
+.eq-est .eq-pt-row .dash-badge::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.eq-est .eq-pt-row .dash-badge-ok{color:#25704c}
+.eq-est .eq-pt-row .dash-badge-ok::before{background:#3e9474}
+.eq-est .eq-pt-row .dash-badge-muted{color:#56665f}
+.eq-est .eq-pt-row .dash-badge-muted::before{background:#a3b1aa}
+.eq-est .eq-pt-open{justify-content:center;min-width:176px;padding:10px 18px;font-size:13px;background:#fff;color:var(--navy);box-shadow:inset 0 0 0 1.5px #b9d3c8;transition:background .15s,color .15s,box-shadow .15s}
+.eq-est .eq-pt-open:hover{background:var(--navy);color:#fff;box-shadow:inset 0 0 0 1.5px var(--navy)}
+.eq-est .eq-pt-open:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (max-width:859px){.auth-dash.eq-est{padding:34px 30px 36px}}
+@media (max-width:640px){
+  .auth-dash.eq-est{padding:28px 20px 30px}
+  .eq-est .dash-head{margin-bottom:20px;padding-bottom:16px}
+  .eq-est .eq-cal-card{padding:20px 18px 22px;margin-bottom:28px}
+  .eq-est .eq-cal-appt{grid-template-columns:50px minmax(0,1fr)}
+  .eq-est .eq-cal-appt-open{grid-column:2;justify-self:start;margin-top:6px}
+  .eq-est .eq-cal-appt.is-next{margin:0 -6px 6px}
+  .eq-est .eq-pt-row{flex-direction:column;align-items:stretch;gap:12px;padding:16px 0;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0}
+  .eq-est .eq-pt-row:last-child{border-bottom:0}
+  .eq-est .eq-pt-row-end{width:100%;justify-content:space-between;gap:12px}
+  .eq-est .eq-pt-row .dash-badge{min-width:0}
+  .eq-est .eq-pt-open{min-width:0;flex:none}
+}
 
 /* ===== REFINAMENTO PREMIUM — PAINEL DO PACIENTE (escopo: #pac-success) ===== */
 #pac-success{--pac-radius:20px}
@@ -5107,6 +5192,7 @@ route();
     if(role !== 'supervisor') supSair();
     currentRole = role;
     currentName = displayName;
+    { const cdEst = document.getElementById('eq-dash-card'); if(cdEst) cdEst.classList.toggle('eq-est', role === 'estudante'); }
     casesStudentSel = '';
     casesListOpen = false;
     tecView = 'painel';
@@ -5705,6 +5791,21 @@ route();
     return byDate;
   }
 
+  /* Home do estudante: identifica (só para destaque visual) o próximo atendimento ainda não iniciado e não cancelado. */
+  function proximoAtendimentoEst(byDate){
+    let melhor = null, ts = Infinity;
+    Object.keys(byDate).forEach(function(k){
+      const p = k.split('-');
+      byDate[k].forEach(function(a){
+        if(a.status === 'Cancelada' || a.iniciou) return;
+        const h = String(a.hora || '').match(/^(\d{1,2})[:h](\d{2})/);
+        const t = new Date(+p[0], +p[1]-1, +p[2], h ? +h[1] : 0, h ? +h[2] : 0).getTime();
+        if(t < ts){ ts = t; melhor = a.caseId + '#' + a.idx; }
+      });
+    });
+    return melhor;
+  }
+
   function renderCalendarDetail(key, apptsByDate){
     if(!calDetail) return;
     const appts = apptsByDate[key] || [];
@@ -5730,10 +5831,15 @@ route();
       });
       html += '</div>';
     } else {
+      const ehEst = currentRole === 'estudante';
+      const proxId = ehEst ? proximoAtendimentoEst(apptsByDate) : null;
       appts.forEach(function(a){
-        html += '<div class="eq-cal-appt">'
+        const ehProx = ehEst && proxId === (a.caseId + '#' + a.idx);
+        const compEst = (ehEst && a.status !== 'Cancelada' && (a.comp || a.iniciou))
+          ? ' <span class="eq-cal-compchip' + (a.comp && a.comp.situacao === 'faltou' ? ' is-faltou' : (a.comp ? ' is-ok' : '')) + '">' + (a.comp ? (a.comp.situacao === 'faltou' ? 'Faltou' : 'Compareceu') : 'Comparecimento pendente') + '</span>' : '';
+        html += '<div class="eq-cal-appt' + (ehProx ? ' is-next' : '') + '">'
           + '<span class="eq-cal-appt-time">' + esc(a.hora) + '</span>'
-          + '<div class="eq-cal-appt-info"><strong>' + esc(a.paciente) + '</strong><span>' + esc(a.local) + ' · ' + esc(a.status) + '</span>'
+          + '<div class="eq-cal-appt-info">' + (ehProx ? '<em class="eq-cal-next-tag">Próximo atendimento</em>' : '') + '<strong>' + esc(a.paciente) + '</strong><span>' + esc(a.local) + ' · ' + esc(a.status) + compEst + '</span>'
           + (tec ? '<span class="eq-cal-appt-meta">Estudante: ' + esc(a.estudante || '—') + ' · Supervisor: ' + esc(a.supervisor || '—') + '</span>' + agAcoesHtml(a.caseId, a.idx, a.status, a.comp) : '')
           + '</div>'
           + '<button type="button" class="eq-cal-appt-open" data-case="' + esc(a.caseId) + '">Ver caso<svg><use href="#i-arrow"/></svg></button>'
