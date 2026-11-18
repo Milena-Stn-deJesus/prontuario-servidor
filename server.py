@@ -31,6 +31,7 @@ O QUE ESSE ARQUIVO FAZ:
                                         só quando existe uma solicitação já liberada pela
                                         equipe (senão, 403 — a liberação é checada aqui,
                                         no servidor, não só escondendo o botão na tela)
+    GET/PUT /api/meu-perfil         -> (só estudante) dados pessoais e disponibilidade (dia x turno) do PRÓPRIO estudante
     POST /api/casos/<id>/agendamentos/<n>/comparecimento -> estudante registra presença/falta (PUT: técnico corrige, com justificativa)
     POST /api/casos/<id>/documentos          -> anexa documento (PDF/JPG/PNG/DOCX até 10 MB; arquivo real no GridFS)
     GET  /api/casos/<id>/documentos/<doc>/arquivo?modo=visualizar|baixar -> entrega o arquivo (auditado)
@@ -377,6 +378,27 @@ def _lista_estudantes():
         e.setdefault("telefone", "")
         e.setdefault("ativo", True)
     return sorted(base.values(), key=lambda e: e["nome"].casefold())
+
+
+def _estudante_da_sessao(sessao):
+    """Cadastro (nome, RA, e-mail, telefone) do estudante LOGADO — sempre ele mesmo, nunca outro RA."""
+    email = (sessao.get("email") or "").strip().casefold()
+    lista = _lista_estudantes()
+    est = next((e for e in lista if email and (e.get("email") or "").strip().casefold() == email), None)
+    if est is None:
+        est = next((e for e in lista if e["nome"] == sessao.get("nome")), None)
+    return est
+
+
+def _perfil_do_estudante(est):
+    d = disp_estudantes_col.find_one({"_id": est["ra"]}) or {}
+    v = vinculos_col.find_one({"_id": est["ra"]}) or {}
+    return {"nome": est["nome"], "ra": est["ra"], "email": est.get("email", ""), "telefone": est.get("telefone", ""),
+            "supervisor": v.get("supervisor", "") if v.get("ativo") else "",
+            "disponibilidade": d.get("disponibilidade") or [],
+            "disponibilidade_atualizada_em": d.get("atualizado_em_br", ""),
+            "dados_conferidos_em": d.get("dados_conferidos_em_br", ""),
+            "primeiro_acesso_concluido": bool(d.get("dados_conferidos_em_br"))}
 
 
 def _ra_inativo(ra):
@@ -2029,6 +2051,21 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(dados)
             return
 
+        if path == "/api/meu-perfil":
+            # Perfil do próprio estudante: dados cadastrais (só leitura) e disponibilidade.
+            sessao = self._exigir_papel({"estudante"})
+            if sessao is None:
+                return
+            try:
+                est = _estudante_da_sessao(sessao)
+                if est is None:
+                    self._send_error_json(404, "cadastro do estudante não encontrado")
+                    return
+                self._send_json(_perfil_do_estudante(est))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/meu-perfil")
+            return
+
         if path == "/api/estudantes":
             # Só técnico e supervisor consultam o cadastro de estudantes (nome + RA).
             sessao = self._exigir_papel({"tecnico", "supervisor"})
@@ -3200,6 +3237,41 @@ class Handler(BaseHTTPRequestHandler):
     # ---------- PUT ----------
     def do_PUT(self):
         path = self.path.split("?", 1)[0]
+
+        if path == "/api/meu-perfil":
+            # O estudante confere os próprios dados e informa SUA disponibilidade (dias e turnos).
+            # Não altera nome, RA, supervisor, casos nem agendamentos — só estes dois campos.
+            sessao = self._exigir_papel({"estudante"})
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            if not isinstance(body, dict):
+                self._send_error_json(400, "corpo da requisição inválido")
+                return
+            disp, erro = _validar_disponibilidade(body.get("disponibilidade"))
+            if erro:
+                self._send_error_json(400, erro)
+                return
+            try:
+                est = _estudante_da_sessao(sessao)
+                if est is None:
+                    self._send_error_json(404, "cadastro do estudante não encontrado")
+                    return
+                campos = {"nome": est["nome"], "disponibilidade": disp, "atualizado_em_br": _agora_br(),
+                          "atualizado_por": sessao.get("nome", "")}
+                if body.get("dados_conferidos") is True:
+                    campos["dados_conferidos_em_br"] = _agora_br()
+                if disp_estudantes_col.update_one({"_id": est["ra"]}, {"$set": campos}).matched_count == 0:
+                    disp_estudantes_col.insert_one({"_id": est["ra"], **campos})
+                _registrar_auditoria(sessao, "perfil do estudante atualizado (disponibilidade%s)" % (", dados conferidos" if "dados_conferidos_em_br" in campos else ""))
+                self._send_json(_perfil_do_estudante(est))
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/meu-perfil")
+            return
 
         m = re.match(r"^/api/estudantes/([^/]+)/disponibilidade$", path)
         if m:
