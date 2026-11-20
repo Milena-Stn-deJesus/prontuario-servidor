@@ -23,7 +23,8 @@ O QUE ESSE ARQUIVO FAZ:
     POST /api/reagendamentos        -> cria um novo pedido (paciente pede para reagendar)
     PUT  /api/reagendamentos/<id>   -> confirma uma nova data (equipe escolhe a data;
                                         dispara o e-mail de confirmação para o paciente)
-    GET  /api/meu-caso              -> (só paciente) status e próxima consulta do PRÓPRIO
+    GET/PUT /api/notificacoes       -> avisos do usuário logado (o paciente só vê os do PRÓPRIO caso)
+    GET  /api/meu-caso              -> (só paciente) status, próxima consulta e consultas futuras do PRÓPRIO
                                         caso, sem nenhum conteúdo clínico
     GET  /api/minhas-solicitacoes   -> (só paciente) as PRÓPRIAS solicitações de prontuário,
                                         com o status real (pendente/liberado)
@@ -756,6 +757,38 @@ def _avisar_tecnico(tipo, detalhe):
     notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "tecnico", "destinatario": "",
                                  "caso_id": "", "evolucao_idx": None, "detalhe": detalhe,
                                  "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+
+
+def _avisar_paciente(caso, tipo, detalhe="", chave=""):
+    """Aviso interno ao PACIENTE, ligado ao id do caso (nunca ao nome). O conteúdo é só data/horário/
+    local de um atendimento ou o andamento de uma solicitação — nenhum dado clínico. Não repete um aviso
+    idêntico que o paciente ainda não leu. Uma falha aqui nunca desfaz a operação que já foi confirmada."""
+    cid = (caso or {}).get("_id")
+    if not cid:
+        return
+    evento = str(chave or detalhe)
+    try:
+        if notificacoes_col.find_one({"para": "paciente", "tipo": tipo, "caso_id": cid, "evento": evento, "lida": False}):
+            return
+        notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "paciente", "destinatario": "",
+                                     "caso_id": cid, "evolucao_idx": None, "detalhe": detalhe, "evento": evento,
+                                     "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+    except PyMongoError as exc:
+        print("[aviso ao paciente] não foi possível gravar (%s): %s" % (tipo, exc), flush=True)
+
+
+def _agendamentos_do_paciente(caso):
+    """Consultas de hoje em diante, só com o que o paciente já vê (data, hora, local, situação)."""
+    hoje = _parse_data_br(_hoje_br())
+    itens = []
+    for ag in (caso.get("agendamentos") or []):
+        chave = _parse_data_br(ag.get("data", ""))
+        if chave is None or (hoje is not None and chave < hoje):
+            continue
+        itens.append((chave, _norm_hora(ag.get("hora")), {"data": ag.get("data", ""), "hora": ag.get("hora", ""),
+                                                          "local": ag.get("local", ""), "status": ag.get("status", "")}))
+    itens.sort(key=lambda t: (t[0], t[1]))
+    return [i[2] for i in itens]
 
 
 def _avisos_convites_expirados():
@@ -2003,10 +2036,18 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/notificacoes":
-            sessao = self._exigir_papel({"estudante", "tecnico", "supervisor"})
+            sessao = self._exigir_papel({"estudante", "tecnico", "supervisor", "paciente"})
             if sessao is None:
                 return
             try:
+                if sessao["role"] == "paciente":
+                    # Só os avisos do PRÓPRIO caso (achado pela sessão, não por um id enviado pelo navegador).
+                    caso = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id"))
+                    docs = [] if caso is None else sorted(notificacoes_col.find({"para": "paciente", "caso_id": caso["_id"]}),
+                                                         key=lambda d: d.get("criada_em", 0), reverse=True)[:30]
+                    self._send_json([{"id": d["_id"], "tipo": d["tipo"], "detalhe": d.get("detalhe", ""),
+                                      "criada_em_br": d["criada_em_br"], "lida": bool(d.get("lida"))} for d in docs])
+                    return
                 if sessao["role"] == "supervisor":
                     docs = [d for d in notificacoes_col.find({"destinatario": sessao["nome"]}) if d.get("para") == "supervisor"]
                     docs.sort(key=lambda d: d.get("criada_em", 0), reverse=True)
@@ -2196,6 +2237,7 @@ class Handler(BaseHTTPRequestHandler):
                 "status": caso.get("status", ""),
                 "status_atualizado_em": caso.get("status_atualizado_em", ""),
                 "proxima_consulta": _proxima_consulta(caso) if caso.get("status") == "Ativo" else None,
+                "agendamentos": _agendamentos_do_paciente(caso) if caso.get("status") == "Ativo" else [],
             }
             _registrar_auditoria(sessao, "consulta do próprio status de caso", caso_id=caso.get("_id"))
             self._send_json(resposta)
@@ -2994,6 +3036,7 @@ class Handler(BaseHTTPRequestHandler):
                     casos_col.update_one({"_id": case_id}, {"$set": {"agendamentos": ags}})
                     novo = casos_col.find_one({"_id": case_id})
                     _avisar_estudante(caso, "novo_agendamento", "%s às %s" % (data, hora))
+                    _avisar_paciente(caso, "novo_agendamento", "%s às %s · %s" % (data, hora, local), "%s %s" % (data, hora))
                     _avisar_supervisor_do_caso(caso, "novo_agendamento", "%s às %s · %s" % (data, hora, caso.get("estudante", "")))
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "POST /api/casos/<id>/agendamentos")
@@ -3182,6 +3225,12 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "POST /api/solicitacoes")
                 return
             doc["_id"] = str(result.inserted_id)
+            if sessao["role"] == "paciente":
+                try:
+                    _avisar_paciente(_encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id")), "solicitacao_recebida",
+                                     "protocolo " + protocolo_val, protocolo_val)
+                except PyMongoError as exc:
+                    print("[aviso ao paciente] caso não encontrado: %s" % exc, flush=True)
             self._send_json(doc, 201)
             return
 
@@ -3401,7 +3450,7 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.match(r"^/api/notificacoes/([^/]+)/lida$", path)
         if m:
-            sessao = self._exigir_papel({"estudante", "tecnico", "supervisor"})
+            sessao = self._exigir_papel({"estudante", "tecnico", "supervisor", "paciente"})
             if sessao is None:
                 return
             nid = unquote(m.group(1))
@@ -3409,6 +3458,9 @@ class Handler(BaseHTTPRequestHandler):
                 d = notificacoes_col.find_one({"_id": nid})
                 if d is None:
                     dono = False
+                elif sessao["role"] == "paciente":
+                    meu = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id"))
+                    dono = bool(meu) and d.get("para") == "paciente" and d.get("caso_id") == meu["_id"]
                 elif sessao["role"] == "tecnico":
                     dono = d.get("para") == "tecnico"
                 elif sessao["role"] == "supervisor":
@@ -3699,6 +3751,9 @@ class Handler(BaseHTTPRequestHandler):
                                       "%s às %s" % (ag.get("data"), ag.get("hora")))
                     _avisar_supervisor_do_caso(caso, {"editar": "agendamento_alterado", "reagendar": "agendamento_alterado", "cancelar": "agendamento_cancelado"}[acao],
                                                "%s às %s · %s" % (ag.get("data"), ag.get("hora"), caso.get("estudante", "")))
+                    _avisar_paciente(caso, "agendamento_cancelado" if acao == "cancelar" else "agendamento_alterado",
+                                     "%s às %s · %s" % (ag.get("data"), ag.get("hora"), ag.get("local", "")),
+                                     "%s %s %s %s" % (acao, ag.get("data"), ag.get("hora"), ag.get("local", "")))
                 except PyMongoError as exc:
                     self._erro_servidor(exc, "PUT /api/casos/<id>/agendamentos/<n>")
                     return
@@ -4118,6 +4173,7 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 return
             try:
+                antes = solicitacoes_col.find_one({"_id": obj_id})
                 result = solicitacoes_col.replace_one({"_id": obj_id}, body)
             except PyMongoError as exc:
                 self._erro_servidor(exc, "PUT /api/solicitacoes/" + str(obj_id))
@@ -4125,6 +4181,13 @@ class Handler(BaseHTTPRequestHandler):
             if result.matched_count == 0:
                 self._send_error_json(404, "solicitação não encontrada: " + str(obj_id))
                 return
+            if antes and body.get("status") == "liberado" and antes.get("status") != "liberado":
+                # O paciente é avisado só na primeira liberação, depois de gravada.
+                try:
+                    _avisar_paciente(_encontrar_caso_do_paciente(antes.get("paciente", "")), "prontuario_liberado",
+                                     "protocolo " + str(antes.get("protocolo", "")), str(antes.get("protocolo", "")) or str(obj_id))
+                except PyMongoError as exc:
+                    print("[aviso ao paciente] caso não encontrado: %s" % exc, flush=True)
             body["_id"] = str(obj_id)
             self._send_json(body)
             return
@@ -4171,6 +4234,11 @@ class Handler(BaseHTTPRequestHandler):
             # salva no banco — assim, mesmo se o envio falhar (ou o SMTP não
             # estiver configurado), a confirmação em si não se perde.
             enviado = _enviar_confirmacao_reagendamento(doc.get("email", ""), doc.get("paciente", ""), nova_data_val)
+            try:
+                _avisar_paciente(_encontrar_caso_do_paciente(doc.get("paciente", "")), "reagendamento_confirmado",
+                                 "nova data: " + nova_data_val, "%s %s" % (obj_id, nova_data_val))
+            except PyMongoError as exc:
+                print("[aviso ao paciente] caso não encontrado: %s" % exc, flush=True)
 
             doc["status"] = "confirmado"
             doc["nova_data"] = nova_data_val

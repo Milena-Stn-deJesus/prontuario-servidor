@@ -1071,6 +1071,97 @@ footer{margin-top:120px}
 .dash-help .btn{align-self:flex-start}
 @media (max-width:560px){.auth-card{padding:32px 24px}}
 
+/* ===== PORTAL DO PACIENTE — navegação por seções e central de avisos (escopo: #pac-success) ===== */
+#pac-success .dash-head{margin-bottom:20px;padding-bottom:0;border-bottom:0}
+#pac-success .pac-tools{display:flex;align-items:center;gap:16px;flex:none}
+#pac-success .pac-notif{position:relative}
+#pac-success .pac-notif-btn{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;transition:border-color .15s,background .15s}
+#pac-success .pac-notif-btn svg{width:18px;height:18px}
+#pac-success .pac-notif-btn:hover{border-color:var(--blue);background:var(--sky)}
+#pac-success .pac-notif-btn:focus-visible,#pac-success .pac-tab:focus-visible,#pac-success .pac-sc:focus-visible,#pac-success .pac-link:focus-visible,#pac-success .pac-notif-all:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#pac-success .pac-notif-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#b3412f;color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center}
+#pac-success .pac-notif-count[hidden],#pac-success .pac-notif-all[hidden],#pac-success .pac-notif-empty[hidden]{display:none}
+#pac-success .pac-notif-panel{position:absolute;right:0;top:50px;z-index:30;width:min(360px,calc(100vw - 48px));box-sizing:border-box;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -26px rgba(19,55,42,.4);padding:14px 6px 8px}
+#pac-success .pac-notif-panel[hidden]{display:none}
+#pac-success .pac-notif-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px 8px;font-size:13px;color:var(--navy)}
+#pac-success .pac-notif-all{all:unset;cursor:pointer;font-size:12px;font-weight:600;color:var(--blue);padding:4px 6px;border-radius:6px}
+#pac-success .pac-notif-all:hover{text-decoration:underline}
+#pac-success .pac-notif-list{list-style:none;margin:0;padding:0;max-height:340px;overflow:auto}
+#pac-success .pac-notif-item{all:unset;box-sizing:border-box;display:flex;gap:10px;width:100%;padding:10px 12px;border-radius:10px;cursor:pointer}
+#pac-success .pac-notif-item:hover{background:var(--bg)}
+#pac-success .pac-notif-item:focus-visible{outline:2px solid var(--blue);outline-offset:-2px;background:var(--bg)}
+#pac-success .pac-notif-dot{flex:none;width:8px;height:8px;border-radius:50%;background:transparent;margin-top:6px}
+#pac-success .pac-notif-item.is-unread .pac-notif-dot{background:var(--blue)}
+#pac-success .pac-notif-item b{display:block;font-size:13.5px;font-weight:500;color:var(--muted)}
+#pac-success .pac-notif-item.is-unread b{font-weight:700;color:var(--ink)}
+#pac-success .pac-notif-item small{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+#pac-success .pac-notif-empty{margin:0;padding:12px 12px 8px;font-size:13px;color:var(--muted)}
+#pac-success .pac-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 26px}
+#pac-success .pac-tab{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 18px;font-size:14.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+#pac-success .pac-tab:hover{color:var(--navy)}
+#pac-success .pac-tab[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--blue)}
+#pac-success .pac-tab .pac-lbl-short{display:none}
+#pac-success .pac-sec{padding:0;margin:0}
+#pac-success .pac-sec[hidden]{display:none!important}
+#pac-success #pac-sec-inicio .dash-case{align-self:start}
+#pac-success .pac-sec:focus{outline:none}
+#pac-success .pac-sec-head{margin:0 0 18px}
+#pac-success .pac-sec-head h3{font-size:20px;font-weight:700;color:var(--navy);margin:0 0 4px}
+#pac-success .pac-sec-head p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.5}
+#pac-success .pac-pend{list-style:none;margin:6px 0 0;padding:0}
+#pac-success .pac-pend li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+#pac-success .pac-pend li:first-child{border-top:0}
+#pac-success .pac-pend-v{display:inline-flex;align-items:center;gap:12px}
+#pac-success .pac-pend-v b{font-size:13.5px;font-weight:600;color:var(--ink)}
+#pac-success .pac-link{all:unset;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--blue);padding:2px 4px;border-radius:6px}
+#pac-success .pac-link:hover{text-decoration:underline}
+#pac-success .pac-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#pac-success .pac-sc{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;font-size:14px;font-weight:600;color:var(--navy);transition:border-color .15s,background .15s}
+#pac-success .pac-sc:hover{border-color:var(--blue);background:var(--sky)}
+#pac-success .pac-sc svg{width:15px;height:15px;color:var(--blue);flex:none}
+#pac-success .pac-help-line{font-size:13.5px;color:var(--muted);margin:18px 0 0;line-height:1.55}
+#pac-success .pac-help-line a{color:var(--blue);font-weight:600}
+#pac-success .pac-ag-list{list-style:none;margin:0;padding:0}
+#pac-success .pac-ag-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
+#pac-success .pac-ag-row:first-child{border-top:0}
+#pac-success .pac-ag-date{flex:none;width:52px;height:52px;border-radius:12px;background:var(--sky);color:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+#pac-success .pac-ag-date b{font-size:19px}
+#pac-success .pac-ag-date small{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-top:3px;font-weight:700}
+#pac-success .pac-ag-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#pac-success .pac-ag-info strong{font-size:14.5px;color:var(--ink)}
+#pac-success .pac-ag-info span{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+#pac-success .pac-ag-row.is-cancel .pac-ag-info strong{text-decoration:line-through;color:var(--muted)}
+#pac-success .pac-ag-empty{padding:28px 0}
+#pac-success .pac-ag-foot{display:flex;flex-direction:column;gap:16px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+#pac-success .pac-ag-foot .dash-collapse{margin:0}
+#pac-success .pac-dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px;margin:0 0 6px}
+#pac-success .pac-dl div{border-top:1px solid var(--line);padding-top:10px}
+#pac-success .pac-dl dt{font-size:12px;color:var(--muted);margin:0 0 3px}
+#pac-success .pac-dl dd{margin:0;font-size:14.5px;font-weight:600;color:var(--navy);overflow-wrap:anywhere}
+#pac-success .pac-more{border:1px solid var(--line);border-radius:14px;margin-top:14px}
+#pac-success .pac-more>summary{cursor:pointer;list-style:none;padding:14px 18px;font-weight:600;font-size:14.5px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;border-radius:14px}
+#pac-success .pac-more>summary::-webkit-details-marker{display:none}
+#pac-success .pac-more>summary::after{content:"+";color:var(--blue);font-size:20px;line-height:1}
+#pac-success .pac-more[open]>summary::after{content:"\2013"}
+#pac-success .pac-more>summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#pac-success .pac-more-body{padding:4px 18px 20px}
+#pac-success #pac-sec-prontuario .dash-record{border:0;padding:0;height:auto}
+@media (max-width:760px){
+  #pac-success .pac-shortcuts{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  #pac-success .dash-head{position:relative}
+  #pac-success .pac-notif{position:static}
+  #pac-success .pac-notif-panel{left:0;right:0;top:calc(100% + 4px);width:auto}
+  #pac-success .pac-tabs{gap:0}
+  #pac-success .pac-tab{flex:1;text-align:center;padding:12px 2px;font-size:13px}
+  #pac-success .pac-tab .pac-lbl-full{display:none}
+  #pac-success .pac-tab .pac-lbl-short{display:inline}
+  #pac-success .pac-dl{grid-template-columns:1fr}
+  #pac-success .pac-tools{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){#pac-success *{transition:none!important}}
+
 /* ===== PAINEL DO ESTUDANTE — reaproveita a casca do painel técnico (.eq-tec); tudo aqui é escopado em .eq-est ===== */
 .auth-dash.eq-est .eq-tec-only:not(.eq-est-ok){display:none!important}
 .eq-est .eq-side-nav>.eq-side-link:not(.eq-side-est){display:none}
@@ -2160,50 +2251,86 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <span class="eyebrow">Painel do paciente</span>
             <h2 id="pac-dash-greeting">Olá! Bem-vindo(a) de volta</h2>
           </div>
-          <a href="#" class="auth-link-sm">Sair</a>
-        </div>
-
-        <div class="dash-row dash-row-hero">
-          <div class="dash-next">
-            <div class="dash-next-head">
-              <span class="dash-next-label">Próxima consulta</span>
-              <span class="dash-badge dash-badge-ok" id="pac-next-status-badge">Confirmada</span>
-            </div>
-            <div class="dash-next-body" id="pac-next-body">
-              <div class="dash-next-date"><span class="dash-next-day" id="pac-next-day">18</span><span class="dash-next-mon" id="pac-next-mon">nov</span></div>
-              <div class="dash-next-info">
-                <strong id="pac-next-fulldate">Quarta-feira, 18 de novembro de 2026</strong>
-                <span><svg><use href="#i-cal"/></svg><span id="pac-next-hora">14h00</span></span>
-                <span><svg><use href="#i-pin"/></svg><span id="pac-next-local">Atendimento presencial — Clínica-Escola, sala 3</span></span>
+          <div class="pac-tools">
+            <div class="pac-notif" id="pac-notif">
+              <button type="button" class="pac-notif-btn" id="pac-notif-btn" aria-haspopup="true" aria-expanded="false" aria-controls="pac-notif-panel" aria-label="Notificações: nenhuma não lida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="pac-notif-count" id="pac-notif-count" hidden>0</span></button>
+              <div class="pac-notif-panel" id="pac-notif-panel" role="region" aria-label="Notificações" hidden>
+                <div class="pac-notif-head"><b>Notificações</b><button type="button" class="pac-notif-all" id="pac-notif-all" hidden>Marcar todas como lidas</button></div>
+                <ul class="pac-notif-list" id="pac-notif-list"></ul>
+                <p class="pac-notif-empty" id="pac-notif-empty">Você não tem notificações.</p>
               </div>
             </div>
-            <div class="dash-next-empty" id="pac-next-empty" hidden>
-              <svg><use href="#i-cal"/></svg>
-              <p>Nenhuma consulta agendada no momento.</p>
-              <a href="#contato" class="btn btn-primary">Falar com a equipe<svg><use href="#i-arrow"/></svg></a>
-            </div>
-            <div class="dash-next-foot" id="pac-next-foot">
-              <button type="button" class="dash-reschedule-btn" id="pac-reschedule-btn"><svg><use href="#i-refresh"/></svg>Preciso reagendar</button>
-              <p class="dash-next-msg" id="pac-reschedule-msg" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela também é enviada para o seu e-mail.</p>
-            </div>
-          </div>
-
-          <div class="dash-case">
-            <div class="dash-case-head">
-              <span>Seu caso</span>
-              <span class="dash-badge dash-badge-ok" id="pac-case-badge">Ativo</span>
-            </div>
-            <div class="dash-case-info">
-              <span class="dash-case-row"><b class="dash-case-k">Aberto em</b><span class="dash-case-v">14/08/2026</span></span>
-              <span class="dash-case-row"><b class="dash-case-k">Responsável</b><span class="dash-case-v">Ana Beatriz Lima</span></span>
-              <span class="dash-case-row"><b class="dash-case-k">Supervisão</b><span class="dash-case-v">Dra. Patrícia Novaes</span></span>
-              <span id="pac-case-closed-line" hidden></span>
-            </div>
+            <a href="#" class="auth-link-sm">Sair</a>
           </div>
         </div>
 
-        <div class="dash-row dash-row-even">
-          <div class="dash-collapse" id="pac-tips-card">
+        <div class="pac-tabs" role="tablist" aria-label="Seções do painel">
+          <button type="button" class="pac-tab" role="tab" id="pac-tab-inicio" data-pac-tab="inicio" aria-controls="pac-sec-inicio" aria-selected="true">Início</button>
+          <button type="button" class="pac-tab" role="tab" id="pac-tab-agendamentos" data-pac-tab="agendamentos" aria-controls="pac-sec-agendamentos" aria-selected="false" tabindex="-1"><span class="pac-lbl-full">Meus agendamentos</span><span class="pac-lbl-short" aria-hidden="true">Agenda</span></button>
+          <button type="button" class="pac-tab" role="tab" id="pac-tab-dados" data-pac-tab="dados" aria-controls="pac-sec-dados" aria-selected="false" tabindex="-1"><span class="pac-lbl-full">Meus dados</span><span class="pac-lbl-short" aria-hidden="true">Dados</span></button>
+          <button type="button" class="pac-tab" role="tab" id="pac-tab-prontuario" data-pac-tab="prontuario" aria-controls="pac-sec-prontuario" aria-selected="false" tabindex="-1"><span class="pac-lbl-full">Meu prontuário</span><span class="pac-lbl-short" aria-hidden="true">Prontuário</span></button>
+        </div>
+
+        <section class="pac-sec" id="pac-sec-inicio" role="tabpanel" aria-labelledby="pac-tab-inicio" tabindex="-1">
+          <div class="dash-row dash-row-hero">
+            <div class="dash-next">
+              <div class="dash-next-head">
+                <span class="dash-next-label">Próxima consulta</span>
+                <span class="dash-badge dash-badge-ok" id="pac-next-status-badge">Confirmada</span>
+              </div>
+              <div class="dash-next-body" id="pac-next-body">
+                <div class="dash-next-date"><span class="dash-next-day" id="pac-next-day">18</span><span class="dash-next-mon" id="pac-next-mon">nov</span></div>
+                <div class="dash-next-info">
+                  <strong id="pac-next-fulldate">Quarta-feira, 18 de novembro de 2026</strong>
+                  <span><svg><use href="#i-cal"/></svg><span id="pac-next-hora">14h00</span></span>
+                  <span><svg><use href="#i-pin"/></svg><span id="pac-next-local">Atendimento presencial — Clínica-Escola, sala 3</span></span>
+                </div>
+              </div>
+              <div class="dash-next-empty" id="pac-next-empty" hidden>
+                <svg><use href="#i-cal"/></svg>
+                <p>Nenhuma consulta agendada no momento.</p>
+                <a href="#contato" class="btn btn-primary">Falar com a equipe<svg><use href="#i-arrow"/></svg></a>
+              </div>
+              <div class="dash-next-foot" id="pac-next-foot">
+                <button type="button" class="dash-reschedule-btn" id="pac-reschedule-btn"><svg><use href="#i-refresh"/></svg>Preciso reagendar</button>
+                <p class="dash-next-msg" id="pac-reschedule-msg" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela também é enviada para o seu e-mail.</p>
+              </div>
+            </div>
+
+            <div class="dash-case">
+              <div class="dash-case-head">
+                <span>Seu acompanhamento</span>
+                <span class="dash-badge dash-badge-ok" id="pac-case-badge">Ativo</span>
+              </div>
+              <div class="dash-case-info"><span id="pac-case-closed-line" hidden></span></div>
+              <ul class="pac-pend" id="pac-pend">
+                <li><span>Prontuário</span><span class="pac-pend-v"><b id="pac-home-rec">Não solicitado</b><button type="button" class="pac-link" data-pac-goto="prontuario">Abrir</button></span></li>
+                <li><span>Notificações</span><span class="pac-pend-v"><b id="pac-home-notif">Nenhuma nova</b><button type="button" class="pac-link" id="pac-home-notif-btn">Ver</button></span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="pac-shortcuts" aria-label="Atalhos">
+            <button type="button" class="pac-sc" data-pac-goto="agendamentos">Meus agendamentos<svg><use href="#i-arrow"/></svg></button>
+            <button type="button" class="pac-sc" data-pac-goto="dados">Meus dados<svg><use href="#i-arrow"/></svg></button>
+            <button type="button" class="pac-sc" data-pac-goto="prontuario">Meu prontuário<svg><use href="#i-arrow"/></svg></button>
+          </div>
+          <p class="pac-help-line">Precisa de ajuda? <a href="#contato">Fale com a equipe</a> para dúvidas, reagendamentos ou qualquer outro assunto.</p>
+        </section>
+
+        <section class="pac-sec" id="pac-sec-agendamentos" role="tabpanel" aria-labelledby="pac-tab-agendamentos" tabindex="-1" hidden>
+          <div class="pac-sec-head"><h3>Meus agendamentos</h3><p>Consultas marcadas pela equipe da Clínica-Escola, da mais próxima para a mais distante.</p></div>
+          <ul class="pac-ag-list" id="pac-ag-list"></ul>
+          <div class="dash-next-empty pac-ag-empty" id="pac-ag-empty" hidden>
+            <svg><use href="#i-cal"/></svg>
+            <p>Nenhuma consulta agendada no momento.</p>
+          </div>
+          <div class="pac-ag-foot" id="pac-ag-foot">
+            <div>
+              <button type="button" class="dash-reschedule-btn" id="pac-reschedule-btn2"><svg><use href="#i-refresh"/></svg>Preciso reagendar</button>
+              <p class="dash-next-msg" id="pac-reschedule-msg2" hidden>Solicitação enviada — a equipe vai alocar uma nova data para você. Assim que confirmada, ela também é enviada para o seu e-mail.</p>
+            </div>
+            <div class="dash-collapse" id="pac-tips-card">
             <h3 class="dash-collapse-h"><button type="button" class="dash-collapse-btn" id="pac-tips-toggle" aria-expanded="false" aria-controls="pac-tips-body">Como se preparar<svg class="dash-collapse-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button></h3>
             <div class="dash-collapse-body" id="pac-tips-body" hidden>
               <p class="dash-tips-group">Para qualquer consulta</p>
@@ -2220,86 +2347,16 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
               </ul>
             </div>
           </div>
-
-          <div class="dash-help" id="pac-profile-mini">
-            <div class="dash-help-head">
-              <svg><use href="#i-user"/></svg>
-              <div>
-                <h3>Meu perfil</h3>
-                <p>Veja seus dados cadastrais e altere sua senha de acesso.</p>
-              </div>
-            </div>
-            <button type="button" class="btn btn-primary" id="pac-profile-open">Acessar meu perfil<svg><use href="#i-arrow"/></svg></button>
           </div>
-        </div>
+        </section>
 
-        <div class="dash-hist">
-          <div class="dash-hist-head">
-            <svg><use href="#i-chart"/></svg>
-            <h3>Histórico de consultas</h3>
-          </div>
-          <table class="dash-table">
-            <caption class="sr-only">Histórico de consultas do paciente, com data, horário e status de presença</caption>
-            <thead>
-              <tr><th scope="col">Data</th><th scope="col">Horário</th><th scope="col">Status</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>04/11/2026</td><td>14h00</td><td><span class="dash-badge dash-badge-ok">Compareceu</span></td></tr>
-              <tr><td>21/10/2026</td><td>14h00</td><td><span class="dash-badge dash-badge-ok">Compareceu</span></td></tr>
-              <tr><td>07/10/2026</td><td>14h00</td><td><span class="dash-badge dash-badge-bad">Faltou</span></td></tr>
-              <tr><td>23/09/2026</td><td>14h00</td><td><span class="dash-badge dash-badge-ok">Compareceu</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="dash-row dash-row-even">
-          <div class="dash-record">
-            <div class="dash-record-head">
-              <svg><use href="#i-file"/></svg>
-              <div>
-                <h3>Meu prontuário</h3>
-                <p>Solicite uma cópia a qualquer momento. O acesso é sempre de leitura e liberado pelo psicólogo responsável.</p>
-              </div>
-            </div>
-            <button type="button" class="btn btn-primary" id="pac-record-btn">Solicitar meu prontuário<svg><use href="#i-arrow"/></svg></button>
-            <div class="dash-record-status" id="pac-record-status" hidden>
-              <span class="dash-badge dash-badge-pending" id="pac-record-badge">Em análise</span>
-              <p id="pac-record-msg"><strong>Solicitação enviada</strong> — protocolo <b id="pac-record-protocol"></b>. Você será notificado assim que o acesso for liberado.</p>
-              <button type="button" class="btn btn-primary" id="pac-record-download" hidden>Baixar prontuário em PDF<svg><use href="#i-arrow"/></svg></button>
-              <p class="dash-record-download-msg" id="pac-record-download-msg" hidden></p>
-            </div>
-          </div>
-
-          <div class="dash-help">
-            <div class="dash-help-head">
-              <svg><use href="#i-phone"/></svg>
-              <div>
-                <h3>Precisa de ajuda?</h3>
-                <p>Fale com a equipe para dúvidas, reagendamentos ou qualquer outro assunto.</p>
-              </div>
-            </div>
-            <a href="#contato" class="btn btn-primary">Falar com a equipe<svg><use href="#i-arrow"/></svg></a>
-          </div>
-        </div>
-      </div>
-
-<div class="auth-card auth-dash" id="pac-profile-page" hidden>
-        <div class="dash-head">
-          <div>
-            <span class="eyebrow">Painel do paciente</span>
-            <h2>Meu perfil</h2>
-          </div>
-          <button type="button" class="auth-link-sm" id="pac-profile-back">Voltar ao painel</button>
-        </div>
-
-        <div class="profile-sec">
-          <h3 class="profile-sec-h">Dados cadastrais</h3>
-          <div class="dash-profile-grid">
-            <div><span>Nome completo</span><strong>Maria Fernanda Alves</strong></div>
-          </div>
-          <p class="dash-profile-note">Nome errado ou desatualizado? <a href="#contato">Solicite a correção com a equipe</a>.</p>
-
-          <form id="pac-contact-form" novalidate class="profile-contact-form">
+        <section class="pac-sec" id="pac-sec-dados" role="tabpanel" aria-labelledby="pac-tab-dados" tabindex="-1" hidden>
+          <div class="pac-sec-head"><h3>Meus dados</h3><p>Informações do seu cadastro na Clínica-Escola.</p></div>
+          <dl class="pac-dl" id="pac-dados-lista"></dl>
+          <p class="dash-profile-note">Algum dado está incorreto ou desatualizado? <a href="#contato">Fale com a equipe</a> — o cadastro só é alterado por ela.</p>
+          <details class="pac-more">
+            <summary>Nome social e contato</summary>
+            <div class="pac-more-body"><form id="pac-contact-form" novalidate class="profile-contact-form">
             <div class="fld">
               <label for="pac-profile-social">Nome social</label>
               <div class="fld-box">
@@ -2312,7 +2369,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
               <label for="pac-profile-tel">Telefone</label>
               <div class="fld-box">
                 <svg><use href="#i-phone"/></svg>
-                <input type="tel" id="pac-profile-tel" value="(11) 98765-4321" placeholder="(11) 90000-0000">
+                <input type="tel" id="pac-profile-tel" value="" placeholder="(11) 90000-0000">
               </div>
               <span class="fld-err" id="pac-profile-tel-err"></span>
             </div>
@@ -2320,18 +2377,17 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
               <label for="pac-profile-end">Endereço</label>
               <div class="fld-box">
                 <svg><use href="#i-pin"/></svg>
-                <input type="text" id="pac-profile-end" value="Rua das Palmeiras, 245 — Vila Buarque, São Paulo - SP">
+                <input type="text" id="pac-profile-end" value="">
               </div>
               <span class="fld-err" id="pac-profile-end-err"></span>
             </div>
             <p class="auth-session-msg" id="pac-contact-ok">Dados atualizados com sucesso.</p>
             <button type="submit" class="btn btn-primary">Salvar alterações</button>
-          </form>
-        </div>
-
-        <div class="profile-sec">
-          <h3 class="profile-sec-h">Alterar senha</h3>
-          <form id="pac-changepw-form" novalidate>
+          </form></div>
+          </details>
+          <details class="pac-more">
+            <summary>Alterar senha</summary>
+            <div class="pac-more-body"><form id="pac-changepw-form" novalidate>
             <div class="fld">
               <label for="pac-pw-current">Senha atual</label>
               <div class="fld-box">
@@ -2366,8 +2422,29 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <span class="fld-err auth-form-err" id="pac-changepw-form-err">Confira a senha atual e os requisitos da nova senha.</span>
             <p class="auth-session-msg" id="pac-changepw-ok">Senha alterada com sucesso.</p>
             <button type="submit" class="btn btn-primary auth-submit">Salvar nova senha<svg><use href="#i-arrow"/></svg></button>
-          </form>
-        </div>
+          </form></div>
+          </details>
+        </section>
+
+        <section class="pac-sec" id="pac-sec-prontuario" role="tabpanel" aria-labelledby="pac-tab-prontuario" tabindex="-1" hidden>
+          <div class="pac-sec-head"><h3>Meu prontuário</h3><p>Peça o acesso ao seu prontuário e acompanhe a situação do pedido.</p></div>
+          <div class="dash-record">
+            <div class="dash-record-head">
+              <svg><use href="#i-file"/></svg>
+              <div>
+                <h3>Solicitação de acesso</h3>
+                <p>Solicite uma cópia a qualquer momento. O acesso é sempre de leitura e liberado pelo psicólogo responsável.</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="pac-record-btn">Solicitar meu prontuário<svg><use href="#i-arrow"/></svg></button>
+            <div class="dash-record-status" id="pac-record-status" hidden>
+              <span class="dash-badge dash-badge-pending" id="pac-record-badge">Em análise</span>
+              <p id="pac-record-msg"><strong>Solicitação enviada</strong> — protocolo <b id="pac-record-protocol"></b>. Você será notificado assim que o acesso for liberado.</p>
+              <button type="button" class="btn btn-primary" id="pac-record-download" hidden>Baixar prontuário em PDF<svg><use href="#i-arrow"/></svg></button>
+              <p class="dash-record-download-msg" id="pac-record-download-msg" hidden></p>
+            </div>
+          </div>
+        </section>
       </div>
 
 <div class="auth-card" id="pac-forgot" hidden>
@@ -3783,6 +3860,7 @@ route();
     Object.keys(cards).forEach(k=>{ if(cards[k]) cards[k].hidden = (k!==name); });
     if(authWrapEl) authWrapEl.classList.toggle('wide', name==='success');
     if(name==='success') startInactivityTimer(); else clearInactivityTimer();
+    if(name==='success') pacPortalAbrir(); else pacPortalFechar();
   }
 
   function entrarNoPainelGenerico(){
@@ -4098,6 +4176,7 @@ route();
       closeRescheduleModal();
       rescheduleBtn.hidden = true;
       rescheduleMsg.hidden = false;
+      { const b2 = document.getElementById('pac-reschedule-btn2'), m2 = document.getElementById('pac-reschedule-msg2'); if(b2) b2.hidden = true; if(m2) m2.hidden = false; }
       /* Pedido de verdade: fica numa fila real para a equipe, que escolhe a
          nova data e confirma — é essa confirmação que dispara o e-mail. */
       window.apiCreateReagendamento({
@@ -4135,6 +4214,7 @@ route();
     if(recordMsg) recordMsg.innerHTML = '<strong>Solicitação enviada</strong> — protocolo <b id="pac-record-protocol">'+(protocolo||'')+'</b>. Você será notificado assim que o acesso for liberado.';
     if(recordDownloadBtn) recordDownloadBtn.hidden = true;
     if(recordDownloadMsg) recordDownloadMsg.hidden = true;
+    pacRecResumo('Em análise');
   }
   function mostrarSolicitacaoLiberada(protocolo){
     if(recordBtn) recordBtn.hidden = true;
@@ -4153,10 +4233,11 @@ route();
      ficou guardado localmente no navegador no momento do pedido. */
   function refreshMinhasSolicitacoes(){
     window.apiGetMinhasSolicitacoes().then(function(lista){
-      if(!lista || !lista.length){ mostrarSemSolicitacao(); return; }
+      if(!lista || !lista.length){ mostrarSemSolicitacao(); pacRecResumo(''); return; }
       const ultima = lista[lista.length-1];
       if(ultima.status === 'liberado') mostrarSolicitacaoLiberada(ultima.protocolo);
       else mostrarSolicitacaoPendente(ultima.protocolo);
+      pacRecResumo(ultima.status === 'liberado' ? 'Liberado' : 'Em análise');
     }).catch(function(err){
       console.warn('Não foi possível consultar as solicitações no servidor:', err);
     });
@@ -4175,6 +4256,7 @@ route();
       window.PRONTUARIO_SOLICITACOES.push(pedido);
       window.apiCreateSolicitacao(pedido).then(function(salvo){
         if(salvo && salvo._id) pedido._id = salvo._id;
+        pacCarregarNotifs();
       }).catch(function(err){
         console.warn('Não foi possível registrar a solicitação no servidor:', err);
         window.showServerOfflineBanner();
@@ -4283,6 +4365,7 @@ route();
      data real do encerramento) — nunca mais decidido pelo e-mail de login. */
   function refreshMeuCaso(){
     window.apiGetMeuCaso().then(function(r){
+      pacCaso = r || null; pacRenderAg();
       if(!r || !r.tem_caso){ setCaseActive(null); return; }
       if(r.status === 'Encerrado'){ setCaseClosed(r.status_atualizado_em || ''); }
       else { setCaseActive(r.proxima_consulta); }
@@ -4293,6 +4376,178 @@ route();
     });
   }
 
+  /* ===== PORTAL DO PACIENTE — seções, consultas, dados e central de avisos =====
+     Reaproveita as funções acima (refreshMeuCaso, refreshMinhasSolicitacoes) e as rotas já existentes;
+     só mostra uma seção por vez. As variáveis são "var" de propósito: showCard pode chamar pacPortalFechar
+     antes desta parte do código ter rodado. */
+  var PAC_SECS = ['inicio','agendamentos','dados','prontuario'];
+  var pacSec = 'inicio', pacCaso = null, pacNotifs = [], pacVistos = {}, pacPrimeira = true, pacPoll = null, pacDados = null;
+  function pacEl(id){ return document.getElementById(id); }
+  function pacEsc(t){ return String(t==null?'':t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function pacIr(sec, opcoes){
+    opcoes = opcoes || {};
+    if(PAC_SECS.indexOf(sec) < 0) sec = 'inicio';
+    pacSec = sec;
+    PAC_SECS.forEach(function(k){
+      const t = pacEl('pac-tab-'+k), pn = pacEl('pac-sec-'+k), on = (k === sec);
+      if(t){ t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; }
+      if(pn) pn.hidden = !on;
+    });
+    if(opcoes.focoAba){ const tb = pacEl('pac-tab-'+sec); if(tb) tb.focus(); }
+    else if(opcoes.focoSecao){ const pn = pacEl('pac-sec-'+sec); if(pn) pn.focus({preventScroll:true}); }
+    if(sec === 'agendamentos') refreshMeuCaso();
+    else if(sec === 'prontuario') refreshMinhasSolicitacoes();
+    else if(sec === 'dados') pacCarregarDados();
+    pacFecharNotif();
+  }
+  /* Consultas */
+  function pacRenderAg(){
+    const ul = pacEl('pac-ag-list'), vazio = pacEl('pac-ag-empty');
+    if(!ul) return;
+    const lista = (pacCaso && pacCaso.agendamentos) || [];
+    ul.innerHTML = lista.map(function(a){
+      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(a.data || '');
+      if(!m) return '';
+      const d = new Date(+m[3], +m[2]-1, +m[1]), dia = DIAS_SEMANA[d.getDay()] || '';
+      const cancelada = a.status === 'Cancelada';
+      return '<li class="pac-ag-row'+(cancelada ? ' is-cancel' : '')+'"><div class="pac-ag-date" aria-hidden="true"><b>'+m[1]+'</b><small>'+(MESES_ABREV[+m[2]-1]||'')+'</small></div>'
+        + '<div class="pac-ag-info"><strong>'+pacEsc(dia.charAt(0).toUpperCase()+dia.slice(1))+', '+(+m[1])+' de '+(MESES_CHEIO[+m[2]-1]||'')+' de '+m[3]+'</strong>'
+        + '<span>'+pacEsc(a.hora || '')+(a.local ? ' · '+pacEsc(a.local) : '')+'</span></div>'
+        + '<span class="dash-badge '+(cancelada ? 'dash-badge-bad' : 'dash-badge-ok')+'">'+pacEsc(a.status || 'Confirmada')+'</span></li>';
+    }).join('');
+    const tem = !!ul.innerHTML;
+    if(vazio) vazio.hidden = tem;
+    const foot = pacEl('pac-ag-foot'), b2 = pacEl('pac-reschedule-btn2');
+    if(b2) b2.closest('div').hidden = !(pacCaso && pacCaso.status === 'Ativo' && tem);
+  }
+  /* Dados cadastrais (os mesmos que o paciente conferiu no primeiro acesso) */
+  function pacCarregarDados(){
+    const dl = pacEl('pac-dados-lista');
+    if(!dl) return;
+    const pintar = function(linhas){
+      dl.innerHTML = linhas.filter(function(l){ return l[1]; }).map(function(l){ return '<div><dt>'+pacEsc(l[0])+'</dt><dd>'+pacEsc(l[1])+'</dd></div>'; }).join('');
+    };
+    pintar([['Nome completo', currentPatientFullName],['E-mail', currentPatientEmail]]);
+    if(typeof window.apiGetMeuCadastro !== 'function') return;
+    window.apiGetMeuCadastro().then(function(r){
+      if(!r || !r.dados) return;
+      pacDados = r.dados;
+      pintar(cfLinhas(r.dados));
+      DEFAULT_TEL = r.dados.telefone || '';
+      if(contactTel && !contactTel.value) contactTel.value = DEFAULT_TEL;
+    }).catch(function(){ /* mantém nome e e-mail da sessão */ });
+  }
+  /* Prontuário: resumo na página inicial */
+  function pacRecResumo(txt){ const e = pacEl('pac-home-rec'); if(e) e.textContent = txt || 'Não solicitado'; }
+  /* Central de notificações */
+  const PAC_NOTIF_TIPOS = {
+    novo_agendamento: ['Nova consulta agendada','agendamentos'],
+    agendamento_alterado: ['Sua consulta foi alterada','agendamentos'],
+    agendamento_cancelado: ['Uma consulta foi cancelada','agendamentos'],
+    reagendamento_confirmado: ['Reagendamento confirmado','agendamentos'],
+    solicitacao_recebida: ['Solicitação de prontuário recebida','prontuario'],
+    prontuario_liberado: ['Seu prontuário foi liberado','prontuario']
+  };
+  function pacNaoLidas(){ return pacNotifs.filter(function(n){ return !n.lida; }); }
+  function pacRenderNotifs(){
+    const ul = pacEl('pac-notif-list'), vazio = pacEl('pac-notif-empty'), cnt = pacEl('pac-notif-count'), btn = pacEl('pac-notif-btn'), todas = pacEl('pac-notif-all');
+    if(!ul) return;
+    const nl = pacNaoLidas().length;
+    ul.innerHTML = pacNotifs.map(function(n){
+      const t = PAC_NOTIF_TIPOS[n.tipo] || ['Atualização no seu acompanhamento','inicio'];
+      return '<li><button type="button" class="pac-notif-item'+(n.lida ? '' : ' is-unread')+'" data-pac-notif="'+pacEsc(n.id)+'"><span class="pac-notif-dot" aria-hidden="true"></span><span><b>'+pacEsc(t[0])+'</b>'
+        + (n.detalhe ? '<small>'+pacEsc(n.detalhe)+'</small>' : '')+'<small>'+pacEsc(n.criada_em_br || '')+(n.lida ? '' : ' · não lida')+'</small></span></button></li>';
+    }).join('');
+    if(vazio) vazio.hidden = pacNotifs.length > 0;
+    if(todas) todas.hidden = nl === 0;
+    if(cnt){ cnt.hidden = nl === 0; cnt.textContent = nl > 99 ? '99+' : String(nl); }
+    if(btn) btn.setAttribute('aria-label', nl ? ('Notificações: '+nl+(nl === 1 ? ' não lida' : ' não lidas')) : 'Notificações: nenhuma não lida');
+    const hn = pacEl('pac-home-notif'); if(hn) hn.textContent = nl ? (nl+(nl === 1 ? ' nova' : ' novas')) : 'Nenhuma nova';
+  }
+  function pacCarregarNotifs(){
+    if(typeof window.apiGetNotificacoes !== 'function' || !pacEl('pac-success') || pacEl('pac-success').hidden) return;
+    window.apiGetNotificacoes().then(function(l){
+      pacNotifs = Array.isArray(l) ? l : [];
+      let novas = false;
+      pacNotifs.forEach(function(n){ if(!pacVistos[n.id]){ pacVistos[n.id] = true; if(!pacPrimeira && !n.lida) novas = true; } });
+      pacPrimeira = false;
+      pacRenderNotifs();
+      /* Chegou um aviso novo: o que ele anuncia (consulta, prontuário) também já mudou — atualiza a tela. */
+      if(novas){ refreshMeuCaso(); refreshMinhasSolicitacoes(); }
+    }).catch(function(){ /* sem servidor: mantém o que já está na tela */ });
+  }
+  function pacAbrirNotif(){
+    const pn = pacEl('pac-notif-panel'), btn = pacEl('pac-notif-btn');
+    if(!pn) return;
+    pn.hidden = false; btn.setAttribute('aria-expanded', 'true');
+    pacCarregarNotifs();
+  }
+  function pacFecharNotif(devolverFoco){
+    const pn = pacEl('pac-notif-panel'), btn = pacEl('pac-notif-btn');
+    if(!pn || pn.hidden) return;
+    pn.hidden = true; btn.setAttribute('aria-expanded', 'false');
+    if(devolverFoco) btn.focus();
+  }
+  function pacMarcarLida(id){
+    const n = pacNotifs.filter(function(x){ return x.id === id; })[0];
+    if(!n || n.lida) return Promise.resolve();
+    n.lida = true; pacRenderNotifs();
+    return window.apiNotifLida(id).catch(function(){ n.lida = false; pacRenderNotifs(); });
+  }
+  function pacPortalAbrir(){
+    pacIr('inicio');
+    pacPrimeira = true;
+    pacCarregarNotifs();
+    if(pacPoll) clearInterval(pacPoll);
+    pacPoll = setInterval(function(){ if(!document.hidden) pacCarregarNotifs(); }, 60000);
+  }
+  function pacPortalFechar(){
+    if(pacPoll){ clearInterval(pacPoll); pacPoll = null; }
+    pacNotifs = []; pacVistos = {}; pacCaso = null; pacDados = null; pacPrimeira = true;
+    if(pacEl('pac-notif-list')){ pacRenderNotifs(); pacFecharNotif(); }
+    pacRecResumo('');
+    pacRenderAg();
+  }
+  (function(){
+    const raiz = pacEl('pac-success');
+    if(!raiz) return;
+    raiz.addEventListener('click', function(e){
+      const aba = e.target.closest('[data-pac-tab]');
+      if(aba){ pacIr(aba.dataset.pacTab); return; }
+      const ir = e.target.closest('[data-pac-goto]');
+      if(ir){ pacIr(ir.dataset.pacGoto, {focoSecao:true}); return; }
+      if(e.target.closest('#pac-notif-btn')){ const pn = pacEl('pac-notif-panel'); if(pn.hidden) pacAbrirNotif(); else pacFecharNotif(); return; }
+      if(e.target.closest('#pac-home-notif-btn')){ pacAbrirNotif(); const b = pacEl('pac-notif-btn'); if(b) b.focus(); return; }
+      if(e.target.closest('#pac-notif-all')){
+        pacNaoLidas().forEach(function(n){ pacMarcarLida(n.id); });
+        return;
+      }
+      const item = e.target.closest('[data-pac-notif]');
+      if(item){
+        const id = item.dataset.pacNotif, n = pacNotifs.filter(function(x){ return x.id === id; })[0];
+        const destino = n && (PAC_NOTIF_TIPOS[n.tipo] || [])[1];
+        pacMarcarLida(id);
+        pacIr(destino || 'inicio', {focoSecao:true});
+        return;
+      }
+      if(e.target.closest('#pac-reschedule-btn2')){ const b = pacEl('pac-reschedule-btn'); if(b) b.click(); return; }
+      if(!e.target.closest('#pac-notif')) pacFecharNotif();
+    });
+    raiz.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && !pacEl('pac-notif-panel').hidden){ e.stopPropagation(); pacFecharNotif(true); return; }
+      const aba = e.target.closest && e.target.closest('[data-pac-tab]');
+      if(!aba) return;
+      const i = PAC_SECS.indexOf(aba.dataset.pacTab);
+      let j = -1;
+      if(e.key === 'ArrowRight') j = (i+1) % PAC_SECS.length;
+      else if(e.key === 'ArrowLeft') j = (i+PAC_SECS.length-1) % PAC_SECS.length;
+      else if(e.key === 'Home') j = 0;
+      else if(e.key === 'End') j = PAC_SECS.length-1;
+      if(j >= 0){ e.preventDefault(); pacIr(PAC_SECS[j], {focoAba:true}); }
+    });
+    document.addEventListener('click', function(e){ if(!raiz.hidden && !e.target.closest('#pac-notif')) pacFecharNotif(); });
+  })();
+
   /* MEU PERFIL — dados cadastrais + troca de senha, em tela própria */
   const profileMiniBtn=document.getElementById('pac-profile-open');
   const profileBackBtn=document.getElementById('pac-profile-back');
@@ -4300,8 +4555,8 @@ route();
   if(profileBackBtn){ profileBackBtn.addEventListener('click', ()=> showCard('success')); }
 
   /* NOME SOCIAL + CONTATO — paciente edita telefone, endereço e nome social diretamente */
-  const DEFAULT_TEL = '(11) 98765-4321';
-  const DEFAULT_END = 'Rua das Palmeiras, 245 — Vila Buarque, São Paulo - SP';
+  let DEFAULT_TEL = '';
+  const DEFAULT_END = '';
   const contactForm=document.getElementById('pac-contact-form');
   const contactSocial=document.getElementById('pac-profile-social');
   const contactTel=document.getElementById('pac-profile-tel');
@@ -4469,6 +4724,7 @@ route();
     if(recordDownloadMsg){ recordDownloadMsg.hidden = true; recordDownloadMsg.textContent=''; }
     if(rescheduleBtn){ rescheduleBtn.hidden = false; }
     if(rescheduleMsg){ rescheduleMsg.hidden = true; }
+    { const b2 = document.getElementById('pac-reschedule-btn2'), m2 = document.getElementById('pac-reschedule-msg2'); if(b2) b2.hidden = false; if(m2) m2.hidden = true; }
     if(typeof closeRescheduleModal==='function'){ closeRescheduleModal(); }
     if(sessionMsg){ sessionMsg.classList.toggle('show', opts.reason==='inactivity'); }
     if(tipsToggle){ tipsToggle.setAttribute('aria-expanded', 'false'); }
