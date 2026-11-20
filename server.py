@@ -31,7 +31,7 @@ O QUE ESSE ARQUIVO FAZ:
                                         só quando existe uma solicitação já liberada pela
                                         equipe (senão, 403 — a liberação é checada aqui,
                                         no servidor, não só escondendo o botão na tela)
-    GET/PUT /api/meu-perfil         -> (só estudante) dados pessoais e disponibilidade (dia x turno) do PRÓPRIO estudante
+    GET/PUT /api/meu-perfil         -> (só estudante) corrige o PRÓPRIO nome/telefone (avisa o técnico) e informa a disponibilidade (dia x turno)
     POST /api/casos/<id>/agendamentos/<n>/comparecimento -> estudante registra presença/falta (PUT: técnico corrige, com justificativa)
     POST /api/casos/<id>/documentos          -> anexa documento (PDF/JPG/PNG/DOCX até 10 MB; arquivo real no GridFS)
     GET  /api/casos/<id>/documentos/<doc>/arquivo?modo=visualizar|baixar -> entrega o arquivo (auditado)
@@ -3256,19 +3256,60 @@ class Handler(BaseHTTPRequestHandler):
             if erro:
                 self._send_error_json(400, erro)
                 return
+            # Cadastro: o estudante pode corrigir o PRÓPRIO nome e telefone. RA e e-mail (chave de
+            # login) continuam só com o técnico. Nome/telefone não enviados não são alterados.
+            novos, erro = _validar_estudante({k: v for k, v in body.items() if k in ("nome", "telefone")}, completo=False)
+            if erro:
+                self._send_error_json(400, erro)
+                return
             try:
-                est = _estudante_da_sessao(sessao)
-                if est is None:
-                    self._send_error_json(404, "cadastro do estudante não encontrado")
-                    return
-                campos = {"nome": est["nome"], "disponibilidade": disp, "atualizado_em_br": _agora_br(),
-                          "atualizado_por": sessao.get("nome", "")}
-                if body.get("dados_conferidos") is True:
-                    campos["dados_conferidos_em_br"] = _agora_br()
-                if disp_estudantes_col.update_one({"_id": est["ra"]}, {"$set": campos}).matched_count == 0:
-                    disp_estudantes_col.insert_one({"_id": est["ra"], **campos})
-                _registrar_auditoria(sessao, "perfil do estudante atualizado (disponibilidade%s)" % (", dados conferidos" if "dados_conferidos_em_br" in campos else ""))
-                self._send_json(_perfil_do_estudante(est))
+                with TRAVA_OPERACOES:
+                    est = _estudante_da_sessao(sessao)
+                    if est is None:
+                        self._send_error_json(404, "cadastro do estudante não encontrado")
+                        return
+                    mudou_campos = []
+                    nome_antigo = est["nome"]
+                    if "nome" in novos and novos["nome"] != est["nome"]:
+                        if (sessao.get("email") or "") in CONTAS:
+                            self._send_error_json(409, "conta de demonstração: o nome só pode ser alterado pelo psicólogo técnico")
+                            return
+                        mudou_campos.append("nome")
+                    if "telefone" in novos and novos["telefone"] != est.get("telefone", ""):
+                        mudou_campos.append("telefone")
+                    nome_final = novos.get("nome", est["nome"]) if "nome" in mudou_campos else est["nome"]
+                    campos = {"nome": nome_final, "disponibilidade": disp, "atualizado_em_br": _agora_br(),
+                              "atualizado_por": nome_final}
+                    if body.get("dados_conferidos") is True:
+                        campos["dados_conferidos_em_br"] = _agora_br()
+                    if mudou_campos:
+                        grava = {"nome": nome_final}
+                        if "telefone" in novos:
+                            grava["telefone"] = novos["telefone"]
+                        _gravar_estudante(est["ra"], grava)
+                    if "nome" in mudou_campos:
+                        # O nome liga o estudante aos casos, ao vínculo, à conta e aos avisos: acompanha a correção.
+                        # Evoluções já assinadas continuam com o nome da época (imutáveis).
+                        contas_col.update_one({"_id": sessao["email"]}, {"$set": {"nome": nome_final}})
+                        casos_col.update_many({"estudante": nome_antigo}, {"$set": {"estudante": nome_final}})
+                        vinculos_col.update_one({"_id": est["ra"]}, {"$set": {"estudante": nome_final}})
+                        for n_ in list(notificacoes_col.find({"destinatario": nome_antigo})):
+                            if not n_.get("para"):
+                                notificacoes_col.update_one({"_id": n_["_id"]}, {"$set": {"destinatario": nome_final}})
+                        for s_ in SESSOES.values():
+                            if s_.get("email") == sessao["email"]:
+                                s_["nome"] = nome_final
+                    if disp_estudantes_col.update_one({"_id": est["ra"]}, {"$set": campos}).matched_count == 0:
+                        disp_estudantes_col.insert_one({"_id": est["ra"], **campos})
+                    est = _estudante_por_ra(est["ra"]) or est
+                if mudou_campos:
+                    _avisar_tecnico("estudante_alterou_cadastro", "%s (RA %s) alterou: %s" % (nome_final, est["ra"], " e ".join(mudou_campos)))
+                _registrar_auditoria(sessao, "perfil do estudante atualizado (disponibilidade%s%s)" % (
+                    ", dados conferidos" if "dados_conferidos_em_br" in campos else "",
+                    ", cadastro: " + ", ".join(mudou_campos) if mudou_campos else ""))
+                perfil = _perfil_do_estudante(est)
+                perfil["campos_alterados"] = mudou_campos
+                self._send_json(perfil)
             except PyMongoError as exc:
                 self._erro_servidor(exc, "PUT /api/meu-perfil")
             return
