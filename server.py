@@ -2515,6 +2515,30 @@ class Handler(BaseHTTPRequestHandler):
 
             conta = CONTAS.get(email)
             email_enviado = False
+            if not conta:
+                # Contas reais (convite ativado) ficam no banco, não em CONTAS: só as que estão
+                # "ativa" e já criaram a senha recebem a redefinição.
+                try:
+                    doc_rec = contas_col.find_one({"_id": email})
+                except PyMongoError as exc:
+                    self._erro_servidor(exc, "POST /api/recuperar-senha")
+                    return
+                if doc_rec and doc_rec.get("status") == "ativa" and doc_rec.get("senha_hash") and doc_rec.get("salt"):
+                    nova_senha = _gerar_senha_temporaria()
+                    novo_salt = secrets.token_hex(16)
+                    try:
+                        contas_col.update_one({"_id": email}, {"$set": {"salt": novo_salt, "senha_hash": _hash_senha_salt(nova_senha, novo_salt)}})
+                    except PyMongoError as exc:
+                        self._erro_servidor(exc, "POST /api/recuperar-senha (gravação)")
+                        return
+                    for tok in [t_ for t_, s_ in SESSOES.items() if s_.get("email") == email]:
+                        SESSOES.pop(tok, None)
+                    TENTATIVAS_LOGIN.pop(email, None)
+                    email_enviado = _enviar_senha_temporaria(email, doc_rec.get("nome"), nova_senha)
+                    print("[recuperar-senha] senha redefinida para %s (conta do banco; e-mail %s)"
+                          % (email, "enviado" if email_enviado else "NÃO enviado — veja o motivo acima"))
+                    self._send_json({"ok": True, "email_enviado": email_enviado})
+                    return
             if conta:
                 nova_senha = _gerar_senha_temporaria()
                 conta["senha_hash"] = _hash_senha(nova_senha)
