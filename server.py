@@ -759,6 +759,22 @@ def _avisar_tecnico(tipo, detalhe):
                                  "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
 
 
+def _proxima_consulta_remarcavel(caso):
+    """Índice da próxima consulta futura 'Confirmada' sem comparecimento, ou None."""
+    hoje = _parse_data_br(_hoje_br())
+    melhor = None
+    for i, a in enumerate((caso or {}).get("agendamentos") or []):
+        if a.get("status") != "Confirmada" or a.get("comparecimento"):
+            continue
+        d = _parse_data_br(a.get("data"))
+        if not d or d < hoje:
+            continue
+        chave = (d, _norm_hora(a.get("hora")))
+        if melhor is None or chave < melhor[0]:
+            melhor = (chave, i)
+    return melhor[1] if melhor else None
+
+
 def _avisar_paciente(caso, tipo, detalhe="", chave=""):
     """Aviso interno ao PACIENTE, ligado ao id do caso (nunca ao nome). O conteúdo é só data/horário/
     local de um atendimento ou o andamento de uma solicitação — nenhum dado clínico. Não repete um aviso
@@ -3271,6 +3287,11 @@ class Handler(BaseHTTPRequestHandler):
 
             doc["status"] = "pendente"
             doc["nova_data"] = ""
+            try:
+                caso_ped = _encontrar_caso_do_paciente(sessao["nome"], sessao.get("caso_id")) if sessao["role"] == "paciente" else None
+            except PyMongoError:
+                caso_ped = None
+            doc["caso_id"] = (caso_ped or {}).get("_id", "")
 
             try:
                 result = reagendamentos_col.insert_one(doc)
@@ -4194,7 +4215,8 @@ class Handler(BaseHTTPRequestHandler):
 
         m3 = re.match(r"^/api/reagendamentos/([0-9a-fA-F]{24})$", path)
         if m3:
-            if self._exigir_papel(PAPEIS_SOLICITACOES_ESCRITA) is None:
+            sessao_rg = self._exigir_papel(PAPEIS_SOLICITACOES_ESCRITA)
+            if sessao_rg is None:
                 return
             try:
                 obj_id = ObjectId(m3.group(1))
@@ -4208,7 +4230,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
             nova_data_val = str(body.get("nova_data", "")).strip()
-            if not nova_data_val:
+            if not nova_data_val and not (body.get("data") and body.get("hora")):
                 self._send_error_json(400, "o campo 'nova_data' é obrigatório para confirmar o reagendamento")
                 return
 
@@ -4221,6 +4243,44 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_error_json(404, "reagendamento não encontrado: " + str(obj_id))
                 return
             ja_confirmado = doc.get("status") == "confirmado" and doc.get("nova_data") == nova_data_val
+
+            # Se a tela mandou data e horário estruturados, a consulta REAL do caso é remarcada
+            # junto (uma única operação): sem isso a agenda do estudante ficaria na data antiga.
+            caso_rg = None
+            agenda_alterada = False
+            data_br, hora_br = _data_para_br(body.get("data")), _hora_para_br(body.get("hora"))
+            if body.get("data") or body.get("hora"):
+                if not data_br or not hora_br:
+                    self._send_error_json(400, "data ou horário inválido"); return
+                nova_data_val = "%s às %s" % (data_br, hora_br)
+                with TRAVA_OPERACOES:
+                    try:
+                        caso_rg = _encontrar_caso_do_paciente(doc.get("paciente", ""), doc.get("caso_id") or None)
+                        if not caso_rg:
+                            self._send_error_json(404, "caso do paciente não encontrado"); return
+                        ags = list(caso_rg.get("agendamentos") or [])
+                        idx = body.get("indice")
+                        idx = int(idx) if str(idx).isdigit() else _proxima_consulta_remarcavel(caso_rg)
+                        if idx is None or idx >= len(ags):
+                            self._send_error_json(409, "este paciente não tem consulta futura confirmada para reagendar — crie o agendamento no caso antes"); return
+                        ag = dict(ags[idx])
+                        if ag.get("status") != "Confirmada" or ag.get("comparecimento"):
+                            self._send_error_json(409, "esta consulta não pode mais ser alterada"); return
+                        if _parse_data_br(data_br) < _parse_data_br(_hoje_br()):
+                            self._send_error_json(400, "não é possível reagendar para uma data que já passou"); return
+                        if (data_br, hora_br) == (ag.get("data"), _norm_hora(ag.get("hora"))):
+                            self._send_error_json(409, "informe uma data ou horário diferente do atual"); return
+                        conflito = _conflito_agenda(data_br, hora_br, caso_rg["_id"], caso_rg.get("estudante"), ignorar=(caso_rg["_id"], idx))
+                        if conflito:
+                            self._send_error_json(409, conflito); return
+                        ag.setdefault("reagendamentos", []).append({"de": "%s %s" % (ag.get("data"), ag.get("hora")), "quando": _agora_br(), "por": sessao_rg["nome"]})
+                        ag["data"], ag["hora"] = data_br, hora_br
+                        ags[idx] = ag
+                        casos_col.update_one({"_id": caso_rg["_id"]}, {"$set": {"agendamentos": ags}})
+                        agenda_alterada = True
+                    except PyMongoError as exc:
+                        self._erro_servidor(exc, "PUT /api/reagendamentos/" + str(obj_id) + " (agenda)")
+                        return
 
             try:
                 reagendamentos_col.update_one(
@@ -4236,7 +4296,7 @@ class Handler(BaseHTTPRequestHandler):
             # estiver configurado), a confirmação em si não se perde.
             enviado = _enviar_confirmacao_reagendamento(doc.get("email", ""), doc.get("paciente", ""), nova_data_val)
             try:
-                caso_rg = _encontrar_caso_do_paciente(doc.get("paciente", ""))
+                caso_rg = caso_rg or _encontrar_caso_do_paciente(doc.get("paciente", ""), doc.get("caso_id") or None)
                 _avisar_paciente(caso_rg, "reagendamento_confirmado",
                                  "nova data: " + nova_data_val, "%s %s" % (obj_id, nova_data_val))
                 # O estudante responsável e o supervisor do caso também precisam saber (sem nome do paciente).
@@ -4251,6 +4311,7 @@ class Handler(BaseHTTPRequestHandler):
             doc["nova_data"] = nova_data_val
             resposta = reagendamento_doc_to_json(doc)
             resposta["enviado_email"] = enviado
+            resposta["agenda_alterada"] = agenda_alterada
             self._send_json(resposta)
             return
 
