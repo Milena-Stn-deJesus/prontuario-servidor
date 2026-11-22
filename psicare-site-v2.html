@@ -5025,6 +5025,7 @@ route();
       novo_paciente: ['Novo paciente alocado', 'O psicólogo técnico alocou um novo paciente para você.'],
       novo_agendamento: ['Novo agendamento', 'Um atendimento foi agendado para ' + (x.detalhe || 'uma data próxima') + '.'],
       agendamento_alterado: ['Agendamento alterado', 'Um atendimento seu foi alterado: ' + (x.detalhe || 'confira a agenda') + '.'],
+      reagendamento_confirmado: ['Reagendamento confirmado', 'O técnico confirmou um reagendamento solicitado por um paciente seu: ' + (x.detalhe || 'confira a agenda') + '.'],
       agendamento_cancelado: ['Agendamento cancelado', 'Um atendimento seu foi cancelado (' + (x.detalhe || 'confira a agenda') + ').'],
       documento_anexado: ['Novo documento anexado', 'Um documento foi anexado ao prontuário de um paciente seu (' + (x.detalhe || 'confira a aba Documentos') + ').']
     };
@@ -8385,6 +8386,7 @@ route();
     paciente_alocado: ['Paciente alocado a estudante', function(d){ return 'Um caso sob a sua supervisão foi alocado a ' + (d || 'um estudante') + '.'; }],
     novo_agendamento: ['Novo agendamento', function(d){ return 'Atendimento agendado: ' + (d || 'confira a agenda') + '.'; }],
     agendamento_alterado: ['Agendamento alterado', function(d){ return 'Um atendimento foi alterado: ' + (d || 'confira a agenda') + '.'; }],
+    reagendamento_confirmado: ['Reagendamento confirmado', function(d){ return 'Reagendamento confirmado pelo técnico: ' + (d || 'confira a agenda') + '.'; }],
     agendamento_cancelado: ['Agendamento cancelado', function(d){ return 'Um atendimento foi cancelado: ' + (d || 'confira a agenda') + '.'; }],
     faltas_2: ['Duas faltas consecutivas', function(d){ return (d ? d + ': ' : '') + 'Paciente com duas faltas consecutivas. Recomenda-se entrar em contato para verificar a continuidade do acompanhamento. Uma nova falta consecutiva poderá resultar na perda da vaga.'; }],
     documento_anexado: ['Novo documento anexado', function(d){ return (d || 'Um documento') + ' foi anexado ao prontuário de um caso sob a sua supervisão.'; }],

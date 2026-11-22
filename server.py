@@ -4220,6 +4220,7 @@ class Handler(BaseHTTPRequestHandler):
             if not doc:
                 self._send_error_json(404, "reagendamento não encontrado: " + str(obj_id))
                 return
+            ja_confirmado = doc.get("status") == "confirmado" and doc.get("nova_data") == nova_data_val
 
             try:
                 reagendamentos_col.update_one(
@@ -4235,10 +4236,16 @@ class Handler(BaseHTTPRequestHandler):
             # estiver configurado), a confirmação em si não se perde.
             enviado = _enviar_confirmacao_reagendamento(doc.get("email", ""), doc.get("paciente", ""), nova_data_val)
             try:
-                _avisar_paciente(_encontrar_caso_do_paciente(doc.get("paciente", "")), "reagendamento_confirmado",
+                caso_rg = _encontrar_caso_do_paciente(doc.get("paciente", ""))
+                _avisar_paciente(caso_rg, "reagendamento_confirmado",
                                  "nova data: " + nova_data_val, "%s %s" % (obj_id, nova_data_val))
+                # O estudante responsável e o supervisor do caso também precisam saber (sem nome do paciente).
+                if caso_rg and not ja_confirmado:
+                    _avisar_estudante(caso_rg, "reagendamento_confirmado", nova_data_val)
+                    _avisar_supervisor_do_caso(caso_rg, "reagendamento_confirmado",
+                                               "%s · %s" % (nova_data_val, caso_rg.get("estudante", "")))
             except PyMongoError as exc:
-                print("[aviso ao paciente] caso não encontrado: %s" % exc, flush=True)
+                print("[aviso ao paciente/estudante] caso não encontrado: %s" % exc, flush=True)
 
             doc["status"] = "confirmado"
             doc["nova_data"] = nova_data_val
