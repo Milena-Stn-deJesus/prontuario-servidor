@@ -5733,10 +5733,11 @@ route();
       let atual = '';
       if(r.status !== 'confirmado'){
         const hoje = new Date(); hoje.setHours(0,0,0,0);
-        let melhor = null;
+        let melhor = null, casoRef = null;
         Object.keys(CASOS || {}).forEach(function(id){
           const c = CASOS[id] || {};
           if(!(r.caso_id ? id === r.caso_id : c.paciente === r.paciente)) return;
+          casoRef = casoRef || c;
           (c.agendamentos || []).forEach(function(a){
             if(a.status !== 'Confirmada' || a.comparecimento) return;
             const m = String(a.data||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if(!m) return;
@@ -5747,6 +5748,13 @@ route();
         atual = melhor
           ? '<small class="eq-reagendar-atual">Consulta que será remarcada: '+esc(melhor.a.data)+' às '+esc(melhor.a.hora)+'</small>'
           : '<small class="eq-reagendar-atual">Sem consulta futura confirmada — crie o agendamento no caso antes de confirmar.</small>';
+        /* Para escolher a nova data com critério: disponibilidade informada pelo estudante do caso (e a do paciente). */
+        if(casoRef){
+          const dispEst = (window.PRONTUARIO_ESTUDANTES_DISP || {})[casoRef.estudante] || [];
+          const dispPac = (casoRef.cadastro || {}).disponibilidade || [];
+          atual += '<small class="eq-reagendar-atual"><b>Disponibilidade do estudante'+(casoRef.estudante ? ' ('+esc(casoRef.estudante)+')' : '')+':</b> '+esc(casoRef.estudante ? dispTexto(dispEst) : 'sem estudante alocado')+'</small>'
+            + '<small class="eq-reagendar-atual"><b>Disponibilidade do paciente:</b> '+esc(dispTexto(dispPac))+'</small>';
+        }
       }
       const action = r.status === 'confirmado'
         ? ''
