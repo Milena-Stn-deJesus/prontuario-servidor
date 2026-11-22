@@ -7966,6 +7966,12 @@ route();
     if(submitBtn) submitBtn.disabled = true;
     window.apiLogin(emailLower, senhaVal).then(function(sessao){
       /* Administração de TI: painel próprio; nenhuma consulta clínica é feita. */
+      /* Conta de paciente não entra pelo login da equipe: descarta a sessão e responde como credencial inválida. */
+      if(sessao.role === 'paciente'){
+        window.apiToken = null;
+        try{ sessionStorage.removeItem('prontuario_token'); }catch(e){}
+        const e = new Error('credencial de paciente no login da equipe'); e.status = 401; throw e;
+      }
       if(sessao.role === 'admin_ti'){ abrirAdmin(sessao); return; }
       /* Busca os casos e as solicitações de novo a CADA login (não só na primeira vez que
          a página carregou) — assim, se outra pessoa cadastrou um paciente ou mudou algo
