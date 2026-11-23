@@ -1431,6 +1431,11 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 .page[hidden]{display:none}
 
 /* Inscrição — estilos isolados: nenhuma regra altera as demais páginas */
+.pv-conf{display:inline-block;margin-left:4px;padding:1px 9px;border:1px solid var(--line);border-radius:999px;font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.pv-versao{margin-top:10px;font-size:12.5px;color:var(--muted)}
+#page-inscricao .enroll-final-priv{margin:20px 0 0;font-size:13px;color:rgba(227,242,230,.78)}
+#page-inscricao .enroll-final-priv a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+#page-inscricao .enroll-final-priv a:hover,#page-inscricao .enroll-final-priv a:focus-visible{color:#fff}
 #page-inscricao .enroll-design{--en-ink:#203e37;--en-muted:#64746c;--en-line:rgba(35,79,65,.18);color:var(--en-ink);overflow:hidden}
 #page-inscricao .enroll-container{width:min(1120px,calc(100% - 72px));margin-inline:auto}
 #page-inscricao .enroll-design h1,#page-inscricao .enroll-design h2,#page-inscricao .enroll-design h3{color:var(--en-ink);letter-spacing:-.035em;line-height:1.1;margin:0}
@@ -2140,7 +2145,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     </div>
   </div></section>
   <section class="enroll-final-section" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final enroll-final-premium">
-        <div class="enroll-final-content"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> 03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSdH1AnV9ukKNWYwgK4QPjtBWTbPHpQZU7AIqZPKGDql4vHWIw/viewform?usp=dialog" target="_blank" rel="noopener noreferrer" class="enroll-final-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a></div>
+        <div class="enroll-final-content"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> 03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSdH1AnV9ukKNWYwgK4QPjtBWTbPHpQZU7AIqZPKGDql4vHWIw/viewform?usp=dialog" target="_blank" rel="noopener noreferrer" class="enroll-final-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a><p class="enroll-final-priv">Saiba como tratamos seus dados: <a href="#privacidade" target="_blank" rel="noopener">Aviso de Privacidade e Proteção de Dados</a>.</p></div>
         <aside class="enroll-final-card" aria-label="O que você encontra no Serviço-Escola">
           <span class="enroll-final-card-title">O que você encontra</span>
           <ul>
@@ -2229,33 +2234,50 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
 <section style="padding-top:150px;padding-bottom:110px;position:relative;overflow:hidden">
   <div class="wrap" style="max-width:760px">
     <span class="eyebrow">Privacidade</span>
-    <h2>Política de Privacidade</h2>
-    <p class="lead">Como a Clínica-Escola de Psicologia da Santa Casa de São Paulo trata os dados pessoais e de saúde registrados neste sistema, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD).</p>
+    <h2>Aviso de Privacidade e Proteção de Dados</h2>
+    <p class="lead">Como a Clínica-Escola de Psicologia da Santa Casa de São Paulo trata os dados pessoais e de saúde registrados neste sistema, em linha com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD).</p>
+    <p class="pv-versao">Versão 1.0 · Texto sujeito à validação da instituição</p>
 
     <div style="margin-top:36px;display:flex;flex-direction:column;gap:28px">
       <div>
-        <h3 style="font-size:18px;margin-bottom:8px">Quais dados coletamos</h3>
-        <p style="color:var(--muted);line-height:1.7">Dados de identificação do paciente (nome, e-mail, CPF) e dados referentes ao acompanhamento psicológico (anamnese, evoluções, documentos e agendamentos), registrados pela equipe responsável pelo atendimento.</p>
+        <h3 style="font-size:18px;margin-bottom:8px">Quais dados são coletados</h3>
+        <ul style="color:var(--muted);line-height:1.7;padding-left:20px;margin:0"><li><b>Identificação e contato do paciente:</b> nome, data de nascimento, CPF, e-mail e telefone.</li><li><b>Responsável legal</b>, quando o paciente é menor de idade: nome, vínculo, CPF e telefone.</li><li><b>Informações do atendimento:</b> disponibilidade de horários, motivo da procura, agendamentos e registro de presença ou falta.</li><li><b>Dados de saúde (dados pessoais sensíveis):</b> anamnese, evoluções de sessão e documentos do acompanhamento psicológico.</li><li><b>Dados de acesso:</b> e-mail de login e registros de acesso e de ações no sistema. Também são guardados nome e e-mail de estudantes, supervisores e técnicos.</li></ul>
       </div>
       <div>
-        <h3 style="font-size:18px;margin-bottom:8px">Para que usamos esses dados</h3>
-        <p style="color:var(--muted);line-height:1.7">Exclusivamente para o acompanhamento clínico do paciente dentro da Clínica-Escola — incluindo o registro do atendimento pelo(a) estudante responsável e a supervisão acadêmica do caso. Os dados não são usados para nenhuma outra finalidade, nem compartilhados com terceiros.</p>
+        <h3 style="font-size:18px;margin-bottom:8px">Para que os dados são usados</h3>
+        <ul style="color:var(--muted);line-height:1.7;padding-left:20px;margin:0"><li>Acompanhamento clínico do paciente e supervisão acadêmica do caso.</li><li>Agendamento de consultas e avisos sobre consultas e alterações.</li><li>Gestão do serviço, por meio de relatórios com números gerais, sem nomes de pacientes e sem conteúdo clínico.</li><li>Acesso à plataforma, inclusive a recuperação de senha por e-mail.</li></ul>
+        <p style="color:var(--muted);line-height:1.7">A base legal de cada finalidade (por exemplo, tutela da saúde e cumprimento de obrigação legal ou regulatória) deve ser definida pela instituição. <span class="pv-conf">a confirmar pela instituição</span></p>
       </div>
       <div>
-        <h3 style="font-size:18px;margin-bottom:8px">Quem tem acesso</h3>
-        <p style="color:var(--muted);line-height:1.7">Apenas pessoas com login autorizado no sistema: o(a) técnico(a) responsável, o(a) supervisor(a) e o(a) estudante vinculado(a) ao caso. Cada papel só visualiza os dados necessários para sua função — por exemplo, um(a) estudante só acessa os casos sob sua responsabilidade.</p>
+        <h3 style="font-size:18px;margin-bottom:8px">Quem pode acessar</h3>
+        <ul style="color:var(--muted);line-height:1.7;padding-left:20px;margin:0"><li><b>Técnico(a):</b> os casos do serviço, para cadastro, alocação, agenda e acompanhamento.</li><li><b>Supervisor(a):</b> os casos dos estudantes que orienta.</li><li><b>Estudante:</b> apenas os casos sob sua responsabilidade.</li><li><b>Paciente:</b> apenas os próprios dados, consultas e avisos.</li><li><b>Administração do sistema:</b> gerencia as contas de acesso da equipe.</li></ul>
+        <p style="color:var(--muted);line-height:1.7">Todo acesso exige login. Cada perfil só enxerga o que sua função precisa.</p>
       </div>
       <div>
-        <h3 style="font-size:18px;margin-bottom:8px">Por quanto tempo guardamos</h3>
-        <p style="color:var(--muted);line-height:1.7">Os dados são mantidos enquanto durar o acompanhamento e, depois disso, pelo prazo mínimo de guarda exigido para registros de atendimento psicológico — uma obrigação legal e profissional da instituição (não uma escolha do sistema). Por isso, mesmo após o fim do acompanhamento, o prontuário não é apagado: o caso é apenas encerrado (alta).</p>
+        <h3 style="font-size:18px;margin-bottom:8px">Como os dados são protegidos</h3>
+        <ul style="color:var(--muted);line-height:1.7;padding-left:20px;margin:0"><li>Acesso por login, com permissões diferentes para cada perfil, conferidas pelo servidor a cada pedido.</li><li>Senhas guardadas de forma cifrada (hash), nunca em texto puro.</li><li>Evoluções, depois de salvas, não podem ser alteradas.</li><li>Ações relevantes ficam registradas em uma trilha de auditoria.</li><li>Conexão segura (HTTPS) entre o navegador e o servidor.</li></ul>
+        <p style="color:var(--muted);line-height:1.7">O sistema usa serviços de terceiros para hospedagem (Render), banco de dados (MongoDB Atlas) e envio de e-mails (Brevo). Condições contratuais, local de armazenamento e demais medidas organizacionais devem ser confirmados pela instituição. <span class="pv-conf">a confirmar pela instituição</span></p>
       </div>
       <div>
-        <h3 style="font-size:18px;margin-bottom:8px">Seus direitos como titular dos dados</h3>
-        <p style="color:var(--muted);line-height:1.7">Você pode solicitar, a qualquer momento, acesso aos seus dados ou correção de informações cadastrais incorretas, entrando em contato com a equipe da Clínica-Escola. Já o conteúdo clínico do prontuário (anamnese, evoluções e documentos) não pode ser excluído por solicitação: a LGPD permite essa guarda quando exigida por lei ou pelas normas da profissão, o que se aplica aqui mesmo depois que o caso é encerrado. <a href="#contato" style="color:var(--blue);font-weight:600">Veja como falar com a equipe</a>.</p>
+        <h3 style="font-size:18px;margin-bottom:8px">Por quanto tempo os dados são guardados</h3>
+        <p style="color:var(--muted);line-height:1.7">O prontuário não é apagado quando o acompanhamento termina: o caso apenas muda de situação (alta). O prazo de guarda será definido pela instituição, conforme a legislação e as normas da profissão. <span class="pv-conf">a confirmar pela instituição</span></p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Seus direitos como titular</h3>
+        <ul style="color:var(--muted);line-height:1.7;padding-left:20px;margin:0"><li>Confirmar que existe tratamento dos seus dados e acessar esses dados.</li><li>Corrigir dados incompletos, inexatos ou desatualizados.</li><li>Pedir anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em desacordo com a lei, quando aplicável.</li><li>Saber com quem os dados são compartilhados.</li><li>Revogar o consentimento, quando o tratamento se basear nele.</li></ul>
+        <p style="color:var(--muted);line-height:1.7">O conteúdo clínico do prontuário pode ter de ser mantido por obrigação legal ou profissional; nesse caso, a eliminação a pedido pode não ser possível.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Como solicitar informações</h3>
+        <p style="color:var(--muted);line-height:1.7">Os pedidos sobre os seus dados podem ser feitos à equipe da Clínica-Escola. <a href="#contato" style="color:var(--blue);font-weight:600">Veja como falar com a equipe</a>. Encarregado(a) pelo tratamento de dados: <b>a ser informado pela instituição</b>. <span class="pv-conf">a confirmar pela instituição</span></p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:8px">Ciência deste aviso</h3>
+        <p style="color:var(--muted);line-height:1.7">No cadastro, a equipe registra a versão deste aviso apresentada ao paciente (ou ao responsável) e quem confirmou a ciência. Isso mostra que a pessoa foi informada; não substitui o consentimento quando ele for necessário.</p>
       </div>
     </div>
 
-    <p style="color:var(--muted);font-size:13px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)">Este é um protótipo acadêmico (projeto integrador) da Faculdade de Ciências Médicas da Santa Casa de São Paulo. Este texto ilustra, de forma simplificada, como um sistema real trataria essas informações em conformidade com a LGPD.</p>
+    <p style="color:var(--muted);font-size:13px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)">Este é um protótipo acadêmico (projeto integrador) da Faculdade de Ciências Médicas da Santa Casa de São Paulo. Os itens marcados como “a confirmar” dependem de validação da instituição, e este texto não constitui parecer jurídico.</p>
   </div>
 </section>
 </div>
@@ -2596,9 +2618,9 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </ul>
           <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:13.5px;color:var(--muted);line-height:1.5">
             <input type="checkbox" id="pac-lgpd-consent" style="margin-top:3px">
-            <span>Li e concordo com o tratamento dos meus dados pessoais e de saúde pela Clínica-Escola, conforme a <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Política de Privacidade</a>.</span>
+            <span>Li e concordo com o tratamento dos meus dados pessoais e de saúde pela Clínica-Escola, conforme o <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Aviso de Privacidade e Proteção de Dados</a>.</span>
           </label>
-          <span class="fld-err auth-form-err" id="pac-lgpd-err">É necessário concordar com a Política de Privacidade para continuar.</span>
+          <span class="fld-err auth-form-err" id="pac-lgpd-err">É necessário concordar com o Aviso de Privacidade para continuar.</span>
           <span class="fld-err auth-form-err" id="pac-newpw-form-err">Sua senha ainda não atende a todos os requisitos.</span>
           <button type="submit" class="btn btn-primary auth-submit">Salvar nova senha<svg><use href="#i-arrow"/></svg></button>
         </form>
@@ -3311,7 +3333,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <p class="eq-np-idnote">O <b>ID do paciente</b> e a <b>data de abertura</b> do caso são registrados automaticamente pelo sistema ao cadastrar.</p>
             <label class="lgpd-consent" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0 18px;font-size:13.5px;color:var(--muted);line-height:1.5">
               <input type="checkbox" id="eq-np-lgpd-consent" style="margin-top:3px" required>
-              <span>Confirmo que o paciente (ou seu responsável) foi informado e consentiu com o tratamento de seus dados pessoais e de saúde, conforme a <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Política de Privacidade</a>.</span>
+              <span>Confirmo que o paciente (ou seu responsável) foi informado e consentiu com o tratamento de seus dados pessoais e de saúde, conforme o <a href="#privacidade" target="_blank" style="color:var(--blue);font-weight:600">Aviso de Privacidade e Proteção de Dados</a>.</span>
             </label>
             <div class="eq-form-actions"><button type="submit" class="btn btn-primary"><svg><use href="#i-plus"/></svg>Cadastrar paciente</button></div>
             <p class="eq-case-export-msg" id="eq-newpatient-msg" hidden></p>
@@ -3438,7 +3460,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       </div>
       <div class="foot-bot">
         <span>© <span id="yr"></span> FCMSCSP</span>
-        <nav><a href="#sobre-nos">Sobre nós</a><a href="#inscricao">Inscreva-se</a><a href="#faq">Dúvidas frequentes</a><a href="#contato">Contato</a><a href="#privacidade">Política de Privacidade</a><a href="#equipe">Login da equipe</a></nav>
+        <nav><a href="#sobre-nos">Sobre nós</a><a href="#inscricao">Inscreva-se</a><a href="#faq">Dúvidas frequentes</a><a href="#contato">Contato</a><a href="#privacidade">Aviso de Privacidade</a><a href="#equipe">Login da equipe</a></nav>
       </div>
     </div>
   </div>
@@ -3763,7 +3785,7 @@ const pageContato=document.getElementById('page-contato');
 const pagePrivacidade=document.getElementById('page-privacidade');
 const pagePaciente=document.getElementById('page-paciente');
 const pageEquipe=document.getElementById('page-equipe');
-const titles={home:'Clínica-Escola de Psicologia — FCMSCSP',sobre:'Sobre nós — Clínica-Escola de Psicologia',inscricao:'Inscreva-se — Clínica-Escola de Psicologia',faq:'Dúvidas frequentes — Clínica-Escola de Psicologia',contato:'Contato — Clínica-Escola de Psicologia',privacidade:'Política de Privacidade — Clínica-Escola de Psicologia',paciente:'Acesso do paciente — Clínica-Escola de Psicologia',equipe:'Acesso da equipe — Clínica-Escola de Psicologia'};
+const titles={home:'Clínica-Escola de Psicologia — FCMSCSP',sobre:'Sobre nós — Clínica-Escola de Psicologia',inscricao:'Inscreva-se — Clínica-Escola de Psicologia',faq:'Dúvidas frequentes — Clínica-Escola de Psicologia',contato:'Contato — Clínica-Escola de Psicologia',privacidade:'Aviso de Privacidade — Clínica-Escola de Psicologia',paciente:'Acesso do paciente — Clínica-Escola de Psicologia',equipe:'Acesso da equipe — Clínica-Escola de Psicologia'};
 
 function faqSetTab(n){
   for(let i=1;i<=3;i++){
@@ -6161,7 +6183,8 @@ route();
         nascimento: nascEl.value.trim(), cpf: cpfEl.value, email: email, responsavel: responsavel,
         telefone: document.getElementById('eq-np-telefone').value.trim(),
         disponibilidade: getDisp('np'),
-        motivo: document.getElementById('eq-np-motivo').value.trim()
+        motivo: document.getElementById('eq-np-motivo').value.trim(),
+        ciencia_aviso: true, versao_aviso: '1.0'
       }).then(function(resp){
         CASOS[resp.id] = resp.caso;
         syncCasesTable();

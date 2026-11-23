@@ -320,6 +320,7 @@ def _gerar_senha_temporaria():
 # Criar contas de verdade (um cadastro real de equipe/paciente) é a próxima
 # etapa, já registrada na lista de pendências do projeto.
 
+AVISO_PRIVACIDADE_VERSAO = "1.0"  # versão do Aviso de Privacidade exibida no site
 SENHA_SALT = os.environ.get("SENHA_SALT", "prontuario-fcmscsp-salt-fixo-2026")
 
 
@@ -3140,7 +3141,8 @@ class Handler(BaseHTTPRequestHandler):
             # técnico (estudante e supervisor nunca veem esse botão). O
             # servidor não garantia isso: qualquer um dos três papéis podia
             # criar um caso novo chamando a API diretamente.
-            if self._exigir_papel({"tecnico"}) is None:
+            sessao_cadastro = self._exigir_papel({"tecnico"})
+            if sessao_cadastro is None:
                 return
             try:
                 body = self._read_json_body()
@@ -3187,6 +3189,9 @@ class Handler(BaseHTTPRequestHandler):
                     self._send_error_json(409, "este e-mail já pertence a outra conta de acesso — informe outro e-mail para a paciente")
                     return
                 cadastro = {"id": novo_id_de_paciente(), **cadastro}
+                if body.get("ciencia_aviso") is True:
+                    # Registro de que a equipe apresentou o aviso (e qual versão). Só em cadastros novos.
+                    cadastro["privacidade"] = {"versao_aviso": AVISO_PRIVACIDADE_VERSAO, "confirmado_em": _agora_br(), "confirmado_por": (sessao_cadastro or {}).get("nome", ""), "tipo": "equipe confirmou que o titular foi informado"}
             except PyMongoError as exc:
                 self._erro_servidor(exc, "POST /api/casos (cadastro)")
                 return
