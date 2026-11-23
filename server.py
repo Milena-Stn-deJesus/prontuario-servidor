@@ -32,6 +32,7 @@ O QUE ESSE ARQUIVO FAZ:
                                         só quando existe uma solicitação já liberada pela
                                         equipe (senão, 403 — a liberação é checada aqui,
                                         no servidor, não só escondendo o botão na tela)
+    GET /api/relatorios/catalogo, POST /api/relatorios -> (só técnico) Relatórios Gerenciais: indicadores agregados por período, somente leitura
     GET/PUT /api/meu-perfil         -> (só estudante) corrige o PRÓPRIO nome/telefone (avisa o técnico) e informa a disponibilidade (dia x turno)
     POST /api/casos/<id>/agendamentos/<n>/comparecimento -> estudante registra presença/falta (PUT: técnico corrige, com justificativa)
     POST /api/casos/<id>/documentos          -> anexa documento (PDF/JPG/PNG/DOCX até 10 MB; arquivo real no GridFS)
@@ -126,6 +127,7 @@ from email.mime.text import MIMEText
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote
+import relatorios
 import base64
 import io
 import zipfile
@@ -757,6 +759,23 @@ def _avisar_tecnico(tipo, detalhe):
     notificacoes_col.insert_one({"_id": "nf-" + secrets.token_hex(6), "tipo": tipo, "para": "tecnico", "destinatario": "",
                                  "caso_id": "", "evolucao_idx": None, "detalhe": detalhe,
                                  "criada_em": time.time(), "criada_em_br": _agora_br(), "lida": False})
+
+
+def _dados_para_relatorio():
+    """Lê (sem alterar nada) o que o módulo de relatórios precisa. Só agregados saem daqui para o navegador."""
+    casos = list(casos_col.find({}))
+    for c in casos:
+        c["_id"] = str(c["_id"])
+    return {
+        "casos": casos,
+        "estudantes": _lista_estudantes_com_disponibilidade(True),
+        "supervisores": _lista_supervisores_ativos(),
+        "inscricoes": list(inscricoes_col.find({})),
+        "solicitacoes": list(solicitacoes_col.find({})),
+        "reagendamentos": list(reagendamentos_col.find({})),
+        "notas": [{"data": n.get("criado_em_br", "")} for n in notas_col.find({})],
+        "faltas_consecutivas": {c["_id"]: len(_faltas_consecutivas(c)) for c in casos},
+    }
 
 
 def _proxima_consulta_remarcavel(caso):
@@ -2123,6 +2142,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._erro_servidor(exc, "GET /api/meu-perfil")
             return
 
+        if path == "/api/relatorios/catalogo":
+            if self._exigir_papel({"tecnico"}) is None:
+                return
+            self._send_json({"categorias": relatorios.catalogo(), "periodos": list(relatorios.PERIODOS)})
+            return
         if path == "/api/estudantes":
             # Só técnico e supervisor consultam o cadastro de estudantes (nome + RA).
             sessao = self._exigir_papel({"tecnico", "supervisor"})
@@ -2472,6 +2496,31 @@ class Handler(BaseHTTPRequestHandler):
                 if sessao:
                     _registrar_auditoria(sessao, "logout", resultado="sucesso")
             self._send_json({"ok": True})
+            return
+
+        if path == "/api/relatorios":
+            sessao_rl = self._exigir_papel({"tecnico"})
+            if sessao_rl is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido"); return
+            agora_br = _dt.datetime.utcnow() - _dt.timedelta(hours=3)
+            try:
+                ids = relatorios.validar_indicadores(body.get("tipo"), body.get("indicadores"))
+                ini, fim, rotulo = relatorios.resolver_periodo(body.get("periodo"), agora_br.date(), body.get("inicio"), body.get("fim"))
+            except ValueError as exc:
+                self._send_error_json(400, str(exc)); return
+            try:
+                secoes = relatorios.gerar(_dados_para_relatorio(), ids, ini, fim, agora_br)
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "POST /api/relatorios"); return
+            _registrar_auditoria(sessao_rl, "relatório gerencial gerado (%s, %s)" % (body.get("tipo"), rotulo))
+            self._send_json({"tipo": body.get("tipo"), "periodo": body.get("periodo"), "periodo_rotulo": rotulo,
+                             "inicio": ini.isoformat(), "fim": fim.isoformat(),
+                             "gerado_em": agora_br.strftime("%d/%m/%Y às %Hh%M"), "gerado_por": sessao_rl.get("nome", ""),
+                             "indicadores": ids, "secoes": secoes})
             return
 
         if path == "/api/recuperar-senha":

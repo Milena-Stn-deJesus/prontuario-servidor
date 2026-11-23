@@ -646,6 +646,7 @@ footer{margin-top:120px}
 .eq-tec[data-view="solicitacoes"] [data-in]:not([data-in~="solicitacoes"]),
 .eq-tec[data-view="cadastro"] [data-in]:not([data-in~="cadastro"]),
 .eq-tec[data-view="alocacao"] [data-in]:not([data-in~="alocacao"]),
+.eq-tec[data-view="relatorios"] [data-in]:not([data-in~="relatorios"]),
 .eq-tec[data-view="caso"] [data-in]:not([data-in~="caso"]){display:none!important}
 /* Alocação de pacientes, agenda do técnico e prontuário dentro do painel — só reaproveitam os tokens do painel */
 .eq-aloc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 18px}
@@ -1162,6 +1163,60 @@ footer{margin-top:120px}
   #pac-success .pac-tools{gap:12px}
 }
 @media (prefers-reduced-motion:reduce){#pac-success *{transition:none!important}}
+
+/* ===== RELATÓRIOS GERENCIAIS (técnico) — escopado em #eq-rel-card ===== */
+#eq-rel-card .eq-rel-fs{border:1px solid var(--line);border-radius:14px;padding:16px 20px 8px;margin:0 0 18px;min-width:0}
+#eq-rel-card .eq-rel-fs legend{padding:0 8px;font-weight:700;font-size:13.5px;color:var(--navy)}
+#eq-rel-card .eq-rel-tipos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+#eq-rel-card .eq-rel-tipo{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;background:#fff}
+#eq-rel-card .eq-rel-tipo:has(input:checked){border-color:var(--navy);background:var(--sky)}
+#eq-rel-card .eq-rel-tipo input{margin-top:4px;accent-color:var(--navy)}
+#eq-rel-card .eq-rel-tipo b{display:block;font-size:14.5px;color:var(--navy)}
+#eq-rel-card .eq-rel-tipo small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+#eq-rel-card .eq-rel-periodo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#eq-rel-card .eq-rel-sel-btns{display:flex;gap:10px;align-items:center;margin-bottom:12px;color:var(--muted)}
+#eq-rel-card .eq-rel-link{background:none;border:0;padding:2px 0;color:var(--navy);font:inherit;font-weight:600;font-size:13.5px;text-decoration:underline;cursor:pointer}
+#eq-rel-card .eq-rel-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:10px}
+#eq-rel-card .eq-rel-cat{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+#eq-rel-card .eq-rel-cat label{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;line-height:1.35;cursor:pointer}
+#eq-rel-card .eq-rel-cat input{margin-top:3px;accent-color:var(--navy);flex:none}
+#eq-rel-card .eq-rel-cat>label{font-weight:700;color:var(--navy);margin-bottom:6px}
+#eq-rel-card .eq-rel-cat ul{list-style:none;margin:0;padding:0 0 0 26px;display:grid;gap:5px;color:var(--ink)}
+#eq-rel-card .eq-rel-acoes{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+#eq-rel-card .eq-rel-msg{font-size:13.5px;color:#a33a2c;font-weight:600}
+#eq-rel-card .eq-rel-msg.ok{color:var(--muted);font-weight:500}
+#eq-rel-card .eq-rel-prev{margin-top:26px;border-top:1px solid var(--line);padding-top:22px}
+#eq-rel-card .eq-rel-prev-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
+#eq-rel-card .eq-rel-prev-head h4{margin:0 0 4px;font-size:19px;color:var(--navy)}
+#eq-rel-card .eq-rel-prev-head p{margin:0;color:var(--muted);font-size:13.5px}
+#eq-rel-card .eq-rel-stale{background:#fbf3df;border:1px solid #e6d3a1;color:#6b4e00;border-radius:10px;padding:10px 14px;font-size:13.5px;margin:0 0 16px}
+#eq-rel-card .eq-rel-sec{border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px;background:#fff}
+#eq-rel-card .eq-rel-sec h5{margin:0 0 2px;font-size:16px;color:var(--navy)}
+#eq-rel-card .eq-rel-cat-nome{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8a6d2f;font-weight:700;margin-bottom:2px}
+#eq-rel-card .eq-rel-ref{display:inline-block;font-size:11.5px;font-weight:600;color:#8a6d2f;background:#f6efdc;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:middle}
+#eq-rel-card .eq-rel-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
+#eq-rel-card .eq-rel-kpi{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--sky)}
+#eq-rel-card .eq-rel-kpi b{display:block;font-size:24px;line-height:1.1;color:var(--navy)}
+#eq-rel-card .eq-rel-kpi span{display:block;font-size:13px;font-weight:600;margin-top:4px}
+#eq-rel-card .eq-rel-kpi small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+#eq-rel-card .eq-rel-nota{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
+#eq-rel-card .eq-rel-vazio{color:var(--muted);font-style:italic;margin:12px 0 4px;font-size:14px}
+#eq-rel-card .eq-rel-tab{overflow-x:auto;margin:14px 0 4px}
+#eq-rel-card .eq-rel-tab table{border-collapse:collapse;width:100%;font-size:13px}
+#eq-rel-card .eq-rel-tab caption{text-align:left;font-weight:600;font-size:13px;color:var(--navy);padding-bottom:6px}
+#eq-rel-card .eq-rel-tab th,#eq-rel-card .eq-rel-tab td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+#eq-rel-card .eq-rel-tab th{background:var(--sky);font-weight:700;color:var(--navy)}
+#eq-rel-card .eq-rel-tab td.n,#eq-rel-card .eq-rel-tab th.n{text-align:right}
+#eq-rel-card .eq-rel-tab th button{background:none;border:0;font:inherit;font-weight:700;color:inherit;cursor:pointer;padding:0;text-align:inherit}
+#eq-rel-card .eq-rel-tab th button:hover{text-decoration:underline}
+#eq-rel-card .eq-rel-graf{margin:14px 0 4px;overflow-x:auto}
+#eq-rel-card .eq-rel-graf svg{display:block;width:100%;height:auto;max-width:760px}
+#eq-rel-card .eq-rel-graf h6{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--navy)}
+#eq-rel-card .eq-rel-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+#eq-rel-card .eq-rel-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (max-width:760px){
+  #eq-rel-card .eq-rel-tipos,#eq-rel-card .eq-rel-cats,#eq-rel-card .eq-rel-periodo{grid-template-columns:1fr}
+}
 
 /* ===== PAINEL DO ESTUDANTE — reaproveita a casca do painel técnico (.eq-tec); tudo aqui é escopado em .eq-est ===== */
 .auth-dash.eq-est .eq-tec-only:not(.eq-est-ok){display:none!important}
@@ -2858,6 +2913,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <button type="button" class="eq-side-link" data-view="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg>Estudantes</button>
             <button type="button" class="eq-side-link" data-view="agenda"><svg aria-hidden="true"><use href="#i-cal"/></svg>Agenda</button>
             <button type="button" class="eq-side-link" data-view="solicitacoes"><svg aria-hidden="true"><use href="#i-file"/></svg>Solicitações<span class="eq-side-count" id="eq-side-count" hidden>0</span></button>
+            <button type="button" class="eq-side-link eq-tec-only" data-view="relatorios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 17v-3M12 17v-5M15 17v-2"/></svg>Relatórios Gerenciais</button>
           </nav>
           <div class="eq-side-foot">
             <a href="#" class="eq-side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Sair</a>
@@ -3111,6 +3167,59 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </table>
           <p class="eq-pt-empty" id="eq-reagendamentos-empty" hidden>Nenhum pedido de reagendamento pendente no momento.</p>
           <p class="eq-pt-empty" id="eq-reagendamentos-msg" hidden></p>
+        </div>
+
+        <div class="dash-hist eq-tec-only" id="eq-rel-card" data-in="relatorios">
+          <div class="eq-tec-page-head">
+            <h3 class="eq-tec-title">Relatórios Gerenciais</h3>
+            <p>Acompanhe os indicadores, analise as atividades e gere relatórios personalizados da Clínica-Escola.</p>
+          </div>
+          <form id="eq-rel-form" novalidate>
+            <fieldset class="eq-rel-fs">
+              <legend>1. Tipo de relatório</legend>
+              <div class="eq-rel-tipos">
+                <label class="eq-rel-tipo"><input type="radio" name="eq-rel-tipo" value="completo" checked><span><b>Relatório completo</b><small>Reúne todos os indicadores disponíveis.</small></span></label>
+                <label class="eq-rel-tipo"><input type="radio" name="eq-rel-tipo" value="personalizado"><span><b>Relatório personalizado</b><small>Escolha apenas os indicadores desejados.</small></span></label>
+              </div>
+            </fieldset>
+            <fieldset class="eq-rel-fs">
+              <legend>2. Período analisado</legend>
+              <div class="eq-rel-periodo">
+                <div class="eq-field"><label for="eq-rel-periodo">Período</label>
+                  <select class="eq-input" id="eq-rel-periodo">
+                    <option value="semana_atual">Esta semana</option>
+                    <option value="semana_anterior">Semana anterior</option>
+                    <option value="mes_atual" selected>Este mês</option>
+                    <option value="mes_anterior">Mês anterior</option>
+                    <option value="tres_meses">Últimos três meses</option>
+                    <option value="personalizado">Período personalizado</option>
+                  </select></div>
+                <div class="eq-field" id="eq-rel-ini-w" hidden><label for="eq-rel-ini">Data inicial</label><input type="date" class="eq-input" id="eq-rel-ini"></div>
+                <div class="eq-field" id="eq-rel-fim-w" hidden><label for="eq-rel-fim">Data final</label><input type="date" class="eq-input" id="eq-rel-fim"></div>
+              </div>
+              <p class="eq-field-hint" id="eq-rel-periodo-hint">Atividades são contadas pela data em que ocorreram. Posições atuais (como pacientes ativos) aparecem marcadas como referência atual.</p>
+            </fieldset>
+            <fieldset class="eq-rel-fs" id="eq-rel-sel" hidden>
+              <legend>3. Indicadores</legend>
+              <div class="eq-rel-sel-btns">
+                <button type="button" class="eq-rel-link" id="eq-rel-todos">Selecionar tudo</button><span aria-hidden="true">|</span>
+                <button type="button" class="eq-rel-link" id="eq-rel-limpar">Limpar seleção</button>
+              </div>
+              <div class="eq-rel-cats" id="eq-rel-cats"></div>
+            </fieldset>
+            <div class="eq-rel-acoes">
+              <button type="submit" class="btn btn-primary" id="eq-rel-ver">Visualizar relatório</button>
+              <span class="eq-rel-msg" id="eq-rel-msg" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+          <div class="eq-rel-prev" id="eq-rel-prev" hidden>
+            <div class="eq-rel-prev-head">
+              <div><h4>Relatório Gerencial de Atividades</h4><p id="eq-rel-prev-meta"></p></div>
+              <button type="button" class="btn btn-primary" id="eq-rel-pdf">Gerar PDF</button>
+            </div>
+            <p class="eq-rel-stale" id="eq-rel-stale" hidden>Os filtros foram alterados. Clique em “Visualizar relatório” para atualizar a prévia antes de gerar o PDF.</p>
+            <div id="eq-rel-corpo"></div>
+          </div>
         </div>
 
         <div class="dash-hist eq-tec-only" id="eq-aloc-card" data-in="alocacao">
@@ -3481,6 +3590,10 @@ window.apiGetMeuPerfil = function(){
 };
 window.apiSalvarMeuPerfil = function(corpo){
   return _apiFetch('/api/meu-perfil', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(corpo)});
+};
+window.apiRelatorioCatalogo = function(){ return _apiFetch('/api/relatorios/catalogo'); };
+window.apiGerarRelatorio = function(corpo){
+  return _apiFetch('/api/relatorios', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(corpo)});
 };
 window.apiGetEstudantes = function(){
   return _apiFetch('/api/estudantes');
@@ -5237,7 +5350,7 @@ route();
     if(typeof aoEntrarNaVisao === 'function') aoEntrarNaVisao(tecView);
   }
   function setTecView(view){
-    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro','alocacao','caso','perfil'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
+    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro','alocacao','caso','perfil','relatorios'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
     tecView = view;
     applyTecView();
     const card = tecCard();
@@ -6476,8 +6589,344 @@ route();
       fillNpSupervisores(); renderAloc(); renderVinculos();
     });
   }
+  /* ===== RELATÓRIOS GERENCIAIS (somente técnico; o servidor também bloqueia os outros perfis) ===== */
+  const REL_CORES = ['#13372a', '#b8893a', '#8a9a92', '#9bbfa9'];
+  let relCatalogo = null, relDados = null, relSort = {}, relOcupado = false;
+
+  function relEl(id){ return document.getElementById(id); }
+  function relMsg(t, ok){ const m = relEl('eq-rel-msg'); if(m){ m.textContent = t || ''; m.classList.toggle('ok', !!ok); } }
+  function relTipo(){ const r = document.querySelector('input[name="eq-rel-tipo"]:checked'); return r ? r.value : 'completo'; }
+  function relMarcados(){ return Array.prototype.map.call(document.querySelectorAll('#eq-rel-cats input[data-ind]:checked'), function(i){ return i.dataset.ind; }); }
+
+  function relDesenharCatalogo(){
+    const box = relEl('eq-rel-cats');
+    if(!box || !relCatalogo) return;
+    box.innerHTML = relCatalogo.categorias.map(function(c, ci){
+      return '<div class="eq-rel-cat"><label><input type="checkbox" data-cat="' + ci + '"><span>' + esc(c.titulo) + '</span></label><ul>'
+        + c.indicadores.map(function(i){ return '<li><label><input type="checkbox" data-ind="' + esc(i.id) + '" data-pai="' + ci + '"><span>' + esc(i.titulo) + '</span></label></li>'; }).join('')
+        + '</ul></div>';
+    }).join('');
+  }
+  function relSincronizarPais(){
+    document.querySelectorAll('#eq-rel-cats input[data-cat]').forEach(function(p){
+      const filhos = document.querySelectorAll('#eq-rel-cats input[data-pai="' + p.dataset.cat + '"]');
+      const n = Array.prototype.filter.call(filhos, function(f){ return f.checked; }).length;
+      p.checked = n === filhos.length; p.indeterminate = n > 0 && n < filhos.length;
+    });
+  }
+  function relDesatualizar(){
+    if(relDados) { const s = relEl('eq-rel-stale'); if(s) s.hidden = false; const b = relEl('eq-rel-pdf'); if(b) b.disabled = true; }
+  }
+  function relAtualizarForm(){
+    const pers = relTipo() === 'personalizado';
+    relEl('eq-rel-sel').hidden = !pers;
+    const cust = relEl('eq-rel-periodo').value === 'personalizado';
+    relEl('eq-rel-ini-w').hidden = !cust; relEl('eq-rel-fim-w').hidden = !cust;
+  }
+
+  function relAbrir(){
+    if(relCatalogo) return;
+    window.apiRelatorioCatalogo().then(function(c){ relCatalogo = c; relDesenharCatalogo(); relMsg(''); })
+      .catch(function(){ relMsg('Não foi possível carregar a lista de indicadores. Tente novamente.'); });
+  }
+
+  /* ---------- gráficos (mesma geometria na tela e no PDF) ---------- */
+  function relAbrevia(t, n){ t = String(t); return t.length > n ? t.slice(0, n - 1) + '…' : t; }
+  function relGeom(g){
+    const ns = g.series.length, n = g.rotulos.length;
+    let max = 0; g.series.forEach(function(s){ s.valores.forEach(function(v){ if(v > max) max = v; }); });
+    const passo = max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : max <= 50 ? 10 : max <= 100 ? 20 : Math.pow(10, Math.floor(Math.log10(max)));
+    const topo = Math.max(passo, Math.ceil(max / passo) * passo);
+    const horiz = n > 8 || g.rotulos.some(function(r){ return String(r).length > 12; });
+    const out = {horiz: horiz, bars: [], rot: [], grade: [], topo: topo};
+    if(!horiz){
+      const W = 640, H = 270, ml = 38, mr = 10, mt = 14, mb = 44, pw = W - ml - mr, ph = H - mt - mb;
+      out.W = W; out.H = H;
+      for(let v = 0; v <= topo; v += passo) out.grade.push({y: mt + ph - ph * v / topo, x1: ml, x2: W - mr, t: String(v), tx: ml - 6});
+      const faixa = pw / n, bw = Math.min(34, faixa * 0.78 / ns);
+      g.rotulos.forEach(function(r, i){
+        const cx = ml + faixa * i + faixa / 2;
+        out.rot.push({x: cx, y: H - mb + 16, t: relAbrevia(r, 14)});
+        g.series.forEach(function(s, k){
+          const v = s.valores[i], h = ph * v / topo;
+          out.bars.push({x: cx - bw * ns / 2 + bw * k, y: mt + ph - h, w: bw - 2, h: h, s: k, v: v, ty: mt + ph - h - 4, tx: cx - bw * ns / 2 + bw * k + (bw - 2) / 2});
+        });
+      });
+    } else {
+      const ml = 170, mr = 40, mt = 8, mb = 26, lin = 15 * ns + 8;
+      const W = 640, H = mt + mb + lin * n, pw = W - ml - mr;
+      out.W = W; out.H = H;
+      for(let v = 0; v <= topo; v += passo) out.grade.push({x: ml + pw * v / topo, y1: mt, y2: H - mb, t: String(v), ty: H - mb + 14, vert: true});
+      g.rotulos.forEach(function(r, i){
+        const y0 = mt + lin * i;
+        out.rot.push({x: ml - 8, y: y0 + lin / 2 + 3, t: relAbrevia(r, 26), end: true});
+        g.series.forEach(function(s, k){
+          const v = s.valores[i], w = pw * v / topo;
+          out.bars.push({x: ml, y: y0 + 4 + 15 * k, w: w, h: 12, s: k, v: v, tx: ml + w + 5, ty: y0 + 4 + 15 * k + 10});
+        });
+      });
+    }
+    return out;
+  }
+  function relSvg(g){
+    const o = relGeom(g);
+    let s = '<svg viewBox="0 0 ' + o.W + ' ' + o.H + '" role="img" aria-label="' + esc(g.titulo) + '" font-family="Inter,Arial,sans-serif">';
+    o.grade.forEach(function(l){
+      if(l.vert){ s += '<line x1="' + l.x + '" y1="' + l.y1 + '" x2="' + l.x + '" y2="' + l.y2 + '" stroke="#d5e6de" stroke-width="1"/><text x="' + l.x + '" y="' + l.ty + '" font-size="11" fill="#617a71" text-anchor="middle">' + l.t + '</text>'; }
+      else { s += '<line x1="' + l.x1 + '" y1="' + l.y + '" x2="' + l.x2 + '" y2="' + l.y + '" stroke="#d5e6de" stroke-width="1"/><text x="' + l.tx + '" y="' + (l.y + 4) + '" font-size="11" fill="#617a71" text-anchor="end">' + l.t + '</text>'; }
+    });
+    o.bars.forEach(function(b){
+      s += '<rect x="' + b.x + '" y="' + b.y + '" width="' + Math.max(b.w, 0) + '" height="' + Math.max(b.h, 0) + '" rx="2" fill="' + REL_CORES[b.s % 4] + '"/>';
+      if(b.v > 0) s += '<text x="' + b.tx + '" y="' + b.ty + '" font-size="11" fill="#13372a" text-anchor="' + (o.horiz ? 'start' : 'middle') + '">' + b.v + '</text>';
+    });
+    o.rot.forEach(function(r){ s += '<text x="' + r.x + '" y="' + r.y + '" font-size="12" fill="#1b2b24" text-anchor="' + (r.end ? 'end' : 'middle') + '">' + esc(r.t) + '</text>'; });
+    return s + '</svg>';
+  }
+
+  /* ---------- prévia ---------- */
+  function relTabelaOrdenada(sec){
+    const t = sec.tabela, st = relSort[sec.id];
+    if(!t) return [];
+    const linhas = t.linhas.slice();
+    if(st){
+      linhas.sort(function(a, b){
+        const x = a[st.col], y = b[st.col];
+        const c = (typeof x === 'number' && typeof y === 'number') ? x - y : String(x).localeCompare(String(y), 'pt-BR');
+        return st.dir * c;
+      });
+    }
+    return linhas;
+  }
+  function relSecaoHtml(sec){
+    let h = '<section class="eq-rel-sec" data-sec="' + esc(sec.id) + '"><div class="eq-rel-cat-nome">' + esc(sec.categoria) + '</div><h5>' + esc(sec.titulo)
+      + (sec.referencia_atual ? '<span class="eq-rel-ref">Referência atual</span>' : '') + '</h5>';
+    if(sec.vazio){ return h + '<p class="eq-rel-vazio">' + esc(sec.aviso) + '</p></section>'; }
+    if(sec.kpis.length){
+      h += '<div class="eq-rel-kpis">' + sec.kpis.map(function(k){
+        return '<div class="eq-rel-kpi"><b>' + esc(k.valor) + '</b><span>' + esc(k.rotulo) + '</span>' + (k.detalhe ? '<small>' + esc(k.detalhe) + '</small>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    if(sec.grafico){
+      const g = sec.grafico;
+      h += '<div class="eq-rel-graf"><h6>' + esc(g.titulo) + '</h6>' + relSvg(g) + (g.series.length > 1 ? '<div class="eq-rel-leg">' + g.series.map(function(s, i){ return '<span><i style="background:' + REL_CORES[i % 4] + '"></i>' + esc(s.nome) + '</span>'; }).join('') + '</div>' : '') + '</div>';
+    }
+    if(sec.tabela){
+      const t = sec.tabela, st = relSort[sec.id];
+      h += '<div class="eq-rel-tab"><table><caption>' + esc(t.titulo) + '</caption><thead><tr>' + t.colunas.map(function(c, i){
+        const num = i > 0 && typeof t.linhas[0][i] === 'number';
+        const ar = st && st.col === i ? (st.dir > 0 ? ' aria-sort="ascending"' : ' aria-sort="descending"') : '';
+        return '<th scope="col" class="' + (num ? 'n' : '') + '"' + ar + '>' + (t.ordenavel ? '<button type="button" data-ord="' + esc(sec.id) + '" data-col="' + i + '" title="Ordenar por ' + esc(c) + '">' + esc(c) + (st && st.col === i ? (st.dir > 0 ? ' ▲' : ' ▼') : '') + '</button>' : esc(c)) + '</th>';
+      }).join('') + '</tr></thead><tbody>' + relTabelaOrdenada(sec).map(function(l){
+        return '<tr>' + l.map(function(c, i){ return '<td class="' + (typeof c === 'number' ? 'n' : '') + '">' + esc(c) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+    }
+    (sec.notas || []).forEach(function(n){ h += '<p class="eq-rel-nota">' + esc(n) + '</p>'; });
+    return h + '</section>';
+  }
+  function relDesenharPrevia(){
+    const r = relDados;
+    relEl('eq-rel-prev-meta').textContent = (r.tipo === 'completo' ? 'Relatório completo' : 'Relatório personalizado') + ' · Período: ' + r.periodo_rotulo + ' · Gerado em ' + r.gerado_em;
+    relEl('eq-rel-corpo').innerHTML = r.secoes.map(relSecaoHtml).join('');
+    relEl('eq-rel-stale').hidden = true; relEl('eq-rel-pdf').disabled = false;
+    relEl('eq-rel-prev').hidden = false;
+  }
+
+  function relCorpoPedido(){
+    const b = {tipo: relTipo(), periodo: relEl('eq-rel-periodo').value};
+    if(b.tipo === 'personalizado') b.indicadores = relMarcados();
+    if(b.periodo === 'personalizado'){ b.inicio = relEl('eq-rel-ini').value; b.fim = relEl('eq-rel-fim').value; }
+    return b;
+  }
+  function relVisualizar(){
+    if(relOcupado) return;
+    const b = relCorpoPedido();
+    if(b.tipo === 'personalizado' && !b.indicadores.length){ relMsg('Selecione ao menos um indicador para gerar o relatório personalizado.'); return; }
+    if(b.periodo === 'personalizado'){
+      if(!b.inicio || !b.fim){ relMsg('Informe a data inicial e a data final do período.'); return; }
+      if(b.fim < b.inicio){ relMsg('A data final não pode ser anterior à data inicial.'); return; }
+    }
+    relOcupado = true; relMsg('Gerando…', true); relEl('eq-rel-ver').disabled = true;
+    window.apiGerarRelatorio(b).then(function(r){ relDados = r; relSort = {}; relDesenharPrevia(); relMsg('Prévia atualizada.', true); })
+      .catch(function(e){ relMsg((e && e.status && e.status < 500 && e.message) ? e.message : 'Não foi possível gerar o relatório agora. Tente novamente.'); })
+      .then(function(){ relOcupado = false; relEl('eq-rel-ver').disabled = false; });
+  }
+
+  /* ---------- PDF (jsPDF, desenhado a partir dos MESMOS dados da prévia) ---------- */
+  function relPdf(){
+    if(!relDados || relEl('eq-rel-stale').hidden === false) return;
+    const jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+    if(!jsPDFCtor){ relMsg('O gerador de PDF não carregou. Verifique a conexão e tente novamente.'); return; }
+    const r = relDados;
+    const NAVY = [19, 55, 42], SAGE = [155, 191, 169], BEGE = [246, 241, 231], OURO = [184, 151, 90], MUTED = [97, 122, 113], LINE = [213, 230, 222], INK = [27, 43, 36];
+    const COR = [[19, 55, 42], [184, 137, 58], [138, 154, 146], [155, 191, 169]];
+    const doc = new jsPDFCtor({unit: 'pt', format: 'a4'});
+    const PW = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight(), MX = 48, CW = PW - MX * 2, BOT = PH - 62;
+    let y = 0;
+    const logoImg = document.querySelector('.nav-logo img');
+    const txt = function(c){ doc.setTextColor(c[0], c[1], c[2]); };
+    const fill = function(c){ doc.setFillColor(c[0], c[1], c[2]); };
+    const draw = function(c){ doc.setDrawColor(c[0], c[1], c[2]); };
+    const linhas = function(t, w){ return doc.splitTextToSize(String(t), w); };
+
+    function capa(){
+      fill(NAVY); doc.rect(0, 0, PW, 112, 'F');
+      fill(OURO); doc.rect(0, 112, PW, 3, 'F');
+      try{ if(logoImg && logoImg.src){ const ratio = (logoImg.naturalWidth && logoImg.naturalHeight) ? logoImg.naturalWidth / logoImg.naturalHeight : 3.5; fill(BEGE); doc.roundedRect(MX - 6, 22, 30 * ratio + 12, 42, 4, 4, 'F'); doc.addImage(logoImg.src, 'PNG', MX, 28, 30 * ratio, 30); } }catch(e){ /* sem logo */ }
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); txt(BEGE);
+      doc.text('FACULDADE DE CIÊNCIAS MÉDICAS DA SANTA CASA DE SÃO PAULO', MX, 82);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.text('Clínica-Escola de Psicologia', MX, 96);
+      y = 150;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(22); txt(NAVY); doc.text('Relatório Gerencial de Atividades', MX, y); y += 26;
+      draw(OURO); doc.setLineWidth(1.2); doc.line(MX, y, MX + 70, y); y += 22;
+      const meta = [['Período analisado', r.periodo_rotulo], ['Tipo de relatório', r.tipo === 'completo' ? 'Completo (todos os indicadores)' : 'Personalizado (' + r.secoes.length + ' indicador' + (r.secoes.length === 1 ? '' : 'es') + ')'],
+        ['Data e hora de geração', r.gerado_em], ['Gerado por', r.gerado_por || '—']];
+      meta.forEach(function(m){ doc.setFont('helvetica', 'bold'); doc.setFontSize(9); txt(MUTED); doc.text(m[0].toUpperCase(), MX, y); doc.setFont('helvetica', 'normal'); doc.setFontSize(11); txt(INK); doc.text(m[1], MX + 140, y); y += 18; });
+      y += 6;
+      const aviso = 'Os números deste relatório representam atividade registrada na plataforma. Não avaliam a qualidade clínica nem a competência de estudantes ou supervisores, e não incluem textos de anamnese, evoluções ou outros conteúdos dos prontuários. Indicadores marcados como "referência atual" mostram a posição no momento da geração, sem filtro de período.';
+      const al = linhas(aviso, CW - 24); fill(BEGE); draw(LINE); doc.setLineWidth(0.6); doc.roundedRect(MX, y, CW, al.length * 12 + 18, 4, 4, 'FD');
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(8.8); txt(MUTED); doc.text(al, MX + 12, y + 16); y += al.length * 12 + 36;
+    }
+    function nova(){ doc.addPage(); y = 54; }
+    function cabo(h){ if(y + h > BOT){ nova(); return true; } return false; }
+
+    function titulo(sec){
+      cabo(70);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); txt(OURO); doc.text(sec.categoria.toUpperCase(), MX, y); y += 14;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); txt(NAVY); doc.text(sec.titulo, MX, y);
+      if(sec.referencia_atual){ const w = doc.getTextWidth(sec.titulo); doc.setFontSize(8); doc.setFont('helvetica', 'bold'); txt(OURO); doc.text('REFERÊNCIA ATUAL', MX + w + 10, y); }
+      y += 8; draw(SAGE); doc.setLineWidth(0.8); doc.line(MX, y, PW - MX, y); y += 16;
+    }
+    function kpis(lista){
+      const cols = 3, gap = 10, w = (CW - gap * (cols - 1)) / cols;
+      for(let i = 0; i < lista.length; i += cols){
+        const linha = lista.slice(i, i + cols);
+        const alturas = linha.map(function(k){ doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); const nr = linhas(k.rotulo, w - 20).length; doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); const nd = k.detalhe ? linhas(k.detalhe, w - 20).length : 0; return 40 + nr * 10 + nd * 9; });
+        const h = Math.max.apply(null, alturas);
+        cabo(h + 8);
+        linha.forEach(function(k, j){
+          const x = MX + j * (w + gap);
+          fill([236, 248, 244]); draw(LINE); doc.setLineWidth(0.6); doc.roundedRect(x, y, w, h, 4, 4, 'FD');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(17); txt(NAVY); doc.text(String(k.valor), x + 10, y + 24);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); txt(INK); doc.setFontSize(8.5); const rl = linhas(k.rotulo, w - 20); doc.text(rl, x + 10, y + 38);
+          if(k.detalhe){ doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); txt(MUTED); doc.setFontSize(7.5); doc.text(linhas(k.detalhe, w - 20), x + 10, y + 36 + rl.length * 10); }
+        });
+        y += h + 8;
+      }
+      y += 4;
+    }
+    function grafico(g){
+      const o = relGeom(g), esc_ = (CW > 0 ? Math.min(1, CW / o.W) : 1), H = o.H * esc_;
+      cabo(H + 40);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); txt(NAVY); doc.text(g.titulo, MX, y); y += 8;
+      const X = function(v){ return MX + v * esc_; }, Y = function(v){ return y + v * esc_; }, F = function(px){ return px * esc_ * 0.82; };
+      o.grade.forEach(function(l){
+        draw(LINE); doc.setLineWidth(0.5); doc.setFont('helvetica', 'normal'); doc.setFontSize(F(11)); txt(MUTED);
+        if(l.vert){ doc.line(X(l.x), Y(l.y1), X(l.x), Y(l.y2)); doc.text(l.t, X(l.x), Y(l.ty), {align: 'center'}); }
+        else { doc.line(X(l.x1), Y(l.y), X(l.x2), Y(l.y)); doc.text(l.t, X(l.tx), Y(l.y) + 3, {align: 'right'}); }
+      });
+      o.bars.forEach(function(b){
+        const c = COR[b.s % 4]; fill(c); if(b.w > 0 && b.h > 0) doc.rect(X(b.x), Y(b.y), b.w * esc_, b.h * esc_, 'F');
+        if(b.v > 0){ doc.setFont('helvetica', 'bold'); doc.setFontSize(F(11)); txt(NAVY); doc.text(String(b.v), X(b.tx), Y(b.ty), {align: o.horiz ? 'left' : 'center'}); }
+      });
+      o.rot.forEach(function(rt){ doc.setFont('helvetica', 'normal'); doc.setFontSize(F(12)); txt(INK); doc.text(rt.t, X(rt.x), Y(rt.y), {align: rt.end ? 'right' : 'center'}); });
+      y += H + 6;
+      if(g.series.length > 1){
+        let x = MX; doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+        g.series.forEach(function(s, i){ const w = doc.getTextWidth(s.nome) + 22; if(x + w > PW - MX){ x = MX; y += 11; } fill(COR[i % 4]); doc.rect(x, y - 6, 7, 7, 'F'); txt(MUTED); doc.text(s.nome, x + 11, y); x += w + 8; });
+        y += 12;
+      }
+      y += 6;
+    }
+    function tabela(sec){
+      const t = sec.tabela, ls = relTabelaOrdenada(sec), nc = t.colunas.length;
+      const primeira = nc > 2 ? 0.22 : 0.6;
+      const wcol = t.colunas.map(function(c, i){ return i === 0 ? CW * primeira : (CW * (1 - primeira)) / (nc - 1); });
+      if(nc === 8){ wcol[0] = CW * 0.2; wcol[1] = CW * 0.17; for(let i = 2; i < 8; i++) wcol[i] = CW * 0.63 / 6; }
+      if(nc === 6){ wcol[0] = CW * 0.22; for(let i = 1; i < 6; i++) wcol[i] = CW * 0.78 / 5; }
+      cabo(40); doc.setFont('helvetica', 'bold'); doc.setFontSize(9); txt(NAVY); doc.text(t.titulo, MX, y); y += 8;
+      const cab = function(){
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.6);
+        const hs = t.colunas.map(function(c, i){ return linhas(c, wcol[i] - 8); });
+        const h = Math.max.apply(null, hs.map(function(a){ return a.length; })) * 9 + 8;
+        fill(NAVY); doc.rect(MX, y, CW, h, 'F'); txt(BEGE);
+        let x = MX; hs.forEach(function(a, i){ doc.text(a, x + 4, y + 12, {align: 'left'}); x += wcol[i]; });
+        y += h;
+      };
+      cabo(60); cab();
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.2);
+      ls.forEach(function(l, idx){
+        const cel = l.map(function(c, i){ return linhas(c, wcol[i] - 8); });
+        const h = Math.max.apply(null, cel.map(function(a){ return a.length; })) * 10 + 6;
+        if(y + h > BOT){ nova(); cab(); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.2); }
+        if(idx % 2 === 0){ fill([246, 249, 247]); doc.rect(MX, y, CW, h, 'F'); }
+        txt(INK); let x = MX; cel.forEach(function(a, i){ doc.text(a, x + 4, y + 11); x += wcol[i]; });
+        draw(LINE); doc.setLineWidth(0.4); doc.line(MX, y + h, MX + CW, y + h);
+        y += h;
+      });
+      y += 10;
+    }
+    function notas(lista){
+      lista.forEach(function(n){ const l = linhas(n, CW); cabo(l.length * 10 + 6); doc.setFont('helvetica', 'italic'); doc.setFontSize(8); txt(MUTED); doc.text(l, MX, y); y += l.length * 10 + 4; });
+    }
+
+    capa();
+    let ultimaCat = '';
+    r.secoes.forEach(function(sec){
+      if(ultimaCat && y > BOT - 120) nova();
+      ultimaCat = sec.categoria;
+      titulo(sec);
+      if(sec.vazio){ cabo(24); doc.setFont('helvetica', 'italic'); doc.setFontSize(10); txt(MUTED); doc.text(sec.aviso, MX, y); y += 26; return; }
+      if(sec.kpis.length) kpis(sec.kpis);
+      if(sec.grafico) grafico(sec.grafico);
+      if(sec.tabela) tabela(sec);
+      notas(sec.notas || []);
+      y += 12;
+    });
+
+    const total = doc.internal.getNumberOfPages();
+    for(let p = 1; p <= total; p++){
+      doc.setPage(p);
+      draw(OURO); doc.setLineWidth(0.8); doc.line(MX, PH - 50, PW - MX, PH - 50);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); txt(NAVY);
+      doc.text('Faculdade de Ciências Médicas da Santa Casa de São Paulo · Clínica-Escola de Psicologia', MX, PH - 38);
+      doc.setFont('helvetica', 'normal'); txt(MUTED);
+      doc.text('Dados extraídos da plataforma Prontuário Eletrônico de Psicologia em ' + r.gerado_em + '. Documento de uso interno.', MX, PH - 27);
+      doc.text('Página ' + p + ' de ' + total, PW - MX, PH - 38, {align: 'right'});
+    }
+    const d = new Date(); const aaaa = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    doc.save('Relatorio_Clinica_Escola_' + aaaa + '-' + mm + '-' + dd + '.pdf');
+    relMsg('PDF gerado.', true);
+  }
+
+  (function relLigar(){
+    const form = relEl('eq-rel-form');
+    if(!form) return;
+    form.addEventListener('submit', function(e){ e.preventDefault(); relVisualizar(); });
+    form.addEventListener('change', function(e){
+      const t = e.target;
+      if(t.matches('input[data-cat]')){ document.querySelectorAll('#eq-rel-cats input[data-pai="' + t.dataset.cat + '"]').forEach(function(f){ f.checked = t.checked; }); }
+      if(t.matches('input[data-ind], input[data-cat]')) relSincronizarPais();
+      relAtualizarForm(); relDesatualizar(); relMsg('');
+    });
+    relEl('eq-rel-ini').addEventListener('input', function(){ relDesatualizar(); });
+    relEl('eq-rel-fim').addEventListener('input', function(){ relDesatualizar(); });
+    relEl('eq-rel-todos').addEventListener('click', function(){ document.querySelectorAll('#eq-rel-cats input').forEach(function(i){ i.checked = true; i.indeterminate = false; }); relDesatualizar(); relMsg(''); });
+    relEl('eq-rel-limpar').addEventListener('click', function(){ document.querySelectorAll('#eq-rel-cats input').forEach(function(i){ i.checked = false; i.indeterminate = false; }); relDesatualizar(); relMsg(''); });
+    relEl('eq-rel-pdf').addEventListener('click', relPdf);
+    relEl('eq-rel-corpo').addEventListener('click', function(e){
+      const b = e.target.closest('button[data-ord]');
+      if(!b) return;
+      const id = b.dataset.ord, col = +b.dataset.col, st = relSort[id];
+      relSort[id] = {col: col, dir: st && st.col === col ? -st.dir : (col === 0 ? 1 : -1)};
+      const sec = relDados.secoes.filter(function(s){ return s.id === id; })[0];
+      const nodo = b.closest('.eq-rel-sec'); if(nodo && sec){ nodo.outerHTML = relSecaoHtml(sec); const novo = relEl('eq-rel-corpo').querySelector('[data-ord="' + id + '"][data-col="' + col + '"]'); if(novo) novo.focus(); }
+    });
+    relAtualizarForm();
+  })();
+
   function aoEntrarNaVisao(v){
     if(currentRole !== 'tecnico') return;
+    if(v === 'relatorios') relAbrir();
     carregarDadosAlocacao(v === 'alocacao' || v === 'cadastro');
     if(v === 'agenda') popularFiltrosAgenda();
     renderAloc();
