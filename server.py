@@ -13,6 +13,9 @@ O QUE ESSE ARQUIVO FAZ:
     PUT  /api/casos/<id>            -> atualiza um caso (agenda, nova evolução, documento,
                                         primeira anamnese...); evoluções e anamnese já
                                         registradas são imutáveis no servidor, não só na tela
+    GET  /api/inscricoes/disponibilidade -> PÚBLICA: {aberta, formulario_url (só se aberta)}; sem cache
+    GET  /api/inscricoes/configuracao    -> estado da Gestão de Inscrições (somente técnico)
+    PUT  /api/inscricoes/configuracao    -> abre/encerra as inscrições {aberta: true|false} (somente técnico, auditado)
     GET  /api/inscricoes            -> DESCONTINUADA (410): inscrição e triagem são feitas fora do sistema
     POST /api/inscricoes            -> DESCONTINUADA (410)
     PUT  /api/inscricoes/<INS-...>  -> DESCONTINUADA (410); os dados antigos seguem no banco
@@ -958,10 +961,33 @@ documentos_col = db["documentos"]
 # Histórico de eventos dos documentos (envio, visualização, download, exclusão lógica). Só acréscimo: não existe rota
 # para editar nem apagar. Nunca guarda conteúdo clínico nem o conteúdo do arquivo.
 documentos_eventos_col = db["documentos_eventos"]
+configuracoes_col = db["configuracoes"]  # configurações institucionais mínimas (hoje: só a Gestão de Inscrições)
 # Exportações do prontuário: o protocolo (#1001, #1002...) nasce aqui, no servidor, e cada exportação fica auditada.
 exportacoes_col = db["exportacoes"]
 documentos_fs = gridfs.GridFS(db, collection="documentos_arquivos")
 print("Conectado ao MongoDB! Banco: %s" % DB_NAME)
+
+
+# ---- Gestão de Inscrições (controle administrativo do acesso ao formulário externo) ----
+# O formulário em si é externo (Google Forms) e nada aqui o fecha: o interruptor só decide se a
+# plataforma oferece o endereço aos visitantes. Sem documento gravado = inscrições ABERTAS, que é o
+# comportamento que existia antes desta função (a implantação não altera nada sozinha).
+FORMULARIO_INSCRICAO_URL = os.environ.get("FORMULARIO_INSCRICAO_URL") or (
+    "https://docs.google.com/forms/d/e/1FAIpQLSdH1AnV9ukKNWYwgK4QPjtBWTbPHpQZU7AIqZPKGDql4vHWIw/viewform?usp=dialog"
+)
+CONFIG_INSCRICOES_ID = "inscricoes"
+
+
+def _estado_inscricoes():
+    """Devolve o documento de configuração (ou o padrão 'aberta'). Pode levantar PyMongoError."""
+    doc = configuracoes_col.find_one({"_id": CONFIG_INSCRICOES_ID})
+    if not doc:
+        return {"aberta": True, "alterado_em": None, "alterado_por": None}
+    return {
+        "aberta": bool(doc.get("aberta", True)),
+        "alterado_em": doc.get("alterado_em"),
+        "alterado_por": doc.get("alterado_por"),
+    }
 
 
 def _registrar_auditoria(sessao, acao, caso_id=None, resultado="sucesso", detalhe=None):
@@ -1792,11 +1818,13 @@ class Handler(BaseHTTPRequestHandler):
             "form-action 'self'",
         )
 
-    def _send_json(self, data, status=200):
+    def _send_json(self, data, status=200, extra_headers=None):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        for _k, _v in (extra_headers or {}).items():
+            self.send_header(_k, _v)
         self._cors_headers()
         self._security_headers()
         self.end_headers()
@@ -2141,6 +2169,30 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(_perfil_do_estudante(est))
             except PyMongoError as exc:
                 self._erro_servidor(exc, "GET /api/meu-perfil")
+            return
+
+        if path == "/api/inscricoes/disponibilidade":
+            # Pública (a página de inscrição é pública). Nunca em cache: o estado precisa ser o real.
+            try:
+                est = _estado_inscricoes()
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/inscricoes/disponibilidade")
+                return
+            resp = {"aberta": est["aberta"]}
+            if est["aberta"]:
+                resp["formulario_url"] = FORMULARIO_INSCRICAO_URL
+            self._send_json(resp, extra_headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"})
+            return
+
+        if path == "/api/inscricoes/configuracao":
+            if self._exigir_papel({"tecnico"}) is None:
+                return
+            try:
+                est = _estado_inscricoes()
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "GET /api/inscricoes/configuracao")
+                return
+            self._send_json(est, extra_headers={"Cache-Control": "no-store"})
             return
 
         if path == "/api/relatorios/catalogo":
@@ -3385,6 +3437,39 @@ class Handler(BaseHTTPRequestHandler):
     # ---------- PUT ----------
     def do_PUT(self):
         path = self.path.split("?", 1)[0]
+
+        if path == "/api/inscricoes/configuracao":
+            sessao = self._exigir_papel({"tecnico"})
+            if sessao is None:
+                return
+            try:
+                body = self._read_json_body()
+            except Exception:
+                self._send_error_json(400, "corpo da requisição não é um JSON válido")
+                return
+            if not isinstance(body, dict) or not isinstance(body.get("aberta"), bool):
+                self._send_error_json(400, "informe 'aberta' como verdadeiro ou falso")
+                return
+            nova = body["aberta"]
+            try:
+                atual = _estado_inscricoes()
+                if atual["aberta"] != nova or configuracoes_col.find_one({"_id": CONFIG_INSCRICOES_ID}) is None:
+                    doc = {"aberta": nova, "alterado_em": _agora_br(), "alterado_por": sessao.get("nome") or sessao.get("email")}
+                    if configuracoes_col.find_one({"_id": CONFIG_INSCRICOES_ID}) is None:
+                        configuracoes_col.insert_one(dict(doc, _id=CONFIG_INSCRICOES_ID))
+                    else:
+                        configuracoes_col.update_one({"_id": CONFIG_INSCRICOES_ID}, {"$set": doc})
+                    if atual["aberta"] != nova:
+                        _registrar_auditoria(
+                            sessao, "inscrições abertas" if nova else "inscrições encerradas",
+                            detalhe="Gestão de Inscrições: estado anterior %s" % ("aberta" if atual["aberta"] else "encerrada"),
+                        )
+                est = _estado_inscricoes()
+            except PyMongoError as exc:
+                self._erro_servidor(exc, "PUT /api/inscricoes/configuracao")
+                return
+            self._send_json(est, extra_headers={"Cache-Control": "no-store"})
+            return
 
         if path == "/api/meu-perfil":
             # O estudante confere os próprios dados e informa SUA disponibilidade (dias e turnos).

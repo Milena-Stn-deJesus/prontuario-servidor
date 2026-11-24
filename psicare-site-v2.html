@@ -847,6 +847,50 @@ footer{margin-top:120px}
 .eq-tec .eq-tec-panel{padding:20px 22px 16px}
 .eq-tec .eq-tec-panel-head{margin-bottom:6px}
 .eq-tec .eq-tec-panel-head .eq-tec-h{margin:0}
+/* Comunicado de inscrições abertas na Home (criado só quando o servidor confirma "abertas") */
+.home-insc{background:var(--navy);color:#fff;padding:104px 0 20px;border-bottom:1px solid rgba(205,185,138,.35)}
+.home-insc .wrap{display:flex;align-items:center;gap:20px}
+.home-insc-ic{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid rgba(205,185,138,.7);color:#d9c79a;display:grid;place-items:center}
+.home-insc-ic svg{width:21px;height:21px}
+.home-insc-txt{min-width:0;flex:1}
+.home-insc-rot{display:block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.2em;color:#d9c79a;margin:0 0 6px}
+.home-insc-tit{font-family:var(--serif);font-weight:400;font-size:clamp(21px,2.4vw,28px);line-height:1.2;color:#fff;margin:0 0 4px;letter-spacing:-.01em}
+.home-insc-desc{font-size:14.5px;line-height:1.55;color:rgba(236,248,244,.85);margin:0}
+.home-insc-btn{flex:none;display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:999px;background:#f3ecd9;color:var(--navy);font-weight:600;font-size:14.5px;text-decoration:none;border:1px solid #f3ecd9;transition:background .2s}
+.home-insc-btn:hover{background:#fff}
+.home-insc-btn:focus-visible{outline:2px solid #d9c79a;outline-offset:3px}
+.home-insc-btn svg{width:16px;height:16px}
+@media(max-width:760px){.home-insc{padding:100px 0 22px}.home-insc .wrap{flex-direction:column;align-items:flex-start;gap:14px}.home-insc-btn{align-self:stretch;justify-content:center}}
+/* Gestão de Inscrições (cartão do técnico) */
+.eq-insc{display:flex;flex-direction:column;gap:12px}
+.eq-insc-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.eq-insc-tit{display:flex;align-items:center;gap:12px;min-width:0}
+.eq-insc-tit b{display:block;font-size:15px;font-weight:600;color:var(--navy)}
+.eq-insc-tit small{display:block;font-size:12.5px;line-height:1.45;color:var(--muted);margin-top:2px}
+.eq-insc-ic{flex:none;width:38px;height:38px;border-radius:10px;border:1.5px solid #c9d6cc;color:#2f6b54;display:grid;place-items:center}
+.eq-insc-ic svg{width:18px;height:18px}
+.eq-insc-sw{display:inline-flex;align-items:center;gap:12px;border:0;background:none;padding:4px;font:inherit;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;border-radius:999px}
+.eq-insc-sw:disabled{opacity:.6;cursor:default}
+.eq-insc-sw:focus-visible{outline:2px solid #2f6b54;outline-offset:3px}
+.eq-insc-trilho{position:relative;flex:none;width:46px;height:26px;border-radius:999px;background:#c8cfc9;transition:background .18s}
+.eq-insc-trilho::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(19,55,42,.25);transition:transform .18s}
+.eq-insc-sw[aria-checked="true"] .eq-insc-trilho{background:#2f6b54}
+.eq-insc-sw[aria-checked="true"] .eq-insc-trilho::after{transform:translateX(20px)}
+.eq-insc-estado{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.5;color:var(--muted);margin:0}
+.eq-insc-estado b{display:block;font-size:14px;color:var(--navy)}
+.eq-insc-dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:5px;background:#a9b2ab}
+.eq-insc-dot.on{background:#2f6b54}
+.eq-insc-nota{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0}
+.eq-insc-meta{font-size:12px;color:var(--muted);margin:0}
+.eq-insc-msg{font-size:13px;margin:0;min-height:0}
+.eq-insc-msg.ok{color:#2f6b54}.eq-insc-msg.erro{color:#8a3b2d}
+@media(prefers-reduced-motion:reduce){.eq-insc-trilho,.eq-insc-trilho::after{transition:none}}
+/* Acesso ao formulário na página pública de inscrição */
+#page-inscricao .enroll-acesso-aviso{margin:0 0 4px;padding:18px 20px;border:1px solid rgba(227,242,230,.28);border-radius:14px;background:rgba(227,242,230,.08);max-width:560px}
+#page-inscricao .enroll-acesso-aviso h3{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:22px;color:#fff;margin:0 0 10px;letter-spacing:-.01em}
+#page-inscricao .enroll-acesso-aviso p{font-size:14.5px;line-height:1.7;color:rgba(227,242,230,.9);margin:0 0 8px}
+#page-inscricao .enroll-acesso-aviso p:last-child{margin-bottom:0}
+#page-inscricao .enroll-acesso-ok{display:inline-block;margin:14px 0 0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bad0bf}
 .eq-pend-badge{font-size:12px;font-weight:700;color:#2f6b54;background:#dfe9df;border-radius:999px;padding:5px 12px}
 .eq-tec .eq-pend-item{border-top-color:var(--tc-line);border-radius:10px;padding:14px 6px}
 .eq-tec .eq-pend-item:hover,.eq-recent-row:hover{background:#f1ede1}
@@ -2145,7 +2189,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
     </div>
   </div></section>
   <section class="enroll-final-section" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final enroll-final-premium">
-        <div class="enroll-final-content"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> 03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSdH1AnV9ukKNWYwgK4QPjtBWTbPHpQZU7AIqZPKGDql4vHWIw/viewform?usp=dialog" target="_blank" rel="noopener noreferrer" class="enroll-final-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a><p class="enroll-final-priv">Saiba como tratamos seus dados: <a href="#privacidade" target="_blank" rel="noopener">Aviso de Privacidade e Proteção de Dados</a>.</p></div>
+        <div class="enroll-final-content"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> 03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><div id="enroll-acesso" aria-live="polite"><p class="enroll-acesso-aviso" id="enroll-acesso-checando">Verificando a disponibilidade das inscrições…</p></div><p class="enroll-final-priv">Saiba como tratamos seus dados: <a href="#privacidade" target="_blank" rel="noopener">Aviso de Privacidade e Proteção de Dados</a>.</p></div>
         <aside class="enroll-final-card" aria-label="O que você encontra no Serviço-Escola">
           <span class="enroll-final-card-title">O que você encontra</span>
           <ul>
@@ -3037,6 +3081,24 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
           </div>
         </section>
 
+        <section class="eq-tec-block eq-tec-only" id="eq-insc-card" data-in="painel" aria-labelledby="eq-insc-titulo">
+          <div class="eq-insc">
+            <div class="eq-insc-top">
+              <div class="eq-insc-tit">
+                <span class="eq-insc-ic" aria-hidden="true"><svg><use href="#i-file"/></svg></span>
+                <div><b id="eq-insc-titulo">Gestão de Inscrições</b><small>Controle a disponibilidade das inscrições para atendimento no Serviço-Escola.</small></div>
+              </div>
+              <button type="button" class="eq-insc-sw" id="eq-insc-sw" role="switch" aria-checked="false" aria-describedby="eq-insc-estado" disabled>
+                <span class="eq-insc-trilho" aria-hidden="true"></span><span>Disponibilizar inscrições</span>
+              </button>
+            </div>
+            <p class="eq-insc-estado" id="eq-insc-estado"><span class="eq-insc-dot" id="eq-insc-dot" aria-hidden="true"></span><span><b id="eq-insc-status">Verificando…</b><span id="eq-insc-compl"></span></span></p>
+            <p class="eq-insc-msg" id="eq-insc-msg" role="status" aria-live="polite"></p>
+            <p class="eq-insc-meta" id="eq-insc-meta" hidden></p>
+            <p class="eq-insc-nota">Para interromper completamente o recebimento de respostas, encerre também as inscrições no Google Forms.</p>
+          </div>
+        </section>
+
         <div class="eq-tec-row eq-tec-only" data-in="painel">
           <section class="eq-tec-panel" aria-labelledby="eq-tec-pend-title">
             <div class="eq-tec-panel-head"><h3 class="eq-tec-h" id="eq-tec-pend-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg>Pendências</h3><span class="eq-pend-badge" id="eq-pend-badge" hidden></span></div>
@@ -3812,6 +3874,57 @@ function capturarAtivacao(){
     }
   });
 }
+/* Gestão de Inscrições — página pública: pergunta ao servidor se as inscrições estão abertas.
+   O endereço do formulário só vem da API quando abertas; nada é presumido se a consulta falhar. */
+/* Consulta única ao estado das inscrições: a página de inscrição e a Home usam a mesma resposta do servidor. */
+function consultarInscricoes(){
+  return fetch(window.API_BASE + '/api/inscricoes/disponibilidade', {cache:'no-store', headers:{'Accept':'application/json'}})
+    .then(function(r){ if(!r.ok) throw new Error('status ' + r.status); return r.json(); });
+}
+window.carregarInscricoes = function(){
+  const alvo = document.getElementById('enroll-acesso');
+  if(!alvo) return;
+  consultarInscricoes()
+    .then(function(d){
+      if(d && d.aberta === true && typeof d.formulario_url === 'string' && /^https:\/\//.test(d.formulario_url)){
+        alvo.innerHTML = '<p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p>'
+          + '<a target="_blank" rel="noopener noreferrer" class="enroll-final-link" id="enroll-form-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>'
+          + '<span class="enroll-acesso-ok">Inscrições abertas</span>';
+        document.getElementById('enroll-form-link').setAttribute('href', d.formulario_url);
+      } else if(d && d.aberta === false){
+        alvo.innerHTML = '<div class="enroll-acesso-aviso"><h3>Inscrições temporariamente encerradas</h3>'
+          + '<p>No momento, não estamos recebendo novas inscrições para atendimento psicológico no Serviço-Escola.</p>'
+          + '<p>Acompanhe esta página para informações sobre o próximo período de inscrições.</p>'
+          + '<p>Agradecemos seu interesse em nosso serviço.</p></div>';
+      } else { throw new Error('resposta inesperada'); }
+    })
+    .catch(function(){
+      alvo.innerHTML = '<p class="enroll-acesso-aviso">Não foi possível verificar a disponibilidade das inscrições neste momento. Por favor, tente novamente mais tarde.</p>';
+    });
+};
+/* Comunicado na Home: o elemento só existe enquanto o servidor confirma "abertas". Encerradas, falha ou resposta
+   inesperada = nenhum elemento (a Home fica exatamente como era, sem espaço vazio e sem aviso de encerramento). */
+var _homeInscSeq = 0;
+function removerComunicadoHome(){ const e = document.getElementById('home-insc'); if(e) e.remove(); }
+window.carregarComunicadoHome = function(){
+  const pagina = document.getElementById('page-home');
+  if(!pagina) return;
+  const minha = ++_homeInscSeq;
+  consultarInscricoes().then(function(d){
+    if(minha !== _homeInscSeq) return; /* uma consulta mais nova já assumiu */
+    if(!(d && d.aberta === true)){ removerComunicadoHome(); return; }
+    if(document.getElementById('home-insc')) return;
+    const sec = document.createElement('section');
+    sec.className = 'home-insc'; sec.id = 'home-insc'; sec.setAttribute('aria-label', 'Período de inscrições');
+    sec.innerHTML = '<div class="wrap"><span class="home-insc-ic" aria-hidden="true"><svg><use href="#i-cal"/></svg></span>'
+      + '<div class="home-insc-txt"><span class="home-insc-rot">PERÍODO DE INSCRIÇÕES ABERTO</span>'
+      + '<h2 class="home-insc-tit">Dê o primeiro passo para o seu cuidado.</h2>'
+      + '<p class="home-insc-desc">Estão abertas as inscrições para atendimento psicológico no Serviço-Escola de Psicologia.</p></div>'
+      + '<a href="#inscricao" class="home-insc-btn">Inscreva-se<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>';
+    pagina.insertBefore(sec, pagina.firstChild);
+  }).catch(function(){ if(minha === _homeInscSeq) removerComunicadoHome(); });
+};
+
 function route(){
   capturarAtivacao();
   const h=location.hash.slice(1);
@@ -3838,6 +3951,8 @@ function route(){
   document.body.classList.toggle('subpage', active!=='home');
   if(active!=='paciente' && typeof window.resetPacienteSession==='function'){ window.resetPacienteSession(); }
   if(active!=='equipe' && typeof window.resetEquipeSession==='function'){ window.resetEquipeSession(); }
+  if(active==='inscricao' && typeof window.carregarInscricoes==='function') window.carregarInscricoes();
+  if(active==='home' && typeof window.carregarComunicadoHome==='function') window.carregarComunicadoHome();
   document.title = titles[active];
   requestAnimationFrame(()=>{
     if(active!=='home' || h===''||h==='topo'){window.scrollTo(0,0);}
@@ -5362,6 +5477,7 @@ route();
       }catch(err){ console.info('Desenho decorativo do painel não pôde ser preparado.', err); }
     }
     if(ehTec){
+      inscCarregar();
       renderTecPend();
       renderTecStudents();
       renderTecRecent();
@@ -6999,6 +7115,51 @@ route();
     });
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !mdlEl.hidden) mdlFechar(); });
   }
+
+  /* ----- Gestão de Inscrições (cartão do painel do técnico) ----- */
+  var inscEstado = null; /* só muda depois que o servidor confirma */
+  function inscMsg(t, tipo){ const m = document.getElementById('eq-insc-msg'); if(m){ m.textContent = t || ''; m.className = 'eq-insc-msg' + (tipo ? ' ' + tipo : ''); } }
+  function inscPintar(est){
+    inscEstado = est;
+    const sw = document.getElementById('eq-insc-sw');
+    if(!sw) return;
+    const ab = est.aberta === true;
+    sw.setAttribute('aria-checked', ab ? 'true' : 'false');
+    sw.disabled = false;
+    document.getElementById('eq-insc-dot').classList.toggle('on', ab);
+    document.getElementById('eq-insc-status').textContent = ab ? 'Inscrições abertas' : 'Inscrições encerradas';
+    document.getElementById('eq-insc-compl').textContent = ab ? 'O formulário de inscrição está disponível na página pública.' : 'O acesso ao formulário de inscrição está temporariamente indisponível na página pública.';
+    const meta = document.getElementById('eq-insc-meta');
+    if(est.alterado_em){ meta.hidden = false; meta.textContent = 'Última alteração: ' + est.alterado_em + (est.alterado_por ? ' — ' + est.alterado_por : ''); } else { meta.hidden = true; }
+  }
+  function inscCarregar(){
+    const sw = document.getElementById('eq-insc-sw');
+    if(!sw) return;
+    _apiFetch('/api/inscricoes/configuracao').then(inscPintar).catch(function(){
+      sw.disabled = true;
+      document.getElementById('eq-insc-status').textContent = 'Não foi possível verificar';
+      document.getElementById('eq-insc-compl').textContent = 'Atualize a página para tentar novamente.';
+    });
+  }
+  function inscPedirTroca(){
+    if(!inscEstado) return;
+    const abrir = inscEstado.aberta !== true;
+    const msg = abrir
+      ? 'Ao confirmar, o acesso ao formulário de inscrição será disponibilizado na página pública do Serviço-Escola.'
+      : 'Ao confirmar, o acesso ao formulário será temporariamente indisponibilizado na página pública. As inscrições e os registros existentes não serão alterados.';
+    mdlAbrir(abrir ? 'Abrir inscrições?' : 'Encerrar inscrições?', '<form novalidate><p>'+esc(msg)+'</p>'+mdlRodape(abrir ? 'Abrir inscrições' : 'Encerrar inscrições')+'</form>', function(){
+      mdlEnviar(_apiFetch('/api/inscricoes/configuracao', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({aberta: abrir})}), function(est){
+        inscPintar(est);
+        mdlFechar();
+        inscMsg(est.aberta ? 'Inscrições abertas com sucesso.' : 'Inscrições encerradas com sucesso.', 'ok');
+        setTimeout(function(){ inscMsg(''); }, 6000);
+      });
+    });
+  }
+  (function(){
+    const sw = document.getElementById('eq-insc-sw');
+    if(sw) sw.addEventListener('click', function(){ inscMsg(''); inscPedirTroca(); });
+  })();
 
   /* ----- Página Alocação de Pacientes ----- */
   function alocCategoria(c){ return c.status === 'Encerrado' ? 'encerrados' : (c.estudante ? 'alocados' : 'aguardando'); }
