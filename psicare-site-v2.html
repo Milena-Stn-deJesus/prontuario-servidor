@@ -647,6 +647,7 @@ footer{margin-top:120px}
 .eq-tec[data-view="cadastro"] [data-in]:not([data-in~="cadastro"]),
 .eq-tec[data-view="alocacao"] [data-in]:not([data-in~="alocacao"]),
 .eq-tec[data-view="relatorios"] [data-in]:not([data-in~="relatorios"]),
+.eq-tec[data-view="inscricoes"] [data-in]:not([data-in~="inscricoes"]),
 .eq-tec[data-view="caso"] [data-in]:not([data-in~="caso"]){display:none!important}
 /* Alocação de pacientes, agenda do técnico e prontuário dentro do painel — só reaproveitam os tokens do painel */
 .eq-aloc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 18px}
@@ -862,13 +863,9 @@ footer{margin-top:120px}
 .home-insc-btn svg{width:16px;height:16px}
 @media(max-width:760px){.home-insc{padding:100px 0 22px}.home-insc .wrap{flex-direction:column;align-items:flex-start;gap:14px}.home-insc-btn{align-self:stretch;justify-content:center}}
 /* Gestão de Inscrições (cartão do técnico) */
-.eq-insc{display:flex;flex-direction:column;gap:12px}
+.eq-insc{display:flex;flex-direction:column;gap:12px;max-width:640px}
+.eq-insc-expl{font-size:13.5px;line-height:1.6;color:var(--ink);margin:0}
 .eq-insc-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.eq-insc-tit{display:flex;align-items:center;gap:12px;min-width:0}
-.eq-insc-tit b{display:block;font-size:15px;font-weight:600;color:var(--navy)}
-.eq-insc-tit small{display:block;font-size:12.5px;line-height:1.45;color:var(--muted);margin-top:2px}
-.eq-insc-ic{flex:none;width:38px;height:38px;border-radius:10px;border:1.5px solid #c9d6cc;color:#2f6b54;display:grid;place-items:center}
-.eq-insc-ic svg{width:18px;height:18px}
 .eq-insc-sw{display:inline-flex;align-items:center;gap:12px;border:0;background:none;padding:4px;font:inherit;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;border-radius:999px}
 .eq-insc-sw:disabled{opacity:.6;cursor:default}
 .eq-insc-sw:focus-visible{outline:2px solid #2f6b54;outline-offset:3px}
@@ -890,7 +887,7 @@ footer{margin-top:120px}
 #page-inscricao .enroll-acesso-aviso h3{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:22px;color:#fff;margin:0 0 10px;letter-spacing:-.01em}
 #page-inscricao .enroll-acesso-aviso p{font-size:14.5px;line-height:1.7;color:rgba(227,242,230,.9);margin:0 0 8px}
 #page-inscricao .enroll-acesso-aviso p:last-child{margin-bottom:0}
-#page-inscricao .enroll-acesso-ok{display:inline-block;margin:14px 0 0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bad0bf}
+#page-inscricao #enroll-acesso{display:contents} /* o bloco não interfere no layout: parágrafo e botão se comportam como antes */
 .eq-pend-badge{font-size:12px;font-weight:700;color:#2f6b54;background:#dfe9df;border-radius:999px;padding:5px 12px}
 .eq-tec .eq-pend-item{border-top-color:var(--tc-line);border-radius:10px;padding:14px 6px}
 .eq-tec .eq-pend-item:hover,.eq-recent-row:hover{background:#f1ede1}
@@ -2188,7 +2185,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
       <article class="enroll-person"><span class="enroll-person-avatar" aria-hidden="true"><svg><use href="#i-cap"/></svg></span><div><h3>Thiago Azevedo Ribeiro</h3><p>Supervisor de estágio e docente da FCMSCSP — CRP 06/97213</p></div></article>
     </div>
   </div></section>
-  <section class="enroll-final-section" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final enroll-final-premium">
+  <section class="enroll-final-section" id="enroll-quadro-form" aria-labelledby="enroll-final-title"><div class="enroll-container"><div class="enroll-final enroll-final-premium">
         <div class="enroll-final-content"><span class="enroll-kicker"><span class="enroll-kicker-line"></span> 03 / PRÓXIMO PASSO</span><h2 id="enroll-final-title">Pronta(o) para<br><em>se inscrever?</em></h2><div id="enroll-acesso" aria-live="polite"><p class="enroll-acesso-aviso" id="enroll-acesso-checando">Verificando a disponibilidade das inscrições…</p></div><p class="enroll-final-priv">Saiba como tratamos seus dados: <a href="#privacidade" target="_blank" rel="noopener">Aviso de Privacidade e Proteção de Dados</a>.</p></div>
         <aside class="enroll-final-card" aria-label="O que você encontra no Serviço-Escola">
           <span class="enroll-final-card-title">O que você encontra</span>
@@ -2980,6 +2977,7 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <button type="button" class="eq-side-link" data-view="agenda"><svg aria-hidden="true"><use href="#i-cal"/></svg>Agenda</button>
             <button type="button" class="eq-side-link" data-view="solicitacoes"><svg aria-hidden="true"><use href="#i-file"/></svg>Solicitações<span class="eq-side-count" id="eq-side-count" hidden>0</span></button>
             <button type="button" class="eq-side-link eq-tec-only" data-view="relatorios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 17v-3M12 17v-5M15 17v-2"/></svg>Relatórios Gerenciais</button>
+            <button type="button" class="eq-side-link eq-tec-only" data-view="inscricoes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Gestão de Inscrições</button>
           </nav>
           <div class="eq-side-foot">
             <a href="#" class="eq-side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Sair</a>
@@ -3078,24 +3076,6 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <button type="button" class="eq-tec-qbtn" data-quick="buscar"><svg aria-hidden="true"><use href="#i-search"/></svg><span>Buscar paciente</span></button>
             <button type="button" class="eq-tec-qbtn" data-quick="estudantes"><svg aria-hidden="true"><use href="#i-cap"/></svg><span>Lista de estudantes</span></button>
             <button type="button" class="eq-tec-qbtn" data-quick="prontuarios"><svg aria-hidden="true"><use href="#i-file"/></svg><span>Consultar prontuários</span></button>
-          </div>
-        </section>
-
-        <section class="eq-tec-block eq-tec-only" id="eq-insc-card" data-in="painel" aria-labelledby="eq-insc-titulo">
-          <div class="eq-insc">
-            <div class="eq-insc-top">
-              <div class="eq-insc-tit">
-                <span class="eq-insc-ic" aria-hidden="true"><svg><use href="#i-file"/></svg></span>
-                <div><b id="eq-insc-titulo">Gestão de Inscrições</b><small>Controle a disponibilidade das inscrições para atendimento no Serviço-Escola.</small></div>
-              </div>
-              <button type="button" class="eq-insc-sw" id="eq-insc-sw" role="switch" aria-checked="false" aria-describedby="eq-insc-estado" disabled>
-                <span class="eq-insc-trilho" aria-hidden="true"></span><span>Disponibilizar inscrições</span>
-              </button>
-            </div>
-            <p class="eq-insc-estado" id="eq-insc-estado"><span class="eq-insc-dot" id="eq-insc-dot" aria-hidden="true"></span><span><b id="eq-insc-status">Verificando…</b><span id="eq-insc-compl"></span></span></p>
-            <p class="eq-insc-msg" id="eq-insc-msg" role="status" aria-live="polite"></p>
-            <p class="eq-insc-meta" id="eq-insc-meta" hidden></p>
-            <p class="eq-insc-nota">Para interromper completamente o recebimento de respostas, encerre também as inscrições no Google Forms.</p>
           </div>
         </section>
 
@@ -3304,6 +3284,27 @@ body.subpage .nav:not(.scrolled){background:rgba(19,55,42,.92);backdrop-filter:b
             <p class="eq-rel-stale" id="eq-rel-stale" hidden>Os filtros foram alterados. Clique em “Visualizar relatório” para atualizar a prévia antes de gerar o PDF.</p>
             <div id="eq-rel-corpo"></div>
           </div>
+        </div>
+
+        <div class="dash-hist eq-tec-only" id="eq-insc-page" data-in="inscricoes">
+          <div class="eq-tec-page-head">
+            <h3 class="eq-tec-title">Gestão de Inscrições</h3>
+            <p>Gerencie a disponibilidade das inscrições para atendimento no Serviço-Escola de Psicologia.</p>
+          </div>
+          <section class="eq-tec-panel" id="eq-insc-card" aria-label="Disponibilidade das inscrições">
+            <div class="eq-insc">
+              <div class="eq-insc-top">
+                <p class="eq-insc-estado" id="eq-insc-estado"><span class="eq-insc-dot" id="eq-insc-dot" aria-hidden="true"></span><span><b id="eq-insc-status">Verificando…</b><span id="eq-insc-compl"></span></span></p>
+                <button type="button" class="eq-insc-sw" id="eq-insc-sw" role="switch" aria-checked="false" aria-describedby="eq-insc-estado" disabled>
+                  <span class="eq-insc-trilho" aria-hidden="true"></span><span>Disponibilizar inscrições</span>
+                </button>
+              </div>
+              <p class="eq-insc-msg" id="eq-insc-msg" role="status" aria-live="polite"></p>
+              <p class="eq-insc-expl">Com as inscrições abertas, a Home exibe o comunicado de período de inscrições e a página de inscrição dá acesso ao formulário. Encerradas, o comunicado deixa de aparecer na Home e a página de inscrição informa que o período está encerrado.</p>
+              <p class="eq-insc-nota">Para interromper completamente o recebimento de respostas, encerre também as inscrições no Google Forms.</p>
+              <p class="eq-insc-meta" id="eq-insc-meta" hidden></p>
+            </div>
+          </section>
         </div>
 
         <div class="dash-hist eq-tec-only" id="eq-aloc-card" data-in="alocacao">
@@ -3888,8 +3889,7 @@ window.carregarInscricoes = function(){
     .then(function(d){
       if(d && d.aberta === true && typeof d.formulario_url === 'string' && /^https:\/\//.test(d.formulario_url)){
         alvo.innerHTML = '<p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p>'
-          + '<a target="_blank" rel="noopener noreferrer" class="enroll-final-link" id="enroll-form-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>'
-          + '<span class="enroll-acesso-ok">Inscrições abertas</span>';
+          + '<a target="_blank" rel="noopener noreferrer" class="enroll-final-link" id="enroll-form-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>';
         document.getElementById('enroll-form-link').setAttribute('href', d.formulario_url);
       } else if(d && d.aberta === false){
         alvo.innerHTML = '<div class="enroll-acesso-aviso"><h3>Inscrições temporariamente encerradas</h3>'
@@ -3921,6 +3921,8 @@ window.carregarComunicadoHome = function(){
       + '<h2 class="home-insc-tit">Dê o primeiro passo para o seu cuidado.</h2>'
       + '<p class="home-insc-desc">Estão abertas as inscrições para atendimento psicológico no Serviço-Escola de Psicologia.</p></div>'
       + '<a href="#inscricao" class="home-insc-btn">Inscreva-se<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>';
+    /* o botão leva direto ao quadro de acesso ao formulário (a rota só rola até lá uma vez, quando este botão foi o gatilho) */
+    sec.querySelector('.home-insc-btn').addEventListener('click', function(){ window._irAoQuadroInscricao = true; });
     pagina.insertBefore(sec, pagina.firstChild);
   }).catch(function(){ if(minha === _homeInscSeq) removerComunicadoHome(); });
 };
@@ -3955,6 +3957,11 @@ function route(){
   if(active==='home' && typeof window.carregarComunicadoHome==='function') window.carregarComunicadoHome();
   document.title = titles[active];
   requestAnimationFrame(()=>{
+    if(active==='inscricao' && window._irAoQuadroInscricao){
+      window._irAoQuadroInscricao = false;
+      const alvo = document.getElementById('enroll-quadro-form');
+      if(alvo){ alvo.scrollIntoView({block:'center'}); setTimeout(function(){ alvo.scrollIntoView({block:'center'}); }, 350); return; }
+    }
     if(active!=='home' || h===''||h==='topo'){window.scrollTo(0,0);}
     else{const el=document.getElementById(h); if(el) el.scrollIntoView(); else window.scrollTo(0,0);}
   });
@@ -5488,7 +5495,7 @@ route();
     if(typeof aoEntrarNaVisao === 'function') aoEntrarNaVisao(tecView);
   }
   function setTecView(view){
-    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro','alocacao','caso','perfil','relatorios'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
+    if(['painel','pacientes','estudantes','agenda','solicitacoes','cadastro','alocacao','caso','perfil','relatorios','inscricoes'].indexOf(view) === -1) view = 'painel'; /* páginas descontinuadas (Formulários/Triagem) não existem mais */
     tecView = view;
     applyTecView();
     const card = tecCard();
@@ -7066,6 +7073,7 @@ route();
   function aoEntrarNaVisao(v){
     if(currentRole !== 'tecnico') return;
     if(v === 'relatorios') relAbrir();
+    if(v === 'inscricoes') inscCarregar();
     carregarDadosAlocacao(v === 'alocacao' || v === 'cadastro');
     if(v === 'agenda') popularFiltrosAgenda();
     renderAloc();
