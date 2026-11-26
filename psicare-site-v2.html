@@ -884,9 +884,17 @@ footer{margin-top:120px}
 @media(prefers-reduced-motion:reduce){.eq-insc-trilho,.eq-insc-trilho::after{transition:none}}
 /* Acesso ao formulário na página pública de inscrição */
 #page-inscricao .enroll-acesso-aviso{margin:0 0 4px;padding:18px 20px;border:1px solid rgba(227,242,230,.28);border-radius:14px;background:rgba(227,242,230,.08);max-width:560px}
-#page-inscricao .enroll-acesso-aviso h3{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:22px;color:#fff;margin:0 0 10px;letter-spacing:-.01em}
-#page-inscricao .enroll-acesso-aviso p{font-size:14.5px;line-height:1.7;color:rgba(227,242,230,.9);margin:0 0 8px}
-#page-inscricao .enroll-acesso-aviso p:last-child{margin-bottom:0}
+/* Comunicado de inscrições encerradas: cartão bege da paleta, texto verde-escuro (contraste AA), detalhes em dourado discreto */
+#page-inscricao .enroll-enc{max-width:500px;padding:26px 30px 24px;border-radius:12px;background:#f6f1e4;border:1px solid rgba(201,173,106,.55);color:var(--navy);margin:0 0 22px}
+#page-inscricao .enroll-enc-head{display:flex;align-items:center;gap:16px}
+#page-inscricao .enroll-enc-ic{flex:none;width:50px;height:50px;border-radius:50%;border:1px solid #c9ad6a;color:var(--navy);display:grid;place-items:center}
+#page-inscricao .enroll-enc-ic svg{width:24px;height:24px}
+#page-inscricao .enroll-enc-rot{display:block;font-size:10.5px;font-weight:700;letter-spacing:.21em;text-transform:uppercase;color:#7a5f24;margin:0 0 5px}
+#page-inscricao .enroll-enc h3{font-family:var(--serif);font-weight:500;font-size:clamp(21px,2.6vw,26px);line-height:1.2;letter-spacing:-.01em;color:var(--navy);margin:0}
+#page-inscricao .enroll-enc-fio{display:block;width:44px;height:1px;background:#c9ad6a;margin:18px 0 16px}
+#page-inscricao .enroll-final-premium .enroll-enc p{font-size:15px;line-height:1.6;color:#26443a;max-width:none;margin:0 0 8px}
+#page-inscricao .enroll-final-premium .enroll-enc p.enroll-enc-fecho{font-size:13.5px;font-style:italic;color:#4a6357;margin:12px 0 0}
+@media(max-width:480px){#page-inscricao .enroll-enc{padding:22px 20px 20px}#page-inscricao .enroll-enc-head{gap:13px}#page-inscricao .enroll-enc-ic{width:44px;height:44px}}
 #page-inscricao #enroll-acesso{display:contents} /* o bloco não interfere no layout: parágrafo e botão se comportam como antes */
 .eq-pend-badge{font-size:12px;font-weight:700;color:#2f6b54;background:#dfe9df;border-radius:999px;padding:5px 12px}
 .eq-tec .eq-pend-item{border-top-color:var(--tc-line);border-radius:10px;padding:14px 6px}
@@ -3882,6 +3890,11 @@ function consultarInscricoes(){
   return fetch(window.API_BASE + '/api/inscricoes/disponibilidade', {cache:'no-store', headers:{'Accept':'application/json'}})
     .then(function(r){ if(!r.ok) throw new Error('status ' + r.status); return r.json(); });
 }
+/* Título da seção de acesso: "Seu cuidado começa aqui." só quando o servidor confirma inscrições encerradas; nos demais casos, o original. */
+function tituloInscricao(aberta){
+  const h = document.getElementById('enroll-final-title');
+  if(h) h.innerHTML = aberta ? 'Pronta(o) para<br><em>se inscrever?</em>' : 'Seu cuidado começa<br><em>aqui.</em>';
+}
 window.carregarInscricoes = function(){
   const alvo = document.getElementById('enroll-acesso');
   if(!alvo) return;
@@ -3891,14 +3904,20 @@ window.carregarInscricoes = function(){
         alvo.innerHTML = '<p>Preencha o formulário abaixo para iniciar sua inscrição. Nossa equipe entrará em contato para as próximas etapas.</p>'
           + '<a target="_blank" rel="noopener noreferrer" class="enroll-final-link" id="enroll-form-link"><span>Acessar formulário de inscrição</span><span class="enroll-final-link-arrow"><svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>';
         document.getElementById('enroll-form-link').setAttribute('href', d.formulario_url);
+        tituloInscricao(true);
       } else if(d && d.aberta === false){
-        alvo.innerHTML = '<div class="enroll-acesso-aviso"><h3>Inscrições temporariamente encerradas</h3>'
-          + '<p>No momento, não estamos recebendo novas inscrições para atendimento psicológico no Serviço-Escola.</p>'
+        alvo.innerHTML = '<div class="enroll-enc"><div class="enroll-enc-head">'
+          + '<span class="enroll-enc-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h5"/><path d="M8 3v4M16 3v4M4 10h16"/><circle cx="17" cy="17" r="4.5"/><path d="M17 14.8V17l1.5 1"/></svg></span>'
+          + '<div><span class="enroll-enc-rot">PERÍODO DE INSCRIÇÕES</span><h3>Inscrições temporariamente encerradas</h3></div></div>'
+          + '<span class="enroll-enc-fio" aria-hidden="true"></span>'
+          + '<p>No momento, não estamos recebendo novas inscrições para atendimento psicológico.</p>'
           + '<p>Acompanhe esta página para informações sobre o próximo período de inscrições.</p>'
-          + '<p>Agradecemos seu interesse em nosso serviço.</p></div>';
+          + '<p class="enroll-enc-fecho">Agradecemos seu interesse em nosso serviço.</p></div>';
+        tituloInscricao(false);
       } else { throw new Error('resposta inesperada'); }
     })
     .catch(function(){
+      tituloInscricao(true);
       alvo.innerHTML = '<p class="enroll-acesso-aviso">Não foi possível verificar a disponibilidade das inscrições neste momento. Por favor, tente novamente mais tarde.</p>';
     });
 };
